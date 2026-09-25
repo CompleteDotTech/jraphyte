@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:evaluation",
+  "title": "TRACE-GC evaluation v0.3.0",
+  "type": "object",
+  "properties": {
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "resolution_batch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "policy_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "policy_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "qualification_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": "string",
+          "minLength": 1
+        },
+        "predicate": {
+          "type": "string",
+          "minLength": 1
+        },
+        "population": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_generator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "question_program": {
+          "type": "string",
+          "minLength": 1
+        },
+        "materializer_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "packing_policy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tokenizer_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resolver_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "risk_class": {
+          "enum": [
+            "R0",
+            "R1",
+            "R2",
+            "R3",
+            "R4",
+            "R5"
+          ]
+        },
+        "security_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "execution_mode": {
+          "enum": [
+            "SYNTHETIC",
+            "RECORDED",
+            "LIVE"
+          ]
+        }
+      },
+      "required": [
+        "task",
+        "predicate",
+        "population",
+        "candidate_generator",
+        "model_version",
+        "question_program",
+        "materializer_version",
+        "packing_policy",
+        "tokenizer_version",
+        "resolver_version",
+        "policy_version",
+        "risk_class",
+        "security_scope",
+        "execution_mode"
+      ],
+      "additionalProperties": false
+    },
+    "outcome": {
+      "enum": [
+        "ACCEPT",
+        "REJECT",
+        "ABSTAIN",
+        "HUMAN_REVIEW",
+        "RETRIEVE_MORE_EVIDENCE"
+      ]
+    },
+    "score": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "candidate_id",
+    "observation_ids",
+    "resolution_batch_id",
+    "policy_version",
+    "policy_id",
+    "qualification_id",
+    "context",
+    "outcome",
+    "score",
+    "reason",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

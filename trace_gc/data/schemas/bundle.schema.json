@@ -1,0 +1,382 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:bundle",
+  "title": "TRACE-GC bundle v0.3.0",
+  "type": "object",
+  "properties": {
+    "format_version": {
+      "const": "0.3.0"
+    },
+    "canonicalization": {
+      "const": "TRACE-C14N-1"
+    },
+    "manifest": {
+      "type": "object",
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "execution_mode": {
+          "enum": [
+            "SYNTHETIC",
+            "RECORDED",
+            "LIVE"
+          ]
+        },
+        "security_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profile": {
+          "enum": [
+            "PARTIAL_ANALYSIS",
+            "FINALIZED_ANALYSIS",
+            "FINALIZED_PUBLISHED",
+            "HISTORICAL_REPLAY"
+          ]
+        },
+        "graph_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "schema_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "record_hashes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "source_status": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "active": {
+                "type": "boolean"
+              },
+              "permission": {
+                "enum": [
+                  "READ",
+                  "DENIED"
+                ]
+              },
+              "epoch": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "tombstone": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "active",
+              "permission",
+              "epoch",
+              "updated_at",
+              "tombstone"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "record_events": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_status_as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ledger_head": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "checkpoint_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "transaction_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "run_id",
+        "execution_mode",
+        "security_scope",
+        "profile",
+        "graph_version",
+        "schema_hash",
+        "record_hashes",
+        "source_status",
+        "record_events",
+        "policy_version",
+        "policy_id",
+        "source_status_as_of",
+        "ledger_head",
+        "checkpoint_id",
+        "transaction_id"
+      ],
+      "additionalProperties": false
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "source",
+              "claim",
+              "evidence",
+              "candidate",
+              "pack",
+              "observation",
+              "evaluation",
+              "resolution-batch",
+              "resolution",
+              "plan",
+              "qualification",
+              "receipt",
+              "transaction",
+              "schema",
+              "graph-snapshot",
+              "policy",
+              "retrieval-query",
+              "retrieval-plan",
+              "graph-access",
+              "graph-context",
+              "retrieval-result",
+              "retrieval-expansion",
+              "retrieval-lineage",
+              "graphrag-answer",
+              "retrieval-replay",
+              "retrieval-evaluation"
+            ]
+          },
+          "hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "body": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "hash",
+          "body"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "ledger": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "run_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "execution_mode": {
+            "enum": [
+              "SYNTHETIC",
+              "RECORDED",
+              "LIVE"
+            ]
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "stage": {
+            "enum": [
+              "SOURCE",
+              "CLAIM",
+              "EVIDENCE",
+              "CANDIDATE",
+              "PACK",
+              "OBSERVATION",
+              "RESOLUTION",
+              "EVALUATION",
+              "QUALIFICATION",
+              "PLAN",
+              "RECEIPT",
+              "TRANSACTION",
+              "SCHEMA",
+              "SNAPSHOT",
+              "POLICY",
+              "RETRIEVAL"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "parent_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "previous_hash": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "record_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "payload_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "id",
+          "run_id",
+          "execution_mode",
+          "sequence",
+          "stage",
+          "created_at",
+          "parent_ids",
+          "previous_hash",
+          "record_ids",
+          "payload_hash",
+          "hash"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "checkpoint": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "purpose": {
+              "enum": [
+                "AUTHORIZATION",
+                "PREFLIGHT",
+                "QUALIFICATION",
+                "RUN_CHECKPOINT",
+                "SOURCE_STATUS",
+                "OBSERVATION"
+              ]
+            },
+            "issuer": {
+              "type": "string",
+              "minLength": 1
+            },
+            "issued_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "payload": {
+              "type": "object"
+            },
+            "signature": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "purpose",
+            "issuer",
+            "issued_at",
+            "expires_at",
+            "payload",
+            "signature"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "format_version",
+    "canonicalization",
+    "manifest",
+    "records",
+    "ledger",
+    "checkpoint"
+  ],
+  "additionalProperties": false
+}

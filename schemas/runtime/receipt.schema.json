@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:receipt",
+  "title": "TRACE-GC receipt v0.3.0",
+  "type": "object",
+  "properties": {
+    "purpose": {
+      "enum": [
+        "AUTHORIZATION",
+        "PREFLIGHT",
+        "QUALIFICATION",
+        "RUN_CHECKPOINT",
+        "SOURCE_STATUS",
+        "OBSERVATION"
+      ]
+    },
+    "issuer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "signature": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "purpose",
+    "issuer",
+    "issued_at",
+    "expires_at",
+    "payload",
+    "signature"
+  ],
+  "additionalProperties": false
+}

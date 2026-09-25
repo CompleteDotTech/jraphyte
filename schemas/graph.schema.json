@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.2:graph",
+  "title": "TRACE-GC graph 0.2-design",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "0.2-design"
+    },
+    "graph_ir_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "initial_graph_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "schema_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "candidate_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "pack_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "decision_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "resolution_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "mutation_plan_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "ledger_event_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "accepted_assertion_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "execution_mode": {
+      "enum": [
+        "SYNTHETIC",
+        "RECORDED",
+        "LIVE"
+      ]
+    },
+    "status": {
+      "enum": [
+        "ANALYSIS_ONLY",
+        "COMPILED",
+        "COMMITTED"
+      ]
+    },
+    "claim_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "schema_version",
+    "graph_ir_id",
+    "run_id",
+    "revision",
+    "initial_graph_version",
+    "schema_hash",
+    "evidence_refs",
+    "candidate_refs",
+    "pack_refs",
+    "decision_refs",
+    "resolution_refs",
+    "mutation_plan_refs",
+    "ledger_event_refs",
+    "accepted_assertion_refs",
+    "execution_mode",
+    "status",
+    "claim_refs"
+  ],
+  "additionalProperties": false
+}

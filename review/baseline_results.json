@@ -1,0 +1,30 @@
+{
+  "review_date": "2026-09-25",
+  "executed_at": "2026-09-25T06:23:49.518946+00:00",
+  "python_version": "3.13.5",
+  "jsonschema_version": "4.26.0",
+  "original_zip_sha256": "72a4973ea6e843ad29df9c68fc3f2b5814e77ccf8891b2774ffd745d7f65d870",
+  "original_manifest_entries_checked": 37,
+  "manifest_mismatches": [],
+  "baseline_bundle": {
+    "status": "PASS",
+    "schema_count": 9,
+    "record_count": 16,
+    "model_calls": 0,
+    "graph_commits": 0,
+    "calibration_qualified": false,
+    "scope": "Offline synthetic schema and selected cross-record contracts only."
+  },
+  "tests_run": 42,
+  "failures": 0,
+  "errors": 0,
+  "success": true,
+  "model_calls": 0,
+  "database_commits": 0,
+  "original_source_files_modified": false,
+  "scope_exclusions": [
+    "No original GraphStore code or backend was executed.",
+    "No live Jev inference or calibration study was conducted.",
+    "No load, concurrency, or security isolation test of a deployment was performed."
+  ]
+}

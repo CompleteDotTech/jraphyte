@@ -1,0 +1,25 @@
+flowchart TD
+  S[External source corpus] --> C[Existing candidate generation]
+  C --> RP[Retrieval Planner]
+  RP --> HR[Hybrid Evidence and Graph Retrieval]
+  HR --> FW[Existing Evidence Firewall plus graph trust classification]
+  FW --> MEC[Minimum source and graph Evidence Closure]
+  MEC --> QP[Existing Question Packing Planner]
+  QP --> J[Pinned Jev atomic judgments]
+  J --> DI[Existing Decision IR plus retrieval lineage]
+  DI --> R[Existing Synthesizer / Resolver]
+  R -->|Insufficient evidence; bounded rounds| RP
+  R -->|Resolved proposal| CC[Existing deterministic Constraint Compiler]
+  CC --> MP[Existing Mutation Planner]
+  MP --> CV[Existing claim/source and provenance verification]
+  CV --> AU[Existing independent preflight and authorization]
+  AU --> TX[Existing Transaction Engine]
+  TX --> G[Versioned evidence graph]
+  G -->|Snapshot-aware read and cache refresh| HR
+  G --> DS[Downstream GraphRAG]
+  DS --> U[Search / QA / agents / research]
+  U -->|New questions or evidence, never direct writes| C
+  DI --> L[Existing decision/provenance ledger]
+  HR --> L
+  TX --> L
+  L --> EV[Evaluation, replay and research]

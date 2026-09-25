@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:resolution-batch",
+  "title": "TRACE-GC resolution-batch v0.3.0",
+  "type": "object",
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "candidate_hashes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "observation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "observation_hashes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "snapshot": {
+      "type": "object",
+      "properties": {
+        "graph_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "schema_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "graph_version",
+        "schema_hash"
+      ],
+      "additionalProperties": false
+    },
+    "problem": {
+      "type": "object",
+      "properties": {
+        "nodes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "existing_identity_pairs": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 2
+          },
+          "minItems": 0
+        },
+        "cannot_links": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 2
+          },
+          "minItems": 0
+        },
+        "exclusive_groups": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "minItems": 0
+        },
+        "weights": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "dependent_assertions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0,
+            "uniqueItems": true
+          }
+        }
+      },
+      "required": [
+        "nodes",
+        "existing_identity_pairs",
+        "cannot_links",
+        "exclusive_groups",
+        "weights",
+        "dependent_assertions"
+      ],
+      "additionalProperties": false
+    },
+    "problem_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "solver_version": {
+      "const": "exact-subset-v1"
+    },
+    "objective": {
+      "const": "MAX_INTEGER_UTILITY_THEN_LEXICOGRAPHIC"
+    },
+    "status": {
+      "enum": [
+        "OPTIMAL",
+        "INFEASIBLE",
+        "BUDGET_EXHAUSTED"
+      ]
+    },
+    "selected_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "expansions": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "objective_value": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "impact": {
+      "type": "object",
+      "properties": {
+        "implied_equivalences": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "affected_nodes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dependent_assertions": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "implied_equivalences",
+        "affected_nodes",
+        "dependent_assertions"
+      ],
+      "additionalProperties": false
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "run_id",
+    "candidate_ids",
+    "candidate_hashes",
+    "observation_ids",
+    "observation_hashes",
+    "snapshot_id",
+    "snapshot",
+    "problem",
+    "problem_hash",
+    "solver_version",
+    "objective",
+    "status",
+    "selected_ids",
+    "expansions",
+    "objective_value",
+    "impact",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

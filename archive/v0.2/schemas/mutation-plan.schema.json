@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.2:mutation-plan",
+  "title": "TRACE-GC mutation-plan 0.2-design",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "0.2-design"
+    },
+    "plan_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_mode": {
+      "enum": [
+        "SYNTHETIC",
+        "RECORDED",
+        "LIVE"
+      ]
+    },
+    "status": {
+      "enum": [
+        "DRAFT",
+        "DRY_RUN_VALIDATED",
+        "READY",
+        "REJECTED",
+        "COMMITTED"
+      ]
+    },
+    "expected_graph_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "expected_schema_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "operation": {
+            "enum": [
+              "ATTACH_CANDIDATE_METADATA",
+              "ADD_ASSERTION",
+              "RETRACT_ASSERTION",
+              "ADD_IDENTITY_ASSERTION",
+              "PROPOSE_SCHEMA_MIGRATION"
+            ]
+          },
+          "candidate_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "resolution_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "decision_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "risk_class": {
+            "enum": [
+              "R0",
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5"
+            ]
+          }
+        },
+        "required": [
+          "operation_id",
+          "operation",
+          "candidate_ref",
+          "resolution_ref",
+          "evidence_refs",
+          "decision_refs",
+          "risk_class"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "policy_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "calibration_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "authorization": {
+      "enum": [
+        "NOT_AUTHORIZED",
+        "REVIEW_REQUIRED",
+        "AUTHORIZED"
+      ]
+    },
+    "constraint_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "constraint_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "capability": {
+            "enum": [
+              "IMPLEMENTED",
+              "DELEGATED",
+              "UNSUPPORTED",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "result": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ]
+          },
+          "validator_version": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "constraint_id",
+          "capability",
+          "result",
+          "validator_version"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "compensation_strategy": {
+      "enum": [
+        "RETRACT_WITH_DEPENDENCIES",
+        "NEW_REVIEWED_PLAN",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "precondition_evidence_hashes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "schema_version",
+    "plan_id",
+    "run_id",
+    "execution_mode",
+    "status",
+    "expected_graph_version",
+    "expected_schema_hash",
+    "idempotency_key",
+    "operations",
+    "policy_version",
+    "calibration_ref",
+    "authorization",
+    "constraint_checks",
+    "compensation_strategy",
+    "precondition_evidence_hashes",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

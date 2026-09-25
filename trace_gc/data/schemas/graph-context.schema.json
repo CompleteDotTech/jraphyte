@@ -1,0 +1,523 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:graph-context",
+  "title": "TRACE-GC graph-context v0.3.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "query_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "graph_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "security_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "access_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_status": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "permission": {
+            "enum": [
+              "READ",
+              "DENIED"
+            ]
+          },
+          "epoch": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "tombstone": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "active",
+          "permission",
+          "epoch",
+          "updated_at",
+          "tombstone"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "available_record_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "focus_entities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "NODE",
+              "EDGE",
+              "PATH",
+              "COMMUNITY",
+              "CONFLICT",
+              "PROVENANCE",
+              "ONTOLOGY",
+              "SCHEMA",
+              "EVIDENCE",
+              "CLAIM",
+              "DECISION",
+              "HYPOTHESIS"
+            ]
+          },
+          "canonical_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "member_assertion_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "assertion_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "entity_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "source_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "decision_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "observation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "transaction_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "plan_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "record_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "relation_types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "text": {
+            "type": "string"
+          },
+          "trust_class": {
+            "enum": [
+              "VERIFIED_GRAPH_FACT",
+              "PROVISIONAL_GRAPH_FACT",
+              "DERIVED_GRAPH_FACT",
+              "CONFLICTED_GRAPH_FACT",
+              "SUPERSEDED_GRAPH_FACT",
+              "HISTORICAL_GRAPH_FACT",
+              "UNVERIFIED_GRAPH_CONTEXT"
+            ]
+          },
+          "current_status": {
+            "type": "string",
+            "minLength": 1
+          },
+          "graph_version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "superseded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provenance_complete": {
+            "type": "boolean"
+          },
+          "risk_class": {
+            "enum": [
+              "R0",
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5"
+            ]
+          },
+          "calibration": {
+            "type": "object",
+            "properties": {
+              "qualified": {
+                "const": false
+              },
+              "note": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "qualified",
+              "note"
+            ],
+            "additionalProperties": false
+          },
+          "generated_summary": {
+            "type": "boolean"
+          },
+          "data_origin": {
+            "enum": [
+              "GENERATED_SUMMARY",
+              "SOURCE_DERIVED"
+            ]
+          },
+          "instruction_authority": {
+            "const": false
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "canonical_ref",
+          "member_assertion_ids",
+          "assertion_ids",
+          "entity_ids",
+          "evidence_ids",
+          "source_ids",
+          "decision_ids",
+          "observation_ids",
+          "transaction_ids",
+          "plan_ids",
+          "record_refs",
+          "relation_types",
+          "text",
+          "trust_class",
+          "current_status",
+          "graph_version",
+          "created_at",
+          "superseded_at",
+          "provenance_complete",
+          "risk_class",
+          "calibration",
+          "generated_summary",
+          "data_origin",
+          "instruction_authority"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "retrieved_nodes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "retrieved_edges": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "retrieved_paths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "communities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "ontology_fragments": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "schema_fragments": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "provenance_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "decision_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "conflict_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "temporal_scope": {
+      "type": "object",
+      "properties": {
+        "as_of": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "valid_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before_source": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "as_of",
+        "valid_at",
+        "before_source"
+      ],
+      "additionalProperties": false
+    },
+    "retrieval_methods": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "strategy_versions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "ranking_scores": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "selected_evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "retrieval_fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "embedding_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "adapter_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reranking_observation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "reranking_base_context_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "version",
+    "query_id",
+    "snapshot_id",
+    "graph_version",
+    "security_scope",
+    "access_id",
+    "source_status",
+    "available_record_ids",
+    "focus_entities",
+    "items",
+    "retrieved_nodes",
+    "retrieved_edges",
+    "retrieved_paths",
+    "communities",
+    "ontology_fragments",
+    "schema_fragments",
+    "provenance_refs",
+    "decision_refs",
+    "conflict_refs",
+    "temporal_scope",
+    "retrieval_methods",
+    "strategy_versions",
+    "ranking_scores",
+    "selected_evidence_ids",
+    "retrieval_fingerprint",
+    "embedding_version",
+    "adapter_version",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:candidate",
+  "title": "TRACE-GC candidate v0.3.0",
+  "type": "object",
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_kind": {
+      "enum": [
+        "ASSERTION",
+        "IDENTITY",
+        "RETRACTION",
+        "SCHEMA",
+        "METADATA"
+      ]
+    },
+    "assertion": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string",
+          "minLength": 1
+        },
+        "predicate": {
+          "type": "string",
+          "minLength": 1
+        },
+        "object": {
+          "type": "string",
+          "minLength": 1
+        },
+        "qualifiers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "subject",
+        "predicate",
+        "object",
+        "qualifiers"
+      ],
+      "additionalProperties": false
+    },
+    "claim_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "claim_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "alternatives": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "generator_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_mode": {
+      "enum": [
+        "SYNTHETIC",
+        "RECORDED",
+        "LIVE"
+      ]
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "run_id",
+    "candidate_kind",
+    "assertion",
+    "claim_id",
+    "claim_hash",
+    "evidence_ids",
+    "prerequisites",
+    "alternatives",
+    "generator_version",
+    "execution_mode",
+    "revision"
+  ],
+  "additionalProperties": false
+}

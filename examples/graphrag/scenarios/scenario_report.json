@@ -1,0 +1,185 @@
+{
+  "status": "PASS",
+  "scenarios": [
+    {
+      "scenario": "A_entity_resolution",
+      "status": "PASS",
+      "execution_mode": "SYNTHETIC",
+      "provider_calls": 0,
+      "production_graph_writes": 0,
+      "retrieval_rounds": 1,
+      "stop_reason_before_review": "HUMAN_REVIEW_REQUIRED",
+      "policy_outcome_before_review": "ABSTAIN",
+      "selected_candidates": [
+        "new-mention"
+      ],
+      "resolver_decisions": [
+        "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35"
+      ],
+      "retrieval_results": [
+        "retrieval-result:b131b070f512fc6865dd2417f97583e2eafede050abbd38db90a717a8ae0a28d"
+      ],
+      "expansions": [
+        "retrieval-expansion:0fbb2f5493b99d020448ec378b9c2e7e8039b73d1832becb59eaaee49f2ff67c"
+      ],
+      "commit_version": 4,
+      "downstream_graph_version": 4,
+      "downstream_assertions": [
+        "known-alias",
+        "new-mention"
+      ],
+      "downstream_conflicts": 0,
+      "canonical_citations": 1,
+      "validation": {
+        "status": "PASS",
+        "format_version": "0.3.0",
+        "profile": "FINALIZED_ANALYSIS",
+        "record_count": 63,
+        "lineage_complete": true,
+        "checkpoint_authenticated": false,
+        "events": 63,
+        "authorization_granted": false,
+        "model_calls": 0,
+        "graph_commits": 0,
+        "scope": "Structural/provenance verification; publication requires the trusted service and current-state transaction rechecks."
+      },
+      "qualification": "NOT_QUALIFIED; explicit sandbox review only"
+    },
+    {
+      "scenario": "B_contradictory_evidence",
+      "status": "PASS",
+      "execution_mode": "SYNTHETIC",
+      "provider_calls": 0,
+      "production_graph_writes": 0,
+      "retrieval_rounds": 1,
+      "stop_reason_before_review": "HUMAN_REVIEW_REQUIRED",
+      "policy_outcome_before_review": "ABSTAIN",
+      "selected_candidates": [
+        "paper-b-refutation"
+      ],
+      "resolver_decisions": [
+        "resolution:defe71ddb09d86353db473b1362dcc7d2fccea9020d0bf2045537ca17eb30db3"
+      ],
+      "retrieval_results": [
+        "retrieval-result:ac2c334f8ce44c9431e9eef761cb4a26673dc218a6e41600247bd50e8f12fc8d"
+      ],
+      "expansions": [
+        "retrieval-expansion:bef9c83b42723605c46257dd420f13994121d24d8098bea031e56363ddb10f7f"
+      ],
+      "commit_version": 4,
+      "downstream_graph_version": 4,
+      "downstream_assertions": [
+        "candidate-1",
+        "paper-b-refutation"
+      ],
+      "downstream_conflicts": 1,
+      "canonical_citations": 2,
+      "validation": {
+        "status": "PASS",
+        "format_version": "0.3.0",
+        "profile": "FINALIZED_ANALYSIS",
+        "record_count": 47,
+        "lineage_complete": true,
+        "checkpoint_authenticated": false,
+        "events": 47,
+        "authorization_granted": false,
+        "model_calls": 0,
+        "graph_commits": 0,
+        "scope": "Structural/provenance verification; publication requires the trusted service and current-state transaction rechecks."
+      },
+      "qualification": "NOT_QUALIFIED; explicit sandbox review only"
+    },
+    {
+      "scenario": "C_research_paper_synthesis",
+      "status": "PASS",
+      "execution_mode": "SYNTHETIC",
+      "provider_calls": 0,
+      "production_graph_writes": 0,
+      "retrieval_rounds": 1,
+      "stop_reason_before_review": "HUMAN_REVIEW_REQUIRED",
+      "policy_outcome_before_review": "ABSTAIN",
+      "selected_candidates": [
+        "candidate-1"
+      ],
+      "resolver_decisions": [
+        "resolution:b547eb19fbab2df3d3fba5ec62a3a77d7c0bfeef68d7fe3ad4e072f0078fd327"
+      ],
+      "retrieval_results": [
+        "retrieval-result:a060722e4262d6e3b4bb350f5c678032d81c049f7e5e73c3987dd4342b0af3d6"
+      ],
+      "expansions": [
+        "retrieval-expansion:696c6d645465014d1ded436b80ea378f4daf38e297115a360a15e2bfd05b268f"
+      ],
+      "commit_version": 2,
+      "downstream_graph_version": 2,
+      "downstream_assertions": [
+        "candidate-1"
+      ],
+      "downstream_conflicts": 0,
+      "canonical_citations": 1,
+      "validation": {
+        "status": "PASS",
+        "format_version": "0.3.0",
+        "profile": "FINALIZED_ANALYSIS",
+        "record_count": 37,
+        "lineage_complete": true,
+        "checkpoint_authenticated": false,
+        "events": 37,
+        "authorization_granted": false,
+        "model_calls": 0,
+        "graph_commits": 0,
+        "scope": "Structural/provenance verification; publication requires the trusted service and current-state transaction rechecks."
+      },
+      "qualification": "NOT_QUALIFIED; explicit sandbox review only"
+    },
+    {
+      "scenario": "D_uncertainty_expansion",
+      "status": "PASS",
+      "execution_mode": "SYNTHETIC",
+      "provider_calls": 0,
+      "production_graph_writes": 0,
+      "retrieval_rounds": 2,
+      "stop_reason_before_review": "HUMAN_REVIEW_REQUIRED",
+      "policy_outcome_before_review": "ABSTAIN",
+      "selected_candidates": [
+        "expanded-candidate"
+      ],
+      "resolver_decisions": [
+        "resolution:370ffbadf3f697563fd96c21440cee7deb22c3e4489f23675a98c11f26fd0221"
+      ],
+      "retrieval_results": [
+        "retrieval-result:6fc2c8e71f1954844f232b8f7bd822ddc2ff9bfdbd23197624acd1a7d829b1b8",
+        "retrieval-result:ee34c3e850c2fa44dfdbe46eef2bfef5bbd3a77aaa5576b52a49ef27f7da4f83"
+      ],
+      "expansions": [
+        "retrieval-expansion:9a1e6904c4323b5eca5baf2c1d9dc9eda24dd34bddf2842b9e170dfd15d849a2",
+        "retrieval-expansion:4559f6256f1feaaab62b8ad04e35278d66c7ec89b5419eaeb1cf861f7cb1b357"
+      ],
+      "commit_version": 3,
+      "downstream_graph_version": 3,
+      "downstream_assertions": [
+        "candidate-1",
+        "expanded-candidate"
+      ],
+      "downstream_conflicts": 0,
+      "canonical_citations": 1,
+      "validation": {
+        "status": "PASS",
+        "format_version": "0.3.0",
+        "profile": "FINALIZED_ANALYSIS",
+        "record_count": 55,
+        "lineage_complete": true,
+        "checkpoint_authenticated": false,
+        "events": 55,
+        "authorization_granted": false,
+        "model_calls": 0,
+        "graph_commits": 0,
+        "scope": "Structural/provenance verification; publication requires the trusted service and current-state transaction rechecks."
+      },
+      "qualification": "NOT_QUALIFIED; explicit sandbox review only"
+    }
+  ],
+  "provider_calls": 0,
+  "production_graph_writes": 0,
+  "scope": "Synthetic integration tests, not empirical evidence of GraphRAG accuracy or calibration."
+}

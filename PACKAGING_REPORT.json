@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "created_at": "2026-09-25T10:59:17.839130+00:00",
+  "release": "0.4.0",
+  "wheel": "dist/trace_gc-0.4.0-py3-none-any.whl",
+  "wheel_sha256": "8c81daa09098a393f1d95dd64df15466c3a92ff8ff8469e7ddc9cf74d912dcb6",
+  "installed_outside_source_tree": true,
+  "installed_import_path": "C:\\Users\\timot\\AppData\\Local\\Temp\\trace-gc-rounded-wheel-final-20260925\\trace_gc\\__init__.py",
+  "installed_choice_near_tie_probe": {
+    "status": "PASS",
+    "raw_probabilities": {
+      "YES": 0.49,
+      "NO": 0.5,
+      "INSUFFICIENT": 0.01
+    },
+    "choice": "YES"
+  },
+  "source_test_suite": {
+    "status": "PASS",
+    "tests": 308,
+    "skipped": 1
+  },
+  "limits": [
+    "No full TRACE-GC live-adapter qualification",
+    "No scientific accuracy calibration"
+  ]
+}

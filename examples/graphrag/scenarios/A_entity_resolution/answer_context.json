@@ -1,0 +1,435 @@
+{
+  "answer_context_id": "graphrag-answer:4a9b38cd79823cf08d2d6442b55ce03385a9d4611321f179438e66c0de2bceda",
+  "context": {
+    "version": "trace-retrieval-v1",
+    "query_id": "retrieval-query:7614f869a7574c7c06d228a020f79f60cc92a58465725f24858e3db0b4d2a69f",
+    "result_id": "retrieval-result:4a1bbf59c7bc21a5f7f0f0b7fdbef4616cfd9718339e7dec0754d9feb29dfe94",
+    "graph_context_id": "graph-context:236dac39c63d337ffa09deb3f402068bb6a8b4d292a08b87c14f7697b15e5036",
+    "graph_version": 4,
+    "mode": "BALANCED_EVIDENCE",
+    "answer_status": "CONTEXT_ONLY",
+    "items": [
+      {
+        "id": "edge:3e53d86df136d2557d737b89",
+        "kind": "EDGE",
+        "canonical_ref": "known-alias",
+        "member_assertion_ids": [],
+        "assertion_ids": [
+          "known-alias"
+        ],
+        "entity_ids": [
+          "person-a",
+          "person-c"
+        ],
+        "evidence_ids": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813"
+        ],
+        "source_ids": [
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "decision_ids": [
+          "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a"
+        ],
+        "observation_ids": [
+          "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2"
+        ],
+        "transaction_ids": [
+          "transaction:998b4022c47c85e085d7822287ff496a5ab5965c3293c69adeb8e8ce0c14d368"
+        ],
+        "plan_ids": [
+          "plan:cacad132f0bae6ea0e56b20936a50306c22b23159955c29dd9eb8fec54eab986"
+        ],
+        "record_refs": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
+          "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2",
+          "plan:cacad132f0bae6ea0e56b20936a50306c22b23159955c29dd9eb8fec54eab986",
+          "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a",
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155",
+          "transaction:998b4022c47c85e085d7822287ff496a5ab5965c3293c69adeb8e8ce0c14d368"
+        ],
+        "relation_types": [
+          "same_as"
+        ],
+        "text": "[{\"assertion_id\":\"known-alias\",\"object\":\"person-c\",\"predicate\":\"same_as\",\"qualifiers\":{},\"subject\":\"person-a\"}]",
+        "trust_class": "PROVISIONAL_GRAPH_FACT",
+        "current_status": "ACTIVE",
+        "graph_version": 4,
+        "created_at": "2026-09-25T09:45:19.916429Z",
+        "superseded_at": null,
+        "provenance_complete": true,
+        "risk_class": "R4",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      },
+      {
+        "id": "edge:52469f43e650f18a9ecfb421",
+        "kind": "EDGE",
+        "canonical_ref": "new-mention",
+        "member_assertion_ids": [],
+        "assertion_ids": [
+          "new-mention"
+        ],
+        "entity_ids": [
+          "person-a",
+          "person-b"
+        ],
+        "evidence_ids": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813"
+        ],
+        "source_ids": [
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "decision_ids": [
+          "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35"
+        ],
+        "observation_ids": [
+          "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030"
+        ],
+        "transaction_ids": [
+          "transaction:14367a407cfceaa0ba759b6f7522527ebcce6baaa5d0765a99acfc9deec08366"
+        ],
+        "plan_ids": [
+          "plan:af4c54f9931e4c6c77a3b2a1ec86f947bb96abc8ccace0c8bf8c0fed01ae3eb4"
+        ],
+        "record_refs": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
+          "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030",
+          "plan:af4c54f9931e4c6c77a3b2a1ec86f947bb96abc8ccace0c8bf8c0fed01ae3eb4",
+          "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35",
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155",
+          "transaction:14367a407cfceaa0ba759b6f7522527ebcce6baaa5d0765a99acfc9deec08366"
+        ],
+        "relation_types": [
+          "same_as"
+        ],
+        "text": "[{\"assertion_id\":\"new-mention\",\"object\":\"person-b\",\"predicate\":\"same_as\",\"qualifiers\":{},\"subject\":\"person-a\"}]",
+        "trust_class": "PROVISIONAL_GRAPH_FACT",
+        "current_status": "ACTIVE",
+        "graph_version": 4,
+        "created_at": "2026-09-25T09:45:20.119833Z",
+        "superseded_at": null,
+        "provenance_complete": true,
+        "risk_class": "R5",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      },
+      {
+        "id": "provenance:3e53d86df136d2557d737b89",
+        "kind": "PROVENANCE",
+        "canonical_ref": "known-alias",
+        "member_assertion_ids": [],
+        "assertion_ids": [
+          "known-alias"
+        ],
+        "entity_ids": [
+          "person-a",
+          "person-c"
+        ],
+        "evidence_ids": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813"
+        ],
+        "source_ids": [
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "decision_ids": [
+          "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a"
+        ],
+        "observation_ids": [
+          "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2"
+        ],
+        "transaction_ids": [
+          "transaction:998b4022c47c85e085d7822287ff496a5ab5965c3293c69adeb8e8ce0c14d368"
+        ],
+        "plan_ids": [
+          "plan:cacad132f0bae6ea0e56b20936a50306c22b23159955c29dd9eb8fec54eab986"
+        ],
+        "record_refs": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
+          "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2",
+          "plan:cacad132f0bae6ea0e56b20936a50306c22b23159955c29dd9eb8fec54eab986",
+          "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a",
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155",
+          "transaction:998b4022c47c85e085d7822287ff496a5ab5965c3293c69adeb8e8ce0c14d368"
+        ],
+        "relation_types": [
+          "same_as"
+        ],
+        "text": "NONCANONICAL RETRIEVAL SUMMARY: [{\"assertion_id\":\"known-alias\",\"object\":\"person-c\",\"predicate\":\"same_as\",\"qualifiers\":{},\"subject\":\"person-a\"}]",
+        "trust_class": "DERIVED_GRAPH_FACT",
+        "current_status": "ACTIVE",
+        "graph_version": 4,
+        "created_at": "2026-09-25T09:45:19.916429Z",
+        "superseded_at": null,
+        "provenance_complete": true,
+        "risk_class": "R4",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": true,
+        "data_origin": "GENERATED_SUMMARY",
+        "instruction_authority": false
+      },
+      {
+        "id": "provenance:52469f43e650f18a9ecfb421",
+        "kind": "PROVENANCE",
+        "canonical_ref": "new-mention",
+        "member_assertion_ids": [],
+        "assertion_ids": [
+          "new-mention"
+        ],
+        "entity_ids": [
+          "person-a",
+          "person-b"
+        ],
+        "evidence_ids": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813"
+        ],
+        "source_ids": [
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "decision_ids": [
+          "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35"
+        ],
+        "observation_ids": [
+          "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030"
+        ],
+        "transaction_ids": [
+          "transaction:14367a407cfceaa0ba759b6f7522527ebcce6baaa5d0765a99acfc9deec08366"
+        ],
+        "plan_ids": [
+          "plan:af4c54f9931e4c6c77a3b2a1ec86f947bb96abc8ccace0c8bf8c0fed01ae3eb4"
+        ],
+        "record_refs": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
+          "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030",
+          "plan:af4c54f9931e4c6c77a3b2a1ec86f947bb96abc8ccace0c8bf8c0fed01ae3eb4",
+          "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35",
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155",
+          "transaction:14367a407cfceaa0ba759b6f7522527ebcce6baaa5d0765a99acfc9deec08366"
+        ],
+        "relation_types": [
+          "same_as"
+        ],
+        "text": "NONCANONICAL RETRIEVAL SUMMARY: [{\"assertion_id\":\"new-mention\",\"object\":\"person-b\",\"predicate\":\"same_as\",\"qualifiers\":{},\"subject\":\"person-a\"}]",
+        "trust_class": "DERIVED_GRAPH_FACT",
+        "current_status": "ACTIVE",
+        "graph_version": 4,
+        "created_at": "2026-09-25T09:45:20.119833Z",
+        "superseded_at": null,
+        "provenance_complete": true,
+        "risk_class": "R5",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": true,
+        "data_origin": "GENERATED_SUMMARY",
+        "instruction_authority": false
+      },
+      {
+        "id": "decision:2811a2ff330e07c0a75211e7",
+        "kind": "DECISION",
+        "canonical_ref": "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a",
+        "member_assertion_ids": [],
+        "assertion_ids": [],
+        "entity_ids": [
+          "person-a",
+          "person-c"
+        ],
+        "evidence_ids": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813"
+        ],
+        "source_ids": [
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "decision_ids": [
+          "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a"
+        ],
+        "observation_ids": [],
+        "transaction_ids": [],
+        "plan_ids": [],
+        "record_refs": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
+          "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a",
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "relation_types": [],
+        "text": "{\"candidate_id\":\"known-alias\",\"outcome\":\"SELECTED\",\"risk_class\":\"R4\"}",
+        "trust_class": "HISTORICAL_GRAPH_FACT",
+        "current_status": "SELECTED",
+        "graph_version": 4,
+        "created_at": null,
+        "superseded_at": null,
+        "provenance_complete": false,
+        "risk_class": "R4",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      },
+      {
+        "id": "decision:8a15c090adc88c73d2d1eae1",
+        "kind": "DECISION",
+        "canonical_ref": "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030",
+        "member_assertion_ids": [],
+        "assertion_ids": [],
+        "entity_ids": [
+          "person-a",
+          "person-b"
+        ],
+        "evidence_ids": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813"
+        ],
+        "source_ids": [
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "decision_ids": [
+          "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030"
+        ],
+        "observation_ids": [],
+        "transaction_ids": [],
+        "plan_ids": [],
+        "record_refs": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
+          "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030",
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "relation_types": [],
+        "text": "{\"candidate_id\":\"new-mention\",\"semantic_outcome\":\"MATCH\",\"status\":\"OK\"}",
+        "trust_class": "HISTORICAL_GRAPH_FACT",
+        "current_status": "MATCH",
+        "graph_version": 4,
+        "created_at": "2026-09-25T09:45:20.012449Z",
+        "superseded_at": null,
+        "provenance_complete": false,
+        "risk_class": "R0",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      },
+      {
+        "id": "decision:b6cfdfcfffd3af1c1220ce08",
+        "kind": "DECISION",
+        "canonical_ref": "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35",
+        "member_assertion_ids": [],
+        "assertion_ids": [],
+        "entity_ids": [
+          "person-a",
+          "person-b"
+        ],
+        "evidence_ids": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813"
+        ],
+        "source_ids": [
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "decision_ids": [
+          "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35"
+        ],
+        "observation_ids": [],
+        "transaction_ids": [],
+        "plan_ids": [],
+        "record_refs": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
+          "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35",
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "relation_types": [],
+        "text": "{\"candidate_id\":\"new-mention\",\"outcome\":\"SELECTED\",\"risk_class\":\"R5\"}",
+        "trust_class": "HISTORICAL_GRAPH_FACT",
+        "current_status": "SELECTED",
+        "graph_version": 4,
+        "created_at": null,
+        "superseded_at": null,
+        "provenance_complete": false,
+        "risk_class": "R5",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      },
+      {
+        "id": "decision:fbe8f81d5cae0debd44cdd22",
+        "kind": "DECISION",
+        "canonical_ref": "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2",
+        "member_assertion_ids": [],
+        "assertion_ids": [],
+        "entity_ids": [
+          "person-a",
+          "person-c"
+        ],
+        "evidence_ids": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813"
+        ],
+        "source_ids": [
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "decision_ids": [
+          "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2"
+        ],
+        "observation_ids": [],
+        "transaction_ids": [],
+        "plan_ids": [],
+        "record_refs": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
+          "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2",
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "relation_types": [],
+        "text": "{\"candidate_id\":\"known-alias\",\"semantic_outcome\":\"MATCH\",\"status\":\"OK\"}",
+        "trust_class": "HISTORICAL_GRAPH_FACT",
+        "current_status": "MATCH",
+        "graph_version": 4,
+        "created_at": "2026-09-25T09:45:19.858421Z",
+        "superseded_at": null,
+        "provenance_complete": false,
+        "risk_class": "R0",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      }
+    ],
+    "citations": [
+      {
+        "evidence_id": "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
+        "source_snapshot_id": "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155",
+        "source_id": "identity-register",
+        "source_hash": "3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155",
+        "start": 0,
+        "end": 72,
+        "quote": "Person A, Person B and Person C are aliases in this fabricated registry."
+      }
+    ],
+    "warnings": [
+      "HISTORICAL_OR_SUPERSEDED_CONTEXT",
+      "SUMMARIES_ARE_NOT_CANONICAL_EVIDENCE"
+    ],
+    "can_mutate_graph": false,
+    "created_at": "2026-09-25T09:45:20.239451Z"
+  }
+}

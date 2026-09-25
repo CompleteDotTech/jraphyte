@@ -1,0 +1,236 @@
+test_01_valid_synthetic_bundle (test_contracts.ContractTests.test_01_valid_synthetic_bundle) ... ok
+test_02_source_bytes_changed (test_contracts.ContractTests.test_02_source_bytes_changed) ... ok
+test_03_wrong_quote (test_contracts.ContractTests.test_03_wrong_quote) ... ok
+test_04_span_out_of_bounds (test_contracts.ContractTests.test_04_span_out_of_bounds) ... ok
+test_05_source_version_changed (test_contracts.ContractTests.test_05_source_version_changed) ... ok
+test_06_withdrawn_source (test_contracts.ContractTests.test_06_withdrawn_source) ... ok
+test_07_missing_source (test_contracts.ContractTests.test_07_missing_source) ... ok
+test_08_noul_has_no_vendor_confidence (test_contracts.ContractTests.test_08_noul_has_no_vendor_confidence) ... ok
+test_09_noul_raw_unknown_field (test_contracts.ContractTests.test_09_noul_raw_unknown_field) ... ok
+test_10_score_mean_not_category (test_contracts.ContractTests.test_10_score_mean_not_category) ... ok
+test_11_score_wrong_expected_value (test_contracts.ContractTests.test_11_score_wrong_expected_value) ... ok
+test_12_distribution_sum (test_contracts.ContractTests.test_12_distribution_sum) ... ok
+test_13_boolean_probability (test_contracts.ContractTests.test_13_boolean_probability) ... ok
+test_14_missing_distribution_label (test_contracts.ContractTests.test_14_missing_distribution_label) ... ok
+test_15_wrong_choice_polarity (test_contracts.ContractTests.test_15_wrong_choice_polarity) ... ok
+test_16_model_version_mismatch (test_contracts.ContractTests.test_16_model_version_mismatch) ... ok
+test_17_candidate_mutated_after_decision (test_contracts.ContractTests.test_17_candidate_mutated_after_decision) ... ok
+test_18_question_mutated_without_new_request (test_contracts.ContractTests.test_18_question_mutated_without_new_request) ... ok
+test_19_state_changed_without_new_request (test_contracts.ContractTests.test_19_state_changed_without_new_request) ... ok
+test_20_same_pack_answer_dependency (test_contracts.ContractTests.test_20_same_pack_answer_dependency) ... ok
+test_21_total_request_budget (test_contracts.ContractTests.test_21_total_request_budget) ... ok
+test_22_state_longest_budget (test_contracts.ContractTests.test_22_state_longest_budget) ... ok
+test_23_question_target_cannot_be_only_map_key (test_contracts.ContractTests.test_23_question_target_cannot_be_only_map_key) ... ok
+test_24_incomplete_closure (test_contracts.ContractTests.test_24_incomplete_closure) ... ok
+test_25_omitted_evidence_dependency (test_contracts.ContractTests.test_25_omitted_evidence_dependency) ... ok
+test_26_fake_calibration_band (test_contracts.ContractTests.test_26_fake_calibration_band) ... ok
+test_27_auto_rule_without_qualification (test_contracts.ContractTests.test_27_auto_rule_without_qualification) ... ok
+test_28_plan_cannot_be_ready (test_contracts.ContractTests.test_28_plan_cannot_be_ready) ... ok
+test_29_accepted_view_cannot_be_published (test_contracts.ContractTests.test_29_accepted_view_cannot_be_published) ... ok
+test_30_stale_plan_graph_version (test_contracts.ContractTests.test_30_stale_plan_graph_version) ... ok
+test_31_risk_cannot_be_lowered_by_operation (test_contracts.ContractTests.test_31_risk_cannot_be_lowered_by_operation) ... ok
+test_32_duplicate_record_id (test_contracts.ContractTests.test_32_duplicate_record_id) ... ok
+test_33_manifest_must_enumerate_records (test_contracts.ContractTests.test_33_manifest_must_enumerate_records) ... ok
+test_34_ledger_payload_tampering (test_contracts.ContractTests.test_34_ledger_payload_tampering) ... ok
+test_35_ledger_chain_tampering (test_contracts.ContractTests.test_35_ledger_chain_tampering) ... ok
+test_36_mode_cannot_impersonate_live (test_contracts.ContractTests.test_36_mode_cannot_impersonate_live) ... ok
+test_37_error_receipt_is_not_semantic_negative (test_contracts.ContractTests.test_37_error_receipt_is_not_semantic_negative) ... ok
+test_38_contradictory_evidence_is_preserved_not_dropped (test_contracts.ContractTests.test_38_contradictory_evidence_is_preserved_not_dropped) ... ok
+test_39_acyclic_candidate_dependencies (test_contracts.ContractTests.test_39_acyclic_candidate_dependencies) ... ok
+test_40_empty_evidence_cannot_support_operation (test_contracts.ContractTests.test_40_empty_evidence_cannot_support_operation) ... ok
+test_41_score_probability_distribution_not_rewritten (test_contracts.ContractTests.test_41_score_probability_distribution_not_rewritten) ... ok
+test_42_unknown_fields_are_not_silently_accepted (test_contracts.ContractTests.test_42_unknown_fields_are_not_silently_accepted) ... ok
+test_baseline_complete_bundle (test_runtime_contracts.BindingTests.test_baseline_complete_bundle) ... ok
+test_cache_partition_has_mode_and_scope (test_runtime_contracts.BindingTests.test_cache_partition_has_mode_and_scope) ... ok
+test_catalog_is_immutable (test_runtime_contracts.BindingTests.test_catalog_is_immutable) ... ok
+test_catalog_returns_copies (test_runtime_contracts.BindingTests.test_catalog_returns_copies) ... ok
+test_claim_substitution_changes_candidate_contract (test_runtime_contracts.BindingTests.test_claim_substitution_changes_candidate_contract) ... ok
+test_declared_closure_cannot_omit_record (test_runtime_contracts.BindingTests.test_declared_closure_cannot_omit_record) ... ok
+test_empty_state_rejected (test_runtime_contracts.BindingTests.test_empty_state_rejected) ... ok
+test_exact_codepoint_span (test_runtime_contracts.BindingTests.test_exact_codepoint_span) ... ok
+test_field_trace_cannot_be_omitted (test_runtime_contracts.BindingTests.test_field_trace_cannot_be_omitted) ... ok
+test_freshness_on_computed_closure (test_runtime_contracts.BindingTests.test_freshness_on_computed_closure) ... ok
+test_historical_provenance_survives_withdrawal (test_runtime_contracts.BindingTests.test_historical_provenance_survives_withdrawal) ... ok
+test_installed_question_meaning_cannot_be_swapped (test_runtime_contracts.BindingTests.test_installed_question_meaning_cannot_be_swapped) ... ok
+test_missing_alternative_rejected (test_runtime_contracts.BindingTests.test_missing_alternative_rejected) ... ok
+test_model_alias_not_pinned (test_runtime_contracts.BindingTests.test_model_alias_not_pinned) ... ok
+test_no_byte_offset_confusion (test_runtime_contracts.BindingTests.test_no_byte_offset_confusion) ... ok
+test_noncausal_alternatives_may_cycle (test_runtime_contracts.BindingTests.test_noncausal_alternatives_may_cycle) ... ok
+test_normalization_is_reproducible (test_runtime_contracts.BindingTests.test_normalization_is_reproducible) ... ok
+test_permission_denial_blocks_fresh_use (test_runtime_contracts.BindingTests.test_permission_denial_blocks_fresh_use) ... ok
+test_rendered_claim_cannot_change_behind_identity (test_runtime_contracts.BindingTests.test_rendered_claim_cannot_change_behind_identity) ... ok
+test_rendered_quote_cannot_be_rehashed_into_validity (test_runtime_contracts.BindingTests.test_rendered_quote_cannot_be_rehashed_into_validity) ... ok
+test_source_quote_changed (test_runtime_contracts.BindingTests.test_source_quote_changed) ... ok
+test_source_versions_are_distinct_snapshots (test_runtime_contracts.BindingTests.test_source_versions_are_distinct_snapshots) ... ok
+test_token_budget_cannot_drop_required_questions (test_runtime_contracts.BindingTests.test_token_budget_cannot_drop_required_questions) ... ok
+test_token_limit_fails_not_truncates (test_runtime_contracts.BindingTests.test_token_limit_fails_not_truncates) ... ok
+test_transitive_closure (test_runtime_contracts.BindingTests.test_transitive_closure) ... ok
+test_unknown_root_field_fails (test_runtime_contracts.BindingTests.test_unknown_root_field_fails) ... ok
+test_unsupported_program_version_fails (test_runtime_contracts.BindingTests.test_unsupported_program_version_fails) ... ok
+test_array_order_preserved (test_runtime_contracts.CanonicalTests.test_array_order_preserved) ... ok
+test_dictionary_order_is_irrelevant (test_runtime_contracts.CanonicalTests.test_dictionary_order_is_irrelevant) ... ok
+test_duplicate_json_keys_fail (test_runtime_contracts.CanonicalTests.test_duplicate_json_keys_fail) ... ok
+test_excessive_depth_fails (test_runtime_contracts.CanonicalTests.test_excessive_depth_fails) ... ok
+test_integer_float_boolean_are_distinct (test_runtime_contracts.CanonicalTests.test_integer_float_boolean_are_distinct) ... ok
+test_invalid_json_structured (test_runtime_contracts.CanonicalTests.test_invalid_json_structured) ... ok
+test_large_integer_fails (test_runtime_contracts.CanonicalTests.test_large_integer_fails) ... ok
+test_nonfinite_json_fail (test_runtime_contracts.CanonicalTests.test_nonfinite_json_fail) ... ok
+test_nonfinite_numbers_fail (test_runtime_contracts.CanonicalTests.test_nonfinite_numbers_fail) ... ok
+test_nonstring_key_fails (test_runtime_contracts.CanonicalTests.test_nonstring_key_fails) ... ok
+test_signed_zero_distinct (test_runtime_contracts.CanonicalTests.test_signed_zero_distinct) ... ok
+test_surrogate_fails (test_runtime_contracts.CanonicalTests.test_surrogate_fails) ... ok
+test_transport_roundtrip (test_runtime_contracts.CanonicalTests.test_transport_roundtrip) ... ok
+test_unicode_not_silently_normalized (test_runtime_contracts.CanonicalTests.test_unicode_not_silently_normalized) ... ok
+test_utf8_byte_order (test_runtime_contracts.CanonicalTests.test_utf8_byte_order) ... ok
+test_cross_pack_cycle (test_runtime_contracts.DependencyTests.test_cross_pack_cycle) ... ok
+test_long_chain_linear_traversal (test_runtime_contracts.DependencyTests.test_long_chain_linear_traversal) ... ok
+test_long_cycle (test_runtime_contracts.DependencyTests.test_long_cycle) ... ok
+test_missing_reference (test_runtime_contracts.DependencyTests.test_missing_reference) ... ok
+test_question_ids_are_collision_safe (test_runtime_contracts.DependencyTests.test_question_ids_are_collision_safe) ... ok
+test_self_cycle (test_runtime_contracts.DependencyTests.test_self_cycle) ... ok
+test_timezone_order_is_instant_not_lexical (test_runtime_contracts.DependencyTests.test_timezone_order_is_instant_not_lexical) ... ok
+test_boolean_probability_fails (test_runtime_contracts.ObservationTests.test_boolean_probability_fails) ... ok
+test_error_keeps_wire_bytes_without_semantics (test_runtime_contracts.ObservationTests.test_error_keeps_wire_bytes_without_semantics) ... ok
+test_live_adapter_disabled_by_default (test_runtime_contracts.ObservationTests.test_live_adapter_disabled_by_default) ... ok
+test_model_version_mismatch_preserved_as_error (test_runtime_contracts.ObservationTests.test_model_version_mismatch_preserved_as_error) ... ok
+test_noul_has_no_invented_confidence (test_runtime_contracts.ObservationTests.test_noul_has_no_invented_confidence) ... ok
+test_observation_cannot_omit_evidence (test_runtime_contracts.ObservationTests.test_observation_cannot_omit_evidence) ... ok
+test_operational_error_cannot_claim_score (test_runtime_contracts.ObservationTests.test_operational_error_cannot_claim_score) ... ok
+test_real_response_preserved_exactly (test_runtime_contracts.ObservationTests.test_real_response_preserved_exactly) ... ok
+test_score_mean_not_rounded_to_category (test_runtime_contracts.ObservationTests.test_score_mean_not_rounded_to_category) ... ok
+test_score_rubric_descriptions_not_just_keys (test_runtime_contracts.ObservationTests.test_score_rubric_descriptions_not_just_keys) ... ok
+test_supersedes_cannot_be_self (test_runtime_contracts.ObservationTests.test_supersedes_cannot_be_self) ... ok
+test_supersedes_must_exist (test_runtime_contracts.ObservationTests.test_supersedes_must_exist) ... ok
+test_checkpoint_not_implicitly_trusted (test_runtime_contracts.PlanAndLedgerTests.test_checkpoint_not_implicitly_trusted) ... ok
+test_duplicate_operation_id (test_runtime_contracts.PlanAndLedgerTests.test_duplicate_operation_id) ... ok
+test_failed_check_cannot_label_plan_validated (test_runtime_contracts.PlanAndLedgerTests.test_failed_check_cannot_label_plan_validated) ... ok
+test_finalized_ledger_cannot_be_empty (test_runtime_contracts.PlanAndLedgerTests.test_finalized_ledger_cannot_be_empty) ... ok
+test_identity_requires_identity_candidate (test_runtime_contracts.PlanAndLedgerTests.test_identity_requires_identity_candidate) ... ok
+test_joint_impact_counts_cross_component_equivalences (test_runtime_contracts.PlanAndLedgerTests.test_joint_impact_counts_cross_component_equivalences) ... ok
+test_ledger_covers_sources_policy_schema (test_runtime_contracts.PlanAndLedgerTests.test_ledger_covers_sources_policy_schema) ... ok
+test_ledger_run_mode_mismatch_rejected (test_runtime_contracts.PlanAndLedgerTests.test_ledger_run_mode_mismatch_rejected) ... ok
+test_lifecycle_all_allowed_and_forbidden_transitions (test_runtime_contracts.PlanAndLedgerTests.test_lifecycle_all_allowed_and_forbidden_transitions) ... ok
+test_partial_analysis_explicitly_allows_no_ledger (test_runtime_contracts.PlanAndLedgerTests.test_partial_analysis_explicitly_allows_no_ledger) ... ok
+test_partial_batch_publication_rejected (test_runtime_contracts.PlanAndLedgerTests.test_partial_batch_publication_rejected) ... ok
+test_risk_projection_consistency (test_runtime_contracts.PlanAndLedgerTests.test_risk_projection_consistency) ... ok
+test_synthetic_run_cannot_claim_published_profile (test_runtime_contracts.PlanAndLedgerTests.test_synthetic_run_cannot_claim_published_profile) ... ok
+test_typed_retraction_requires_revision (test_runtime_contracts.PlanAndLedgerTests.test_typed_retraction_requires_revision) ... ok
+test_unresolved_solver_cannot_claim_selection (test_runtime_contracts.PlanAndLedgerTests.test_unresolved_solver_cannot_claim_selection) ... ok
+test_caller_cannot_claim_measured_tokenizer_without_injected_implementation (test_runtime_qualification.MockTransportTests.test_caller_cannot_claim_measured_tokenizer_without_injected_implementation) ... ok
+test_retry_records_errors_and_signed_success_without_real_network (test_runtime_qualification.MockTransportTests.test_retry_records_errors_and_signed_success_without_real_network) ... ok
+test_correlated_source_groups_rejected (test_runtime_qualification.QualificationTests.test_correlated_source_groups_rejected) ... ok
+test_development_holdout_overlap_rejected (test_runtime_qualification.QualificationTests.test_development_holdout_overlap_rejected) ... ok
+test_duplicate_action_id_rejected (test_runtime_qualification.QualificationTests.test_duplicate_action_id_rejected) ... ok
+test_every_scope_dimension_is_bound (test_runtime_qualification.QualificationTests.test_every_scope_dimension_is_bound) ... ok
+test_exact_applicability (test_runtime_qualification.QualificationTests.test_exact_applicability) ... ok
+test_expired_qualification (test_runtime_qualification.QualificationTests.test_expired_qualification) ... ok
+test_final_pipeline_not_pre_resolver_score (test_runtime_qualification.QualificationTests.test_final_pipeline_not_pre_resolver_score) ... ok
+test_frozen_observations_reused_for_policy_evaluation (test_runtime_qualification.QualificationTests.test_frozen_observations_reused_for_policy_evaluation) ... ok
+test_locked_threshold_required (test_runtime_qualification.QualificationTests.test_locked_threshold_required) ... ok
+test_model_generated_labels_rejected (test_runtime_qualification.QualificationTests.test_model_generated_labels_rejected) ... ok
+test_no_unapproved_qualification (test_runtime_qualification.QualificationTests.test_no_unapproved_qualification) ... ok
+test_qualified_automatic_gate_still_requires_authorization (test_runtime_qualification.QualificationTests.test_qualified_automatic_gate_still_requires_authorization) ... ok
+test_revoke_qualification (test_runtime_qualification.QualificationTests.test_revoke_qualification) ... ok
+test_risk_limit_must_be_met (test_runtime_qualification.QualificationTests.test_risk_limit_must_be_met) ... ok
+test_signed_approval_cannot_follow_rehashed_substitution (test_runtime_qualification.QualificationTests.test_signed_approval_cannot_follow_rehashed_substitution) ... ok
+test_synthetic_population_cannot_be_qualified (test_runtime_qualification.QualificationTests.test_synthetic_population_cannot_be_qualified) ... ok
+test_zero_acceptance_not_zero_risk (test_runtime_qualification.QualificationTests.test_zero_acceptance_not_zero_risk) ... ok
+test_concurrent_reservations_cannot_overspend (test_runtime_qualification.SharedBudgetTests.test_concurrent_reservations_cannot_overspend) ... ok
+test_multiple_resources_reserved_atomically (test_runtime_qualification.SharedBudgetTests.test_multiple_resources_reserved_atomically) ... ok
+test_negative_and_boolean_reservations_fail (test_runtime_qualification.SharedBudgetTests.test_negative_and_boolean_reservations_fail) ... ok
+test_persisted_usage_cannot_reset (test_runtime_qualification.SharedBudgetTests.test_persisted_usage_cannot_reset) ... ok
+test_all_errors_bound_one (test_runtime_qualification.StatisticalTests.test_all_errors_bound_one) ... ok
+test_audit_sampling_reproducible_without_duplicates (test_runtime_qualification.StatisticalTests.test_audit_sampling_reproducible_without_duplicates) ... ok
+test_higher_confidence_increases_bound (test_runtime_qualification.StatisticalTests.test_higher_confidence_increases_bound) ... ok
+test_more_data_reduces_zero_error_bound (test_runtime_qualification.StatisticalTests.test_more_data_reduces_zero_error_bound) ... ok
+test_nonboolean_counts (test_runtime_qualification.StatisticalTests.test_nonboolean_counts) ... ok
+test_positive_error_exact_reference (test_runtime_qualification.StatisticalTests.test_positive_error_exact_reference) ... ok
+test_risk_bound_monotonicity (test_runtime_qualification.StatisticalTests.test_risk_bound_monotonicity) ... ok
+test_zero_acceptance_is_undefined (test_runtime_qualification.StatisticalTests.test_zero_acceptance_is_undefined) ... ok
+test_zero_error_bound_is_not_zero (test_runtime_qualification.StatisticalTests.test_zero_error_bound_is_not_zero) ... ok
+test_and_prerequisite_withdrawal_cascades (test_runtime_transactions.ConcurrentAndStatefulTests.test_and_prerequisite_withdrawal_cascades) ... ok
+test_end_to_end_demo (test_runtime_transactions.ConcurrentAndStatefulTests.test_end_to_end_demo) ... ok
+test_finalized_published_bundle_checks_external_trust_and_atomic_anchor (test_runtime_transactions.ConcurrentAndStatefulTests.test_finalized_published_bundle_checks_external_trust_and_atomic_anchor) ... ok
+test_generated_permission_withdrawal_and_retry_sequences (test_runtime_transactions.ConcurrentAndStatefulTests.test_generated_permission_withdrawal_and_retry_sequences) ... ok
+test_synthetic_publication_prohibited_even_with_review_on_non_sandbox (test_runtime_transactions.ConcurrentAndStatefulTests.test_synthetic_publication_prohibited_even_with_review_on_non_sandbox) ... ok
+test_two_connections_cannot_both_publish_stale_snapshot (test_runtime_transactions.ConcurrentAndStatefulTests.test_two_connections_cannot_both_publish_stale_snapshot) ... ok
+test_alternative_proof_survives_one_withdrawal (test_runtime_transactions.TransactionTests.test_alternative_proof_survives_one_withdrawal) ... ok
+test_analysis_export_never_grants_authority (test_runtime_transactions.TransactionTests.test_analysis_export_never_grants_authority) ... ok
+test_atomic_journal_binds_verified_lineage_head (test_runtime_transactions.TransactionTests.test_atomic_journal_binds_verified_lineage_head) ... ok
+test_atomic_publication_and_replay (test_runtime_transactions.TransactionTests.test_atomic_publication_and_replay) ... ok
+test_backend_detects_receipt_only_tampering (test_runtime_transactions.TransactionTests.test_backend_detects_receipt_only_tampering) ... ok
+test_backend_detects_state_tampering (test_runtime_transactions.TransactionTests.test_backend_detects_state_tampering) ... ok
+test_default_service_is_analysis_only (test_runtime_transactions.TransactionTests.test_default_service_is_analysis_only) ... ok
+test_erase_revokes_then_reports_exact_replay_loss (test_runtime_transactions.TransactionTests.test_erase_revokes_then_reports_exact_replay_loss) ... ok
+test_erasure_without_tombstone_denied (test_runtime_transactions.TransactionTests.test_erasure_without_tombstone_denied) ... ok
+test_expired_receipt_rejected (test_runtime_transactions.TransactionTests.test_expired_receipt_rejected) ... ok
+test_idempotency_key_with_different_plan_is_conflict (test_runtime_transactions.TransactionTests.test_idempotency_key_with_different_plan_is_conflict) ... ok
+test_inactive_source_is_not_resurrected_by_permission_restore (test_runtime_transactions.TransactionTests.test_inactive_source_is_not_resurrected_by_permission_restore) ... ok
+test_invented_lineage_head_rejected (test_runtime_transactions.TransactionTests.test_invented_lineage_head_rejected) ... ok
+test_replay_from_persisted_immutable_records (test_runtime_transactions.TransactionTests.test_replay_from_persisted_immutable_records) ... ok
+test_revocation_does_not_trust_incomplete_caller_catalog (test_runtime_transactions.TransactionTests.test_revocation_does_not_trust_incomplete_caller_catalog) ... ok
+test_revoked_issuer_rejected (test_runtime_transactions.TransactionTests.test_revoked_issuer_rejected) ... ok
+test_rollback_at_every_write_boundary (test_runtime_transactions.TransactionTests.test_rollback_at_every_write_boundary) ... ok
+test_sandbox_cannot_be_reopened_as_production (test_runtime_transactions.TransactionTests.test_sandbox_cannot_be_reopened_as_production) ... ok
+test_signed_failed_preflight_is_not_a_pass (test_runtime_transactions.TransactionTests.test_signed_failed_preflight_is_not_a_pass) ... ok
+test_stale_version_after_source_change (test_runtime_transactions.TransactionTests.test_stale_version_after_source_change) ... ok
+test_unknown_issuer_cannot_authorize (test_runtime_transactions.TransactionTests.test_unknown_issuer_cannot_authorize) ... ok
+test_untrusted_signature_cannot_publish (test_runtime_transactions.TransactionTests.test_untrusted_signature_cannot_publish) ... ok
+test_cli_pin_mismatch_is_explicit (test_runtime_workflows.LegacyPinTests.test_cli_pin_mismatch_is_explicit) ... ok
+test_git_blob_hash_known_empty_object (test_runtime_workflows.LegacyPinTests.test_git_blob_hash_known_empty_object) ... ok
+test_nonmatching_source_is_never_executed (test_runtime_workflows.LegacyPinTests.test_nonmatching_source_is_never_executed) ... ok
+test_pinned_loader_executes_verified_bytes_not_a_second_path_read (test_runtime_workflows.LegacyPinTests.test_pinned_loader_executes_verified_bytes_not_a_second_path_read) ... ok
+test_pinned_upstream_conformance (test_runtime_workflows.LegacyPinTests.test_pinned_upstream_conformance) ... skipped 'External pinned core.py not supplied; not a passed integration gate'
+test_cli_bad_json_returns_structured_error (test_runtime_workflows.WorkflowTests.test_cli_bad_json_returns_structured_error) ... ok
+test_cli_validate_reports_no_write_authority (test_runtime_workflows.WorkflowTests.test_cli_validate_reports_no_write_authority) ... ok
+test_exclusive_alternatives_are_joint_not_independent (test_runtime_workflows.WorkflowTests.test_exclusive_alternatives_are_joint_not_independent) ... ok
+test_global_cannot_link_prevents_transitive_identity_contradiction (test_runtime_workflows.WorkflowTests.test_global_cannot_link_prevents_transitive_identity_contradiction) ... ok
+test_joint_identity_component_publication_and_reversal (test_runtime_workflows.WorkflowTests.test_joint_identity_component_publication_and_reversal) ... ok
+test_metadata_is_separate_from_candidate_semantics (test_runtime_workflows.WorkflowTests.test_metadata_is_separate_from_candidate_semantics) ... ok
+test_policy_branch_retains_exact_observations_and_old_evaluations (test_runtime_workflows.WorkflowTests.test_policy_branch_retains_exact_observations_and_old_evaluations) ... ok
+test_policy_replay_cannot_mint_qualification (test_runtime_workflows.WorkflowTests.test_policy_replay_cannot_mint_qualification) ... ok
+test_retract_stale_assertion_revision_fails (test_runtime_workflows.WorkflowTests.test_retract_stale_assertion_revision_fails) ... ok
+test_retract_variant_preserves_alternate_proof (test_runtime_workflows.WorkflowTests.test_retract_variant_preserves_alternate_proof) ... ok
+test_schema_impact_must_match (test_runtime_workflows.WorkflowTests.test_schema_impact_must_match) ... ok
+test_schema_migration_is_explicit_and_transactional (test_runtime_workflows.WorkflowTests.test_schema_migration_is_explicit_and_transactional) ... ok
+test_schema_migration_requires_reviewer_authority (test_runtime_workflows.WorkflowTests.test_schema_migration_requires_reviewer_authority) ... ok
+test_schema_proposal_does_not_change_active_schema (test_runtime_workflows.WorkflowTests.test_schema_proposal_does_not_change_active_schema) ... ok
+
+----------------------------------------------------------------------
+Ran 197 tests in 17.508s
+
+OK (skipped=1)
+
+=== Original design-review probes ===
+P01: REJECTED_BY_VALIDATOR: Pack state can be completely empty despite complete closure
+P02: REJECTED_BY_VALIDATOR: Rendered evidence can differ from the verified quoted span
+P03: REJECTED_BY_VALIDATOR: Rendered claim can change without changing the candidate assertion
+P04: REJECTED_BY_VALIDATOR: Declared closure omits a transitive candidate prerequisite
+P05: REJECTED_BY_VALIDATOR: Question names a dependency that does not exist
+P06: REJECTED_BY_VALIDATOR: A decision can list itself as a parent
+P07: REJECTED_BY_VALIDATOR: Cross-pack prior-decision dependencies can form a cycle
+P08: REJECTED_BY_VALIDATOR: A semantic support decision can omit every evidence reference
+P09: REJECTED_BY_VALIDATOR: Withdrawn support escapes the active-source check when omitted from pack evidence_refs
+P10: REJECTED_BY_VALIDATOR: Identity operation can target an ordinary document-support candidate
+P11: REJECTED_BY_VALIDATOR: Two operations can share an operation_id in one plan
+P12: REJECTED_BY_VALIDATOR: Decision supersedes points to a nonexistent decision
+P13: REJECTED_BY_VALIDATOR: Resolution alternative candidate reference does not exist
+P14: REJECTED_BY_VALIDATOR: All ledger events can be removed while retaining every substantive record
+P15: REJECTED_BY_VALIDATOR: Synthetic ledger event can claim another run and LIVE mode
+P16: REJECTED_BY_VALIDATOR: Score response legend descriptions can disagree with the question rubric
+P17: REJECTED_BY_VALIDATOR: Resolution risk can be lower than its planned ordinary assertion operation
+P18: REJECTED_BY_VALIDATOR: A plan can be DRY_RUN_VALIDATED while a required implemented constraint reports FAIL
+
+=== External gates ===
+{
+  "pinned_legacy": {
+    "status": "SKIPPED",
+    "expected_git_blob": "68217feec539d37e4a524432c93df035f9a0fe39",
+    "source_supplied": false,
+    "command": "python tools/check_legacy.py --core /path/to/core.py --output legacy-conformance.json"
+  },
+  "live_provider": "NOT_RUN; mock transport only",
+  "production_calibration": "NOT_QUALIFIED; independent deployment labels absent",
+  "controlled_pilot": "NOT_RUN",
+  "deployed_backend": "NOT_RUN"
+}

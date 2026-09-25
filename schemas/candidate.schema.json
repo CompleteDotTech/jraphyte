@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.2:candidate",
+  "title": "TRACE-GC candidate 0.2-design",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "0.2-design"
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "kind": {
+      "enum": [
+        "ASSERTION",
+        "ENTITY_IDENTITY",
+        "TYPE_ASSIGNMENT",
+        "SCHEMA_CHANGE"
+      ]
+    },
+    "assertion": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string",
+          "minLength": 1
+        },
+        "predicate": {
+          "type": "string",
+          "minLength": 1
+        },
+        "object": {
+          "type": "string",
+          "minLength": 1
+        },
+        "qualifiers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "subject",
+        "predicate",
+        "object",
+        "qualifiers"
+      ],
+      "additionalProperties": false
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "prerequisite_candidate_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "alternative_candidate_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "generator_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generator_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_mode": {
+      "enum": [
+        "SYNTHETIC",
+        "RECORDED",
+        "LIVE"
+      ]
+    },
+    "status": {
+      "enum": [
+        "PROPOSED",
+        "SUPPORTED",
+        "CONTESTED",
+        "REJECTED",
+        "SUPERSEDED"
+      ]
+    },
+    "claim_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "claim_content_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "candidate_id",
+    "run_id",
+    "revision",
+    "kind",
+    "assertion",
+    "evidence_refs",
+    "prerequisite_candidate_refs",
+    "alternative_candidate_refs",
+    "generator_id",
+    "generator_version",
+    "source_mode",
+    "status",
+    "claim_ref",
+    "claim_content_hash"
+  ],
+  "additionalProperties": false
+}

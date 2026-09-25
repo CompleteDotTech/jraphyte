@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:policy",
+  "title": "TRACE-GC policy v0.3.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "ANALYSIS_ONLY",
+        "REVIEWED",
+        "QUALIFIED"
+      ]
+    },
+    "security_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "population": {
+      "type": "string",
+      "minLength": 1
+    },
+    "allowed_modes": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "SYNTHETIC",
+          "RECORDED",
+          "LIVE"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "maximum_risk": {
+      "enum": [
+        "R0",
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5"
+      ]
+    },
+    "qualification_metric": {
+      "const": "ERRORS_PER_ACCEPTED_ACTION"
+    },
+    "required_checks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "version",
+    "mode",
+    "security_scope",
+    "population",
+    "allowed_modes",
+    "maximum_risk",
+    "qualification_metric",
+    "required_checks"
+  ],
+  "additionalProperties": false
+}

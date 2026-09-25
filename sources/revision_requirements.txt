@@ -1,0 +1,1170 @@
+Update the existing graph-synthesis / TRACE-GC project using the latest architectural improvements derived from TypeSafe AI / Jev best practices.
+
+Preserve the existing design where appropriate. Do not replace the architecture wholesale. Integrate these improvements into the current specification, implementation plan, diagrams, schemas, evaluation methodology, and paper/research framing.
+
+## Objective
+
+Evolve the current graph-synthesis architecture into an:
+
+**Evidence-gated, uncertainty-aware, empirically calibrated, self-improving typed probabilistic graph compiler.**
+
+Jev should remain a bounded semantic decision component. It must not own orchestration, graph mutation, deterministic reasoning, arithmetic, structural invariants, or side effects.
+
+The resulting architecture should clearly separate:
+
+1. Candidate generation
+2. Evidence retrieval
+3. Evidence validation
+4. Semantic judgment
+5. Synthesis / resolution
+6. Deterministic constraint validation
+7. Mutation planning
+8. Transactional graph commit
+9. Provenance and replay
+10. Evaluation and question-set improvement
+
+---
+
+# 1. Add an Evidence Firewall
+
+Insert a formal **Evidence Firewall** between retrieval and semantic synthesis.
+
+Every retrieved source, passage, span, record, or candidate piece of evidence should be classified before it is allowed to influence graph synthesis.
+
+Evaluate at least:
+
+- relevance to the candidate assertion
+- whether it contains usable evidence
+- whether it supports the candidate
+- whether it contradicts the candidate
+- whether it is merely related but non-probative
+- whether it contains instructions or prompt-injection-like content
+- source provenance
+- source identity
+- source trust/risk metadata where available
+- duplication/redundancy
+- temporal applicability
+- whether the source is primary, secondary, inferred, or generated
+
+Create explicit categories such as:
+
+```text
+SUPPORTED_EVIDENCE
+CONTRADICTING_EVIDENCE
+RELATED_NON_EVIDENCE
+IRRELEVANT
+ADVERSARIAL_OR_INSTRUCTIONAL
+UNVERIFIABLE
+DUPLICATE
+STALE_OR_OUT_OF_SCOPE
+```
+
+Do not give the synthesizer an undifferentiated collection of retrieved text.
+
+---
+
+# 2. Add Claim-to-Source Verification
+
+Every graph mutation or asserted relationship should have machine-verifiable provenance.
+
+For every proposed fact or edge, preserve:
+
+```text
+source_id
+document_hash
+source_version
+span_start
+span_end
+quoted_or_normalized_span
+retrieval_timestamp
+candidate_id
+decision_id
+```
+
+Before committing a graph assertion:
+
+1. Deterministic code verifies that the referenced source/span actually exists.
+2. Semantic evaluation determines whether the source:
+   - supports the assertion
+   - contradicts it
+   - is unrelated
+   - is ambiguous
+3. Low-confidence support must not become automatic graph truth.
+
+Represent provenance as a first-class object in the Graph IR rather than optional metadata.
+
+---
+
+# 3. Separate Semantic Outcome from Confidence
+
+Do not let one floating-point threshold represent both meaning and certainty.
+
+Every Jev decision should preserve at least:
+
+```text
+semantic_outcome
+confidence
+probability_distribution
+decision_policy_result
+```
+
+Example:
+
+```text
+semantic_outcome:
+    ACCEPT
+    AMBIGUOUS
+    REJECT
+
+confidence:
+    LOW
+    MEDIUM
+    HIGH
+```
+
+The action policy should be separate:
+
+```text
+ACCEPT + HIGH
+    → candidate for automatic commit
+
+ACCEPT + MEDIUM
+    → resolver / synthesis stage
+
+AMBIGUOUS
+    → resolver / synthesis stage
+
+REJECT + HIGH
+    → discard
+
+LOW confidence
+    → abstain, retrieve more evidence, or escalate
+```
+
+Risk must affect the policy.
+
+For example:
+
+```text
+add non-destructive supporting edge
+    lower confidence requirement
+
+merge two entities with sameAs
+    very high confidence requirement
+
+delete or rewrite existing graph structure
+    extremely high confidence + deterministic safeguards
+```
+
+Do not use universal confidence thresholds across mutation types.
+
+---
+
+# 4. Add Minimum Evidence Closure
+
+For every Jev decision, construct the smallest evidence set necessary to answer the question.
+
+Implement a concept called:
+
+**Minimum Evidence Closure**
+
+A closure may include:
+
+```text
+candidate entities
+candidate relation
+relevant source spans
+local ontology fragment
+relevant schema constraints
+temporal facts
+relevant prior graph facts
+applicable decision policy
+```
+
+Do not pass:
+
+- entire documents unnecessarily
+- entire graph neighborhoods unnecessarily
+- entire ontology/schema when only a fragment is needed
+- unrelated prior decisions
+
+The goal is:
+
+```text
+maximum semantic relevance
+minimum irrelevant state
+```
+
+Make this a formal compiler invariant.
+
+---
+
+# 5. Add a Question Packing Planner
+
+Optimize Jev usage by grouping independent questions that share essentially the same state.
+
+Implement:
+
+**Question Packing Planner**
+
+Process:
+
+```text
+candidate decision requirements
+        ↓
+determine evidence dependency for each question
+        ↓
+compute minimum evidence closure
+        ↓
+cluster questions sharing the same closure
+        ↓
+batch those questions into a single Jev request
+```
+
+Avoid both extremes:
+
+```text
+BAD:
+entire graph + hundreds of questions
+
+BAD:
+same evidence resent separately for every question
+
+GOOD:
+small evidence closure + multiple independent semantic questions
+```
+
+Track:
+
+```text
+pack_id
+question_ids
+shared_state_hash
+token/input size
+latency
+cost
+model version
+```
+
+This should support later optimization studies.
+
+---
+
+# 6. Explicitly Separate Probabilities from Policy Scores
+
+Do not multiply or otherwise combine separate Jev outputs and claim the result is a joint probability unless empirically calibrated.
+
+Prohibit patterns like:
+
+```text
+P_same_entity
+× P_same_name
+× P_type_match
+× P_relation_support
+=
+P_graph_edge_is_true
+```
+
+unless a separate statistical model has been trained/calibrated to justify that interpretation.
+
+Instead permit application-controlled composite scores:
+
+```text
+policy_score =
+    w1 * identity_signal
+  + w2 * evidence_support
+  + w3 * source_reliability
+  + w4 * type_compatibility
+  + w5 * temporal_consistency
+```
+
+Call this a:
+
+```text
+policy_score
+resolver_score
+ranking_score
+```
+
+not a probability.
+
+Preserve original Jev outputs separately.
+
+---
+
+# 7. Add Hierarchical Beam Search
+
+For ontology placement, entity typing, relation selection, and schema alignment, do not require irreversible greedy classification.
+
+Add beam-search-style exploration.
+
+Example:
+
+```text
+Entity
+├─ Organization 0.48
+│  ├─ Company 0.59
+│  └─ Nonprofit 0.36
+├─ Product 0.41
+│  ├─ Software 0.76
+│  └─ Service 0.19
+└─ Person 0.11
+```
+
+Keep the top K plausible paths alive.
+
+Allow deeper evidence to recover from uncertainty at earlier levels.
+
+Use accumulated values only as:
+
+```text
+search score
+ranking score
+beam score
+```
+
+unless specifically calibrated.
+
+Support configurable:
+
+```text
+beam_width
+depth_limit
+minimum_branch_score
+maximum_expansion_cost
+early_stop_policy
+```
+
+---
+
+# 8. Strengthen Deterministic Constraint Compilation
+
+Make explicit that Jev does not enforce graph invariants.
+
+All of these must remain deterministic/compiler responsibilities where applicable:
+
+```text
+domain/range validation
+cardinality
+type constraints
+uniqueness
+identifier constraints
+symmetry
+transitivity
+inverse relations
+temporal ordering
+date arithmetic
+numeric arithmetic
+cannot-link constraints
+required properties
+schema constraints
+SHACL-like constraints
+ontology consistency
+cycle rules
+referential integrity
+graph transaction validity
+```
+
+Example:
+
+```text
+Jev:
+Does this evidence describe Alice as employed by Acme?
+
+Code:
+Is Person --employedBy--> Organization allowed?
+
+Code:
+Does the proposed edge violate temporal constraints?
+
+Code:
+Does it conflict with a cannot-link condition?
+```
+
+Semantic interpretation belongs to Jev.
+
+Structural truth belongs to the compiler.
+
+---
+
+# 9. Make the Synthesizer an Explicit Layer Above Jev
+
+Do not describe Jev itself as the synthesizer.
+
+Use this separation:
+
+```text
+Candidate Generator
+        ↓
+Evidence Firewall
+        ↓
+Minimum Evidence Closure
+        ↓
+Jev Semantic Judgments
+        ↓
+Decision IR
+        ↓
+Synthesizer / Resolver
+        ↓
+Constraint Compiler
+        ↓
+Mutation Planner
+        ↓
+Transactional Commit
+```
+
+The synthesizer/resolver should handle:
+
+- conflicting semantic signals
+- multiple candidate explanations
+- uncertain entity alignment
+- ontology alternatives
+- relationship alternatives
+- competing candidate graph structures
+- policy scoring
+- abstention
+- requests for more evidence
+- escalation to human curator when unresolved
+
+The human curator becomes the final escalation layer rather than the default destination for every ambiguous Jev result.
+
+---
+
+# 10. Add Explicit Abstention and Evidence Acquisition
+
+The system must be able to say:
+
+```text
+INSUFFICIENT_EVIDENCE
+```
+
+and stop.
+
+Do not force every candidate into:
+
+```text
+accept
+reject
+```
+
+The synthesizer should be allowed to produce:
+
+```text
+ACCEPT
+REJECT
+ABSTAIN
+RETRIEVE_MORE_EVIDENCE
+HUMAN_REVIEW
+CONFLICT_UNRESOLVED
+```
+
+If more evidence is needed, generate a structured acquisition request:
+
+```json
+{
+  "candidate_id": "...",
+  "missing_evidence": [
+    "ownership relationship",
+    "time period",
+    "legal entity identifier"
+  ],
+  "preferred_sources": [
+    "primary source",
+    "official filing"
+  ]
+}
+```
+
+---
+
+# 11. Improve Decision IR
+
+Expand Decision IR so every semantic decision is replayable.
+
+Include at minimum:
+
+```text
+decision_id
+candidate_id
+question_id
+question_schema_version
+question_text_or_structure
+state_hash
+evidence_refs
+model_provider
+exact_model_version
+semantic_outcome
+raw_answer
+probability_distribution
+confidence
+policy_score
+policy_version
+resolver_version
+timestamp
+latency
+cost
+request_id if available
+parent_decisions
+supersedes
+abstention_reason
+```
+
+Never overwrite prior decisions silently.
+
+Use append-only or versioned decision history.
+
+---
+
+# 12. Pin the Jev Model Version
+
+Do not use a moving model alias for research evaluation or calibrated production thresholds.
+
+Pin the exact tested model version.
+
+For example:
+
+```text
+jev-1.13.0
+```
+
+Record the exact model version on every decision.
+
+Changing the model version should trigger:
+
+```text
+benchmark rerun
+calibration check
+threshold comparison
+regression analysis
+```
+
+Treat a model-version change similarly to a compiler/runtime upgrade.
+
+---
+
+# 13. Add Empirical Calibration
+
+Do not invent confidence thresholds.
+
+Create calibration datasets for:
+
+```text
+entity identity
+relationship correctness
+ontology placement
+relation typing
+claim/evidence support
+contradiction detection
+schema alignment
+entity merging
+graph mutation acceptance
+```
+
+Measure at least:
+
+```text
+precision
+recall
+F1
+false merge rate
+false split rate
+incorrect edge rate
+abstention rate
+human-review rate
+calibration error
+cost
+latency
+```
+
+For high-risk graph operations emphasize precision.
+
+For example:
+
+```text
+sameAs merge:
+optimize heavily against false positives
+
+candidate supporting relation:
+possibly tolerate lower threshold
+```
+
+---
+
+# 14. Replace Binary Noul Thresholding with Uncertainty Bands
+
+Do not treat `0.5` as a universal yes/no cutoff.
+
+Support policy bands such as:
+
+```text
+strong_no
+likely_no
+uncertain
+likely_yes
+strong_yes
+```
+
+The exact cutoffs must be learned from benchmark data.
+
+Example only:
+
+```text
+0.00–0.20 → strong_no
+0.20–0.40 → likely_no
+0.40–0.60 → uncertain
+0.60–0.80 → likely_yes
+0.80–1.00 → strong_yes
+```
+
+These are placeholders, not production values.
+
+Different semantic questions may have different calibrated boundaries.
+
+---
+
+# 15. Add Question-Set Autoresearch
+
+Add a self-improvement loop for the Jev semantic question set.
+
+The system should learn which questions actually improve graph synthesis.
+
+Architecture:
+
+```text
+graph synthesis failures
+        ↓
+error corpus
+        ↓
+research/LLM component proposes semantic questions
+        ↓
+Jev evaluates them over training corpus
+        ↓
+graph synthesis reruns
+        ↓
+compare against gold/reference graph
+        ↓
+measure incremental value
+        ↓
+retain / revise / reject question
+        ↓
+validate on held-out data
+```
+
+Possible discovered questions might include:
+
+```text
+Are these two entities distinct subsidiaries in the same corporate family?
+
+Does this source distinguish a former relationship from a current relationship?
+
+Does this statement describe ownership or merely partnership?
+
+Does this evidence refer to the legal entity or the product brand?
+
+Is the apparent contradiction explainable by different time periods?
+```
+
+Store question performance:
+
+```text
+question_id
+version
+target_failure_mode
+training_gain
+validation_gain
+cost
+latency
+correlation_with_existing_questions
+retention_status
+```
+
+Do not retain semantic questions simply because they sound useful.
+
+Require measurable held-out improvement.
+
+---
+
+# 16. Add Question Redundancy Analysis
+
+Because multiple Jev questions can become redundant, measure:
+
+```text
+feature correlation
+decision overlap
+incremental predictive value
+cost per useful decision
+latency contribution
+```
+
+Prune semantic questions that provide little incremental benefit.
+
+The goal is a compact semantic feature set rather than an ever-growing question library.
+
+---
+
+# 17. Add Error-Driven Synthesis Research
+
+Classify graph-synthesis failures.
+
+Example error taxonomy:
+
+```text
+ENTITY_FALSE_MERGE
+ENTITY_FALSE_SPLIT
+WRONG_RELATION
+MISSING_RELATION
+WRONG_ENTITY_TYPE
+WRONG_RELATION_TYPE
+TEMPORAL_ERROR
+PROVENANCE_MISMATCH
+SOURCE_CONTRADICTION_IGNORED
+SCHEMA_VIOLATION
+LOW_CONFIDENCE_AUTO_COMMIT
+ONTOLOGY_PATH_ERROR
+RETRIEVAL_FAILURE
+IRRELEVANT_CONTEXT_CONTAMINATION
+DUPLICATE_ASSERTION
+STALE_EVIDENCE
+```
+
+Use these failures to guide:
+
+- new Jev questions
+- retrieval changes
+- evidence-firewall changes
+- resolver changes
+- policy threshold changes
+- compiler constraint changes
+
+---
+
+# 18. Improve Provenance into a Full Decision Ledger
+
+The project should maintain both:
+
+```text
+Graph Provenance
+```
+
+and:
+
+```text
+Decision Provenance
+```
+
+Example lineage:
+
+```text
+source document
+    ↓
+retrieved span
+    ↓
+evidence firewall decision
+    ↓
+candidate extraction
+    ↓
+Jev decision pack
+    ↓
+resolver decision
+    ↓
+constraint validation
+    ↓
+mutation plan
+    ↓
+transaction
+    ↓
+graph node/edge
+```
+
+A graph assertion should be traceable backward through every stage.
+
+It should also be possible to replay the synthesis under:
+
+```text
+different model version
+different decision policy
+different resolver
+different ontology
+different source set
+different thresholds
+```
+
+without destroying historical results.
+
+---
+
+# 19. Add Counterfactual Replay
+
+Implement evaluation where historical graph synthesis is replayed under changed conditions.
+
+Examples:
+
+```text
+What would the graph have looked like using Jev version X?
+
+What assertions change if threshold T moves from 0.8 to 0.9?
+
+What if Question Q had not existed?
+
+What if source S were removed?
+
+What if a stronger ontology constraint were enabled?
+```
+
+Use this for:
+
+- regression testing
+- policy evaluation
+- model upgrades
+- question-set research
+- source sensitivity analysis
+
+---
+
+# 20. Make Mutations Transactional and Reversible
+
+Every graph update should become a mutation plan before commit.
+
+Example:
+
+```json
+{
+  "transaction_id": "...",
+  "operations": [
+    {
+      "operation": "ADD_EDGE",
+      "subject": "...",
+      "predicate": "...",
+      "object": "..."
+    }
+  ],
+  "evidence_refs": [],
+  "decision_refs": [],
+  "constraint_results": [],
+  "risk_class": "MEDIUM"
+}
+```
+
+Support:
+
+```text
+validate
+dry-run
+commit
+rollback
+supersede
+repair
+```
+
+Do not directly mutate graph state from semantic-model output.
+
+---
+
+# 21. Add Risk Classes for Graph Operations
+
+Define mutation risk classes.
+
+Example:
+
+```text
+R0
+No persistent change
+
+R1
+Add low-impact candidate/support metadata
+
+R2
+Add ordinary relation
+
+R3
+Modify existing relation
+
+R4
+Merge entities / sameAs
+
+R5
+Delete, collapse, or globally restructure graph state
+```
+
+Higher-risk mutations require:
+
+```text
+stronger evidence
+higher calibrated confidence
+more deterministic validation
+possibly independent semantic judgments
+possibly human review
+```
+
+---
+
+# 22. Update the Main Architecture Diagram
+
+Revise the canonical architecture to approximately:
+
+```text
+INPUT SOURCES
+     │
+     ▼
+Deterministic preprocessing
+     │
+     ▼
+Candidate generation
+     │
+     ▼
+Retrieval
+     │
+     ▼
+┌──────────────────────────┐
+│     EVIDENCE FIREWALL    │
+│ relevance                │
+│ support                  │
+│ contradiction            │
+│ provenance               │
+│ adversarial detection    │
+└────────────┬─────────────┘
+             │
+             ▼
+Minimum Evidence Closure
+             │
+             ▼
+Question Packing Planner
+             │
+       ┌─────┴─────┐
+       ▼           ▼
+ Decision Pack   Decision Pack
+       │           │
+       └─────┬─────┘
+             ▼
+            JEV
+     Choice / Score / Nouls
+             │
+             ▼
+         Decision IR
+             │
+             ▼
+┌──────────────────────────┐
+│   SYNTHESIZER / RESOLVER │
+│ confidence gating        │
+│ policy scoring           │
+│ beam search              │
+│ conflict resolution      │
+│ abstention               │
+│ evidence acquisition     │
+└────────────┬─────────────┘
+             │
+             ▼
+Deterministic Constraint Compiler
+             │
+             ▼
+        Mutation Plan
+             │
+             ▼
+ Claim/Evidence Verification
+             │
+             ▼
+      Transaction Engine
+             │
+             ▼
+       Knowledge Graph
+             │
+     ┌───────┴────────┐
+     ▼                ▼
+Provenance       Evaluation Corpus
+Ledger                │
+                      ▼
+               Autoresearch Loop
+                      │
+                      ▼
+              Improved Question Set
+                      │
+                      └──────► JEV
+```
+
+---
+
+# 23. Update the Research Framing
+
+Update the paper/project framing so TRACE-GC is described as more than:
+
+> “Jev plus a graph compiler.”
+
+Frame it as:
+
+> **A typed probabilistic graph compiler that converts candidate evidence into reversible graph mutations through evidence gating, atomic semantic judgments, uncertainty-aware synthesis, deterministic constraint compilation, and empirically optimized decision policies.**
+
+Make the research contribution clear.
+
+Potential contribution areas:
+
+1. Minimum Evidence Closure
+2. Question Packing Planner
+3. Evidence Firewall for graph synthesis
+4. Decision IR
+5. Typed semantic decision packs
+6. Risk-aware mutation policy
+7. Hierarchical beam-based ontology synthesis
+8. Replayable graph compilation
+9. Empirical semantic-question optimization
+10. Self-improving synthesis rubric without model fine-tuning
+
+Clearly separate which ideas are:
+
+```text
+derived from TypeSafe/Jev usage patterns
+adaptations of known techniques
+novel TRACE-GC contributions
+hypotheses requiring experimentation
+```
+
+Do not overclaim novelty.
+
+---
+
+# 24. Update the Evaluation Plan
+
+Compare at least:
+
+```text
+A. Generative model directly writes graph
+
+B. Generative model + deterministic validation
+
+C. Candidate generation + Jev decisions + compiler
+
+D. Full TRACE-GC:
+   Evidence Firewall
+   Minimum Evidence Closure
+   packed semantic decisions
+   synthesizer/resolver
+   constraint compiler
+   calibrated risk policies
+
+E. Full TRACE-GC + autoresearch-optimized question set
+```
+
+Measure:
+
+```text
+graph precision
+graph recall
+edge F1
+entity-resolution accuracy
+false merge rate
+false split rate
+ontology classification accuracy
+provenance correctness
+unsupported assertion rate
+contradiction handling
+abstention quality
+human-review volume
+latency
+token/API cost
+Jev request count
+evidence-state size
+question count
+replay reproducibility
+```
+
+Run ablations for:
+
+```text
+without Evidence Firewall
+without Minimum Evidence Closure
+without beam search
+without calibrated thresholds
+without claim-source verification
+without question packing
+without autoresearch
+```
+
+---
+
+# 25. Produce Updated Artifacts
+
+After incorporating these changes, update or create:
+
+1. Canonical architecture specification
+2. Architecture Mermaid diagram
+3. Graph IR schema
+4. Decision IR schema
+5. Evidence IR/schema
+6. Mutation Plan schema
+7. Question Pack schema
+8. Risk policy specification
+9. Confidence/calibration specification
+10. Provenance/decision-ledger schema
+11. Replay specification
+12. Evaluation methodology
+13. Error taxonomy
+14. Autoresearch/question-optimization design
+15. Revised implementation roadmap
+16. Revised paper outline
+17. Updated novelty/contribution analysis
+18. List of open research questions
+
+---
+
+# 26. Important Design Rules
+
+Treat these as hard rules:
+
+```text
+Jev judges semantics.
+Code owns control flow.
+
+Jev does not mutate the graph.
+
+Jev does not perform arithmetic.
+
+Jev does not enforce graph invariants.
+
+Jev outputs are not assumed statistically independent.
+
+Composite policy scores are not automatically probabilities.
+
+Low confidence may trigger abstention.
+
+Every graph assertion requires traceable provenance.
+
+Every consequential mutation must pass deterministic validation.
+
+Every model/version/policy decision must be replayable.
+
+Question thresholds must be empirically calibrated.
+
+The system must be allowed to request more evidence.
+
+The semantic question set should be empirically optimized over time.
+```
+
+---
+
+# 27. Preserve Existing Work
+
+Before making changes:
+
+1. Review the existing TRACE-GC architecture, paper, schemas, code, diagrams, and implementation notes.
+2. Identify which existing components already satisfy these requirements.
+3. Do not duplicate components unnecessarily.
+4. Update terminology consistently.
+5. Preserve useful prior research.
+6. Clearly document architectural deltas.
+7. Identify any previous assumptions that these changes invalidate.
+
+Return both:
+
+```text
+BEFORE
+existing architecture/component
+
+AFTER
+revised component
+
+WHY
+reason for the change
+```
+
+for every material architecture change.
+
+The end result should be a coherent revision of the existing project, not a disconnected second design.

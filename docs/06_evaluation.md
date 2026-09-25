@@ -1,0 +1,11 @@
+# Evaluation and release evidence
+
+Run `python tools/run_validation.py`. The release report includes per-test outcomes, skips, compatibility fixture validation, the 18 design-review probes, canonical vectors and the isolated end-to-end demo. `tests/test_runtime_contracts.py` covers rehashed adversarial inputs, dependencies, immutable binding and ledger/lifecycle cases. `test_runtime_transactions.py` covers source changes, rollback at four fault points, concurrency, persistent idempotency, OR/AND proof maintenance, trust and generated action sequences. `test_runtime_qualification.py` covers exact risk arithmetic, all scope dimensions, independent-label checks, mocked adapter retries and shared budgets. `test_runtime_workflows.py` covers schema/metadata/retraction variants, global identity/cannot-links, replay branches, CLI and upstream pin rejection.
+
+Generated state sequences use deterministic seeds and standard-library unittest; Hypothesis is not a dependency and was not represented as having run. The CI matrix is a configuration for future runs. The attached report identifies the environment actually used.
+
+The optional exact upstream test requires `TRACE_GC_LEGACY_CORE`; its absence is an explicit skipped gate. The reference backend is not a substitute. Real provider schema/behavior, deployed concurrency, IAM integration, statistical label validity and empirical risk must be assessed in their real environment. No benchmark, semantic-accuracy result, qualified threshold, controlled pilot or new-science claim is inferred from fixture passing.
+
+## GraphRAG evaluation
+
+The runtime adds retrieval, synthesis and efficiency metric functions, grouped held-out policy gates and a runnable 91-run synthetic benchmark. Four existing-runtime lifecycle scenarios exercise GraphRAG through signed sandbox commits. Real semantic accuracy and deployment calibration are not inferred from those fixtures. See `19_graphrag_replay_evaluation.md`, `benchmarks/graphrag/` and the generated release validation report.

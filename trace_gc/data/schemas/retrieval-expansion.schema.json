@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:retrieval-expansion",
+  "title": "TRACE-GC retrieval-expansion v0.3.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retrieval_round": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "reason_for_expansion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "previous_result_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "result_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "new_information_added": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "new_relevant_information_per_round": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "confidence_before": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "confidence_after": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "confidence_change": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "decision_before": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "decision_after": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision_change": {
+      "type": "boolean"
+    },
+    "stop_reason": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "cost_units": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "latency_ms": {
+      "type": "number"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "version",
+    "candidate_id",
+    "retrieval_round",
+    "reason_for_expansion",
+    "previous_result_id",
+    "result_id",
+    "decision_ids",
+    "new_information_added",
+    "new_relevant_information_per_round",
+    "confidence_before",
+    "confidence_after",
+    "confidence_change",
+    "decision_before",
+    "decision_after",
+    "decision_change",
+    "stop_reason",
+    "cost_units",
+    "latency_ms",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

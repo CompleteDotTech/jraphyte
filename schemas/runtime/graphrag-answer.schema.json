@@ -1,0 +1,351 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:graphrag-answer",
+  "title": "TRACE-GC graphrag-answer v0.3.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "query_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "result_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "graph_context_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "graph_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "mode": {
+      "enum": [
+        "CONSENSUS",
+        "BALANCED_EVIDENCE",
+        "CONTRADICTIONS_ONLY",
+        "PROVENANCE_ONLY",
+        "HISTORICAL",
+        "LATEST_VALID_STATE"
+      ]
+    },
+    "answer_status": {
+      "const": "CONTEXT_ONLY"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "NODE",
+              "EDGE",
+              "PATH",
+              "COMMUNITY",
+              "CONFLICT",
+              "PROVENANCE",
+              "ONTOLOGY",
+              "SCHEMA",
+              "EVIDENCE",
+              "CLAIM",
+              "DECISION",
+              "HYPOTHESIS"
+            ]
+          },
+          "canonical_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "member_assertion_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "assertion_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "entity_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "source_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "decision_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "observation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "transaction_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "plan_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "record_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "relation_types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "text": {
+            "type": "string"
+          },
+          "trust_class": {
+            "enum": [
+              "VERIFIED_GRAPH_FACT",
+              "PROVISIONAL_GRAPH_FACT",
+              "DERIVED_GRAPH_FACT",
+              "CONFLICTED_GRAPH_FACT",
+              "SUPERSEDED_GRAPH_FACT",
+              "HISTORICAL_GRAPH_FACT",
+              "UNVERIFIED_GRAPH_CONTEXT"
+            ]
+          },
+          "current_status": {
+            "type": "string",
+            "minLength": 1
+          },
+          "graph_version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "superseded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provenance_complete": {
+            "type": "boolean"
+          },
+          "risk_class": {
+            "enum": [
+              "R0",
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5"
+            ]
+          },
+          "calibration": {
+            "type": "object",
+            "properties": {
+              "qualified": {
+                "const": false
+              },
+              "note": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "qualified",
+              "note"
+            ],
+            "additionalProperties": false
+          },
+          "generated_summary": {
+            "type": "boolean"
+          },
+          "data_origin": {
+            "enum": [
+              "GENERATED_SUMMARY",
+              "SOURCE_DERIVED"
+            ]
+          },
+          "instruction_authority": {
+            "const": false
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "canonical_ref",
+          "member_assertion_ids",
+          "assertion_ids",
+          "entity_ids",
+          "evidence_ids",
+          "source_ids",
+          "decision_ids",
+          "observation_ids",
+          "transaction_ids",
+          "plan_ids",
+          "record_refs",
+          "relation_types",
+          "text",
+          "trust_class",
+          "current_status",
+          "graph_version",
+          "created_at",
+          "superseded_at",
+          "provenance_complete",
+          "risk_class",
+          "calibration",
+          "generated_summary",
+          "data_origin",
+          "instruction_authority"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_snapshot_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "quote": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "source_snapshot_id",
+          "source_id",
+          "source_hash",
+          "start",
+          "end",
+          "quote"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "can_mutate_graph": {
+      "const": false
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "version",
+    "query_id",
+    "result_id",
+    "graph_context_id",
+    "graph_version",
+    "mode",
+    "answer_status",
+    "items",
+    "citations",
+    "warnings",
+    "can_mutate_graph",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

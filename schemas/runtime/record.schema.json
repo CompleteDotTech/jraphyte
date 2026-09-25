@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:record",
+  "title": "TRACE-GC record v0.3.0",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "enum": [
+        "source",
+        "claim",
+        "evidence",
+        "candidate",
+        "pack",
+        "observation",
+        "evaluation",
+        "resolution-batch",
+        "resolution",
+        "plan",
+        "qualification",
+        "receipt",
+        "transaction",
+        "schema",
+        "graph-snapshot",
+        "policy",
+        "retrieval-query",
+        "retrieval-plan",
+        "graph-access",
+        "graph-context",
+        "retrieval-result",
+        "retrieval-expansion",
+        "retrieval-lineage",
+        "graphrag-answer",
+        "retrieval-replay",
+        "retrieval-evaluation"
+      ]
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "body": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "hash",
+    "body"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,144 @@
+{
+  "scope": "Additional offline synthetic probes; hashes intentionally refreshed; no live inference or graph writes.",
+  "package_revision": "0.2-design",
+  "baseline": {
+    "status": "PASS",
+    "schema_count": 9,
+    "record_count": 16,
+    "model_calls": 0,
+    "graph_commits": 0,
+    "calibration_qualified": false,
+    "scope": "Offline synthetic schema and selected cross-record contracts only."
+  },
+  "probe_count": 18,
+  "accepted_probe_count": 18,
+  "warning": "An accepted probe is not evidence of a deployed exploit. Some findings are draft/lifecycle or future-integration contract gaps.",
+  "results": [
+    {
+      "id": "P01",
+      "finding": "Pack state can be completely empty despite complete closure",
+      "location": "tools/validate_package.py:158-194; schemas/question-pack.schema.json:state",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P02",
+      "finding": "Rendered evidence can differ from the verified quoted span",
+      "location": "tools/validate_package.py:125-133,158-194",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P03",
+      "finding": "Rendered claim can change without changing the candidate assertion",
+      "location": "tools/validate_package.py:178-194,207-212",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P04",
+      "finding": "Declared closure omits a transitive candidate prerequisite",
+      "location": "tools/validate_package.py:167-171",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P05",
+      "finding": "Question names a dependency that does not exist",
+      "location": "tools/validate_package.py:176-184",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P06",
+      "finding": "A decision can list itself as a parent",
+      "location": "tools/validate_package.py:214",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P07",
+      "finding": "Cross-pack prior-decision dependencies can form a cycle",
+      "location": "tools/validate_package.py:181-184,214",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P08",
+      "finding": "A semantic support decision can omit every evidence reference",
+      "location": "tools/validate_package.py:214-215",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P09",
+      "finding": "Withdrawn support escapes the active-source check when omitted from pack evidence_refs",
+      "location": "tools/validate_package.py:167-175,214-215,268-277",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P10",
+      "finding": "Identity operation can target an ordinary document-support candidate",
+      "location": "tools/validate_package.py:268-274; schemas/mutation-plan.schema.json:operations",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P11",
+      "finding": "Two operations can share an operation_id in one plan",
+      "location": "tools/validate_package.py:268-277",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P12",
+      "finding": "Decision supersedes points to a nonexistent decision",
+      "location": "tools/validate_package.py:202-245; schemas/decision.schema.json:supersedes",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P13",
+      "finding": "Resolution alternative candidate reference does not exist",
+      "location": "tools/validate_package.py:247-256",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P14",
+      "finding": "All ledger events can be removed while retaining every substantive record",
+      "location": "tools/validate_package.py:279-291",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P15",
+      "finding": "Synthetic ledger event can claim another run and LIVE mode",
+      "location": "tools/validate_package.py:279-287",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P16",
+      "finding": "Score response legend descriptions can disagree with the question rubric",
+      "location": "tools/validate_package.py:241-243",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P17",
+      "finding": "Resolution risk can be lower than its planned ordinary assertion operation",
+      "location": "tools/validate_package.py:247-277",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    },
+    {
+      "id": "P18",
+      "finding": "A plan can be DRY_RUN_VALIDATED while a required implemented constraint reports FAIL",
+      "location": "tools/validate_package.py:260-277",
+      "outcome": "ACCEPTED_BY_VALIDATOR",
+      "detail": "PASS"
+    }
+  ]
+}

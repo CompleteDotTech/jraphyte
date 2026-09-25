@@ -1,0 +1,199 @@
+{
+  "created_at": "2026-09-25T05:44:07.044770+00:00",
+  "status": "PASS",
+  "python_version": "3.13.5",
+  "jsonschema_version": "4.26.0",
+  "bundle_validation": {
+    "status": "PASS",
+    "schema_count": 9,
+    "record_count": 16,
+    "model_calls": 0,
+    "graph_commits": 0,
+    "calibration_qualified": false,
+    "scope": "Offline synthetic schema and selected cross-record contracts only."
+  },
+  "tests_run": 42,
+  "failures": 0,
+  "errors": 0,
+  "tests": [
+    {
+      "test": "test_contracts.ContractTests.test_01_valid_synthetic_bundle",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_02_source_bytes_changed",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_03_wrong_quote",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_04_span_out_of_bounds",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_05_source_version_changed",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_06_withdrawn_source",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_07_missing_source",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_08_noul_has_no_vendor_confidence",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_09_noul_raw_unknown_field",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_10_score_mean_not_category",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_11_score_wrong_expected_value",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_12_distribution_sum",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_13_boolean_probability",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_14_missing_distribution_label",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_15_wrong_choice_polarity",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_16_model_version_mismatch",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_17_candidate_mutated_after_decision",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_18_question_mutated_without_new_request",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_19_state_changed_without_new_request",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_20_same_pack_answer_dependency",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_21_total_request_budget",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_22_state_longest_budget",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_23_question_target_cannot_be_only_map_key",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_24_incomplete_closure",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_25_omitted_evidence_dependency",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_26_fake_calibration_band",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_27_auto_rule_without_qualification",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_28_plan_cannot_be_ready",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_29_accepted_view_cannot_be_published",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_30_stale_plan_graph_version",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_31_risk_cannot_be_lowered_by_operation",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_32_duplicate_record_id",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_33_manifest_must_enumerate_records",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_34_ledger_payload_tampering",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_35_ledger_chain_tampering",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_36_mode_cannot_impersonate_live",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_37_error_receipt_is_not_semantic_negative",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_38_contradictory_evidence_is_preserved_not_dropped",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_39_acyclic_candidate_dependencies",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_40_empty_evidence_cannot_support_operation",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_41_score_probability_distribution_not_rewritten",
+      "status": "PASS"
+    },
+    {
+      "test": "test_contracts.ContractTests.test_42_unknown_fields_are_not_silently_accepted",
+      "status": "PASS"
+    }
+  ],
+  "claims_not_established": [
+    "Jev semantic accuracy",
+    "empirical calibration",
+    "production authorization",
+    "existing GraphStore regression compatibility",
+    "backend transaction safety",
+    "Mermaid render correctness",
+    "end-to-end graph synthesis performance"
+  ],
+  "model_calls": 0,
+  "database_commits": 0
+}

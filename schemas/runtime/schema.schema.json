@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:schema",
+  "title": "TRACE-GC schema v0.3.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "relations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "minLength": 1
+          },
+          "range": {
+            "type": "string",
+            "minLength": 1
+          },
+          "symmetric": {
+            "type": "boolean"
+          },
+          "inverse_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "incompatible": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "transitive": {
+            "type": "boolean"
+          },
+          "allow_self": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "domain",
+          "range",
+          "symmetric",
+          "inverse_of",
+          "incompatible",
+          "transitive",
+          "allow_self"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "version",
+    "relations"
+  ],
+  "additionalProperties": false
+}

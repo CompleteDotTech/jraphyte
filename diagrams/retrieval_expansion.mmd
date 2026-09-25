@@ -1,0 +1,19 @@
+stateDiagram-v2
+  [*] --> PlanCheap
+  PlanCheap --> Retrieve
+  Retrieve --> VerifyAndClose
+  VerifyAndClose --> AtomicJudgment
+  AtomicJudgment --> ExistingResolver
+  ExistingResolver --> QualifiedOrReviewed: sufficient semantic evidence
+  ExistingResolver --> StopRejected: rejection or structural impossibility
+  ExistingResolver --> CheckBudgetAndNovelty: INSUFFICIENT / RETRIEVE_MORE_EVIDENCE
+  CheckBudgetAndNovelty --> PlanExpanded: new context and budget remain
+  PlanExpanded --> Retrieve
+  CheckBudgetAndNovelty --> StopUnresolved: saturation / budget / maximum rounds
+  QualifiedOrReviewed --> ExistingMutationPipeline: independently authorized
+  QualifiedOrReviewed --> StopForHumanReview: qualification absent
+  ExistingMutationPipeline --> VersionedCommit
+  VersionedCommit --> [*]
+  StopRejected --> [*]
+  StopUnresolved --> [*]
+  StopForHumanReview --> [*]

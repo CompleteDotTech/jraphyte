@@ -1,0 +1,27 @@
+flowchart TD
+  UP[Upstream candidate and semantic question] --> P[Task and risk Retrieval Planner]
+  DOWN[Downstream search / QA / agent question] --> Q[Structured GraphRetrievalQuery]
+  P --> Q
+  Q --> B[Snapshot and budget manager]
+  STORE[Existing graph store / source catalog / decision journal] --> A[GraphQueryAdapter consistent read]
+  B --> A
+  A --> ACL[Application-owned ACL and current source-status filter]
+  ACL --> L[Lexical and vector source retrieval]
+  ACL --> G[Entity / relation / neighborhood / path retrieval]
+  ACL --> H[Ontology / community / temporal / decision retrieval]
+  ACL --> PC[Provenance and explicit contradiction retrieval]
+  L --> CAN[Canonical reconstruction and existing Evidence Firewall]
+  G --> CAN
+  H --> CAN
+  PC --> CAN
+  CAN --> R[Deterministic utility fusion and bounded selection]
+  R --> GC[GraphContextIR plus source evidence IDs]
+  R --> LL[Retrieval lineage: candidates / selections / discards / budgets]
+  GC -->|Upstream only, optional| J[Bounded Jev relevance packs; not truth judgments]
+  J --> GC2[New context branch with unchanged canonical evidence]
+  GC --> MEC[Existing minimum Evidence Closure and question pack]
+  GC2 --> MEC
+  GC --> AC[Downstream GraphRAGAnswerContext and exact citations]
+  CACHE[Scoped LRU: snapshot / ACL / epochs / algorithm / query] <--> R
+  TX[Existing successful transaction] -->|New snapshot invalidates before next use| CACHE
+  NOTE[No retrieval component holds publication authority]

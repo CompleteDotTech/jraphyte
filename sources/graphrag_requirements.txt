@@ -1,0 +1,2044 @@
+Extend the **existing TRACE-GC project** to make GraphRAG and graph-aware retrieval first-class architectural components.
+
+## Critical starting assumption
+
+TRACE-GC has **already been updated** with the previously specified improvements.
+
+Do **not** reimplement, duplicate, rename unnecessarily, or replace those improvements.
+
+Assume the current TRACE-GC architecture already contains, at minimum:
+
+- Evidence Firewall
+- claim-to-source verification
+- explicit semantic outcome vs confidence separation
+- Minimum Evidence Closure
+- Question Packing Planner
+- probability vs policy-score separation
+- hierarchical / beam-search reasoning where applicable
+- deterministic constraint compilation
+- an explicit Synthesizer / Resolver above Jev
+- abstention and evidence-acquisition states
+- expanded Decision IR
+- exact Jev model-version pinning and provenance
+- empirical calibration
+- uncertainty bands rather than universal `0.5` thresholds
+- question-set autoresearch
+- question redundancy analysis
+- error-driven synthesis research
+- decision/provenance ledger
+- counterfactual replay
+- transactional and reversible graph mutations
+- graph-operation risk classes
+- evaluation / ablation infrastructure
+- the improved evidence-gated TRACE-GC architecture produced by the previous upgrade
+
+First inspect the current project and determine how these are already implemented.
+
+**Integrate GraphRAG into that architecture rather than creating a parallel architecture.**
+
+Do not regress any existing behavior.
+
+---
+
+# Primary objective
+
+Add a complete **bidirectional GraphRAG subsystem** to TRACE-GC.
+
+Graph retrieval should operate in two different roles:
+
+```text
+1. UPSTREAM GRAPH-AWARE RETRIEVAL
+
+Existing graph
+    ↓
+retrieve useful graph context
+    ↓
+TRACE-GC synthesis / validation
+    ↓
+new graph mutation
+
+
+2. DOWNSTREAM GRAPHRAG
+
+Compiled evidence graph
+    ↓
+GraphRAG retrieval
+    ↓
+search / QA / agents / research / discovery
+```
+
+These two roles must remain architecturally distinct but share infrastructure where appropriate.
+
+The result should produce a continuous loop:
+
+```text
+retrieve
+   ↓
+understand
+   ↓
+synthesize
+   ↓
+validate
+   ↓
+compile
+   ↓
+commit
+   ↓
+retrieve again
+```
+
+---
+
+# 1. Preserve the core responsibility boundaries
+
+Make these distinctions explicit throughout the architecture and implementation:
+
+```text
+GraphRAG
+    = determines WHERE relevant graph knowledge may exist
+
+Evidence Retrieval
+    = finds candidate source material and graph context
+
+Evidence Firewall
+    = determines whether retrieved material is usable evidence
+
+Jev
+    = makes bounded semantic judgments about evidence
+
+Synthesizer / Resolver
+    = reconciles competing semantic judgments and graph hypotheses
+
+Constraint Compiler
+    = determines whether proposed graph structure satisfies deterministic rules
+
+Mutation Planner
+    = determines the exact proposed persistent changes
+
+Transaction Engine
+    = commits, rolls back, supersedes, or repairs graph state
+
+TRACE-GC
+    = controls whether evidence ultimately becomes graph state
+```
+
+GraphRAG must **never become the arbiter of graph truth**.
+
+A retrieved graph fact may be:
+
+- correct
+- incomplete
+- outdated
+- contradicted
+- derived from weak evidence
+- superseded
+- context-specific
+- relevant only for candidate generation
+
+Retrieval therefore produces **candidate context**, not automatically trusted truth.
+
+---
+
+# 2. Add a first-class Hybrid Evidence & Graph Retrieval layer
+
+Replace any overly generic notion of retrieval with an explicit subsystem called something similar to:
+
+```text
+Hybrid Evidence & Graph Retrieval
+```
+
+unless the project already has an equivalent component.
+
+It should support multiple retrieval channels.
+
+At minimum:
+
+```text
+lexical search
+vector / embedding retrieval
+entity retrieval
+graph neighborhood traversal
+multi-hop path retrieval
+community retrieval
+ontology/schema retrieval
+relationship retrieval
+provenance traversal
+evidence traversal
+contradiction retrieval
+historical decision retrieval
+temporal retrieval
+source retrieval
+similar-case retrieval
+```
+
+The system should be capable of combining:
+
+```text
+document retrieval
++
+vector retrieval
++
+graph traversal
++
+semantic graph retrieval
+```
+
+into one candidate evidence/context set.
+
+Do not force all retrieval through GraphRAG.
+
+GraphRAG is one retrieval strategy inside a broader hybrid retrieval system.
+
+---
+
+# 3. Create explicit upstream GraphRAG
+
+Add graph-aware retrieval **before semantic synthesis**.
+
+When TRACE-GC evaluates a new candidate assertion, it should be able to query the existing graph for context such as:
+
+```text
+candidate entity neighborhood
+known aliases
+possible duplicate entities
+current entity type
+historical entity types
+existing relationships
+neighboring relationships
+multi-hop paths
+ownership hierarchy
+organizational hierarchy
+ontology ancestors
+ontology descendants
+schema restrictions
+existing evidence
+contradicting evidence
+prior decisions
+superseded decisions
+related claims
+temporal relationships
+graph communities
+source provenance
+previous merge/split history
+```
+
+Example:
+
+```text
+New source:
+
+"Acme acquired Foo in March 2024."
+
+Candidate:
+
+Acme --acquired--> Foo
+```
+
+Before asking Jev to judge the candidate, GraphRAG may retrieve:
+
+```text
+Acme
+ ├── owns → Bar
+ ├── partneredWith → Foo
+ └── alias → Acme Holdings
+
+Foo
+ ├── subsidiaryOf → Baz
+ ├── previousOwner → Qux
+ └── relevant evidence E12, E29
+
+Existing graph path:
+Acme → partneredWith → Foo
+
+Historical decision:
+D221 rejected previous sameAs(Acme,Foo)
+
+Ontology:
+acquired:
+    domain Organization
+    range Organization
+
+Temporal evidence:
+Foo subsidiaryOf Baz until Feb 2024
+```
+
+That context can become part of the **Minimum Evidence Closure** if relevant.
+
+GraphRAG should therefore feed the existing:
+
+```text
+Minimum Evidence Closure
+```
+
+component rather than bypass it.
+
+---
+
+# 4. GraphRAG must not bypass the Evidence Firewall
+
+All retrieved external evidence must continue to pass through the existing Evidence Firewall.
+
+For graph-derived context, implement an analogous trust classification.
+
+Graph-derived items should carry information such as:
+
+```text
+assertion_id
+source_decision_id
+source_evidence_ids
+current_status
+confidence/calibration metadata
+created_at
+superseded_at
+provenance completeness
+risk class
+graph version
+```
+
+The retrieval layer should distinguish:
+
+```text
+VERIFIED_GRAPH_FACT
+PROVISIONAL_GRAPH_FACT
+DERIVED_GRAPH_FACT
+CONFLICTED_GRAPH_FACT
+SUPERSEDED_GRAPH_FACT
+HISTORICAL_GRAPH_FACT
+UNVERIFIED_GRAPH_CONTEXT
+```
+
+Do not flatten all existing edges into equally trusted context.
+
+---
+
+# 5. Extend Minimum Evidence Closure to include graph context
+
+The existing Minimum Evidence Closure should now be able to select evidence from two major pools:
+
+```text
+A. SOURCE EVIDENCE
+
+documents
+database rows
+API responses
+research papers
+files
+source spans
+records
+
+
+B. GRAPH CONTEXT
+
+entities
+edges
+paths
+communities
+prior decisions
+ontology fragments
+schema fragments
+conflicts
+provenance chains
+temporal state
+```
+
+Define:
+
+```text
+Minimum Evidence Closure =
+minimum source + graph context sufficient
+to answer a specific semantic question
+```
+
+The closure planner should explicitly avoid graph-context explosion.
+
+Do not automatically include:
+
+- entire entity neighborhoods
+- all multi-hop paths
+- entire communities
+- entire ontologies
+- all provenance
+- all historical decisions
+
+Retrieve only what materially contributes to the decision.
+
+---
+
+# 6. Add Graph Context IR
+
+Create a first-class structured representation for retrieved graph context.
+
+For example:
+
+```json
+{
+  "graph_context_id": "GC-...",
+  "query_id": "GRQ-...",
+  "graph_version": "...",
+  "focus_entities": [],
+  "retrieved_nodes": [],
+  "retrieved_edges": [],
+  "retrieved_paths": [],
+  "communities": [],
+  "ontology_fragments": [],
+  "schema_fragments": [],
+  "provenance_refs": [],
+  "decision_refs": [],
+  "conflict_refs": [],
+  "temporal_scope": {},
+  "retrieval_methods": [],
+  "ranking_scores": {},
+  "created_at": "..."
+}
+```
+
+This should be versioned and traceable.
+
+---
+
+# 7. Add Graph Retrieval Query IR
+
+Do not represent GraphRAG requests only as free-form text.
+
+Create a structured Graph Retrieval Query object.
+
+Potential fields:
+
+```text
+query_id
+requesting_component
+candidate_id
+decision_id
+focus_entities
+focus_relationships
+target_information
+hop_limit
+allowed_relation_types
+excluded_relation_types
+temporal_scope
+ontology_scope
+source_scope
+community_scope
+include_provenance
+include_conflicts
+include_historical
+include_superseded
+maximum_nodes
+maximum_edges
+maximum_paths
+maximum_tokens
+retrieval_strategy
+ranking_strategy
+```
+
+Example:
+
+```json
+{
+  "query_id": "GRQ-381",
+  "candidate_id": "C-911",
+  "focus_entities": ["Acme", "Foo"],
+  "target_information": [
+    "existing relationship",
+    "ownership history",
+    "contradiction evidence"
+  ],
+  "hop_limit": 2,
+  "include_provenance": true,
+  "include_conflicts": true,
+  "maximum_paths": 10
+}
+```
+
+---
+
+# 8. Support multiple graph-retrieval strategies
+
+Implement GraphRAG as a pluggable strategy interface.
+
+Support or design for:
+
+```text
+local neighborhood search
+multi-hop path search
+community-based search
+global graph search
+ontology-guided search
+entity-centric search
+relation-centric search
+temporal graph search
+provenance-aware search
+conflict-aware search
+hybrid vector + graph search
+```
+
+Do not tightly couple TRACE-GC to one GraphRAG implementation or database.
+
+Create an abstraction such as:
+
+```text
+GraphRetriever
+```
+
+with implementations/adapters behind it.
+
+---
+
+# 9. Remain graph-database agnostic
+
+TRACE-GC should not require Neo4j specifically.
+
+Support a storage/retrieval abstraction allowing implementations based on systems such as:
+
+```text
+Neo4j
+PostgreSQL + graph extension
+PostgreSQL + pgvector
+Apache AGE
+PuppyGraph
+RDF/SPARQL stores
+property graph databases
+custom graph stores
+in-memory graphs
+```
+
+The architecture should distinguish:
+
+```text
+Graph storage engine
+```
+
+from:
+
+```text
+GraphRAG retrieval algorithm
+```
+
+and from:
+
+```text
+TRACE-GC synthesis logic
+```
+
+Document this explicitly.
+
+---
+
+# 10. Support hybrid vector + graph retrieval
+
+Graph traversal alone may not find semantically related evidence.
+
+Vector retrieval alone may ignore graph topology.
+
+Support combined retrieval:
+
+```text
+query
+   │
+   ├── lexical retrieval
+   ├── embedding retrieval
+   ├── entity lookup
+   ├── neighborhood search
+   ├── path search
+   └── community search
+          │
+          ▼
+    candidate context
+          │
+          ▼
+      reranking
+          │
+          ▼
+Minimum Evidence Closure
+```
+
+Potential ranking features:
+
+```text
+semantic similarity
+graph distance
+path relevance
+entity identity confidence
+edge provenance quality
+temporal relevance
+source trust
+community relevance
+relation relevance
+contradiction value
+information novelty
+decision usefulness
+```
+
+Do not call a combined ranking score a probability unless calibrated as such.
+
+---
+
+# 11. Add graph-aware semantic reranking
+
+Allow Jev to assist with **bounded reranking/classification of graph retrieval candidates** where semantic judgment is genuinely useful.
+
+Examples:
+
+```text
+Is this graph path relevant to determining whether A acquired B?
+
+Does this neighboring entity help distinguish these candidate identities?
+
+Does this prior decision apply to the current candidate?
+
+Is this graph contradiction temporally relevant?
+
+Does this relationship provide evidence about the current question?
+```
+
+But keep ordinary deterministic filters in code:
+
+```text
+hop count
+timestamps
+exact identifiers
+schema compatibility
+relation allowlists
+source IDs
+graph version
+numeric scoring
+```
+
+---
+
+# 12. Introduce retrieval budgets
+
+GraphRAG can expand rapidly.
+
+Add explicit budgets.
+
+At minimum:
+
+```text
+maximum hops
+maximum paths
+maximum nodes
+maximum edges
+maximum communities
+maximum provenance depth
+maximum decisions
+maximum source spans
+maximum token/context size
+maximum retrieval latency
+maximum retrieval cost
+```
+
+The retrieval planner should choose the minimum necessary search.
+
+Example:
+
+```text
+Tier 0:
+exact entity / identifier lookup
+
+Tier 1:
+1-hop neighborhood
+
+Tier 2:
+2-hop paths + provenance
+
+Tier 3:
+community/global retrieval
+
+Tier 4:
+expensive semantic graph search
+```
+
+Escalate only when needed.
+
+---
+
+# 13. Add retrieval expansion triggered by uncertainty
+
+Tie GraphRAG directly into TRACE-GC's existing abstention/evidence-acquisition mechanism.
+
+Example:
+
+```text
+Initial evidence closure
+       ↓
+Jev
+       ↓
+LOW CONFIDENCE
+       ↓
+Resolver:
+RETRIEVE_MORE_EVIDENCE
+       ↓
+Graph Retrieval Planner
+       ↓
+expand:
+    one additional hop
+    conflict search
+    provenance search
+    ontology search
+       ↓
+new evidence closure
+       ↓
+new decision
+```
+
+This should be bounded.
+
+Do not permit uncontrolled recursive retrieval loops.
+
+Track:
+
+```text
+retrieval_round
+reason_for_expansion
+new_information_added
+confidence_change
+decision_change
+cost
+latency
+```
+
+---
+
+# 14. Add retrieval stopping rules
+
+Graph retrieval should stop when one or more criteria are met.
+
+Examples:
+
+```text
+sufficient evidence obtained
+confidence exceeds calibrated requirement
+additional retrieval produces no useful information
+candidate rejected
+constraint failure makes candidate impossible
+budget reached
+duplicate evidence dominates results
+human review required
+```
+
+Add explicit saturation detection.
+
+Example metric:
+
+```text
+new_relevant_information_per_round
+```
+
+If retrieval produces near-zero new decision-relevant evidence, stop expanding.
+
+---
+
+# 15. Add downstream GraphRAG over the compiled evidence graph
+
+TRACE-GC should expose the compiled graph to downstream GraphRAG consumers.
+
+The downstream GraphRAG layer should support:
+
+```text
+question answering
+scientific search
+research synthesis
+agent context retrieval
+entity exploration
+relationship discovery
+multi-hop reasoning support
+evidence discovery
+contradiction exploration
+timeline reconstruction
+provenance inspection
+literature review
+hypothesis discovery
+```
+
+The output should not merely return graph nodes.
+
+It should return **evidence-backed graph context**.
+
+---
+
+# 16. Make downstream GraphRAG provenance-aware
+
+When downstream GraphRAG returns a fact or relationship, include its provenance chain.
+
+Instead of:
+
+```text
+Acme acquired Foo.
+```
+
+the retrieval result should be capable of returning:
+
+```text
+Assertion:
+Acme acquired Foo.
+
+Graph assertion:
+EDGE-882
+
+Compiled by:
+TX-91
+
+Resolver decision:
+D-441
+
+Semantic evidence:
+D-433
+D-437
+
+Source evidence:
+E-81
+E-92
+
+Source documents:
+S-14
+S-22
+```
+
+This should make TRACE-GC graphs unusually useful for RAG because answers can be traced back to the compilation process.
+
+---
+
+# 17. Support claim-centric GraphRAG, not only entity-centric GraphRAG
+
+For research and scientific knowledge graphs especially, make claims first-class retrieval targets.
+
+GraphRAG should be able to retrieve:
+
+```text
+claim
+supporting claims
+contradicting claims
+replications
+failed replications
+methods
+datasets
+metrics
+experimental conditions
+authors
+papers
+entities
+causal relationships
+temporal relationships
+provenance
+```
+
+Example:
+
+```text
+Question:
+Does intervention X improve outcome Y?
+
+GraphRAG should retrieve:
+
+Claim C1:
+X improves Y.
+
+Supported by:
+Study A
+Study B
+
+Contradicted by:
+Study C
+
+Conditions:
+population P
+dosage D
+
+Replication:
+Study D
+
+Method differences:
+...
+```
+
+This is more useful than simple triple retrieval.
+
+---
+
+# 18. Add contradiction-aware GraphRAG
+
+Contradictions should not disappear during retrieval.
+
+GraphRAG should be capable of intentionally returning:
+
+```text
+supporting evidence
++
+contradicting evidence
++
+unresolved conflicts
+```
+
+for the same query.
+
+Add query modes such as:
+
+```text
+CONSENSUS
+BALANCED_EVIDENCE
+CONTRADICTIONS_ONLY
+PROVENANCE_ONLY
+HISTORICAL
+LATEST_VALID_STATE
+```
+
+Do not default to hiding conflicting graph evidence.
+
+---
+
+# 19. Add temporal GraphRAG
+
+TRACE-GC already tracks provenance and historical decisions.
+
+Extend GraphRAG so users/agents can ask:
+
+```text
+What was believed at time T?
+
+What is the current graph state?
+
+How did this relationship change?
+
+What evidence caused the change?
+
+Which assertion superseded another?
+
+What was known before source S arrived?
+```
+
+Support graph-version or temporal-state retrieval.
+
+---
+
+# 20. Add decision-aware GraphRAG
+
+GraphRAG should optionally retrieve not only graph state but the decisions that created it.
+
+Examples:
+
+```text
+Why were A and B merged?
+
+Why was relationship R rejected?
+
+Which semantic questions were decisive?
+
+Which constraint prevented this mutation?
+
+What evidence changed the graph?
+
+Which assertions were abstained from?
+```
+
+This turns the TRACE-GC decision ledger into a queryable reasoning artifact.
+
+---
+
+# 21. Add GraphRAG access to superseded and rejected knowledge
+
+Do not throw away rejected or historical candidates.
+
+Allow specialized retrieval over:
+
+```text
+accepted assertions
+rejected assertions
+superseded assertions
+abstained assertions
+unresolved candidates
+historical graph states
+```
+
+This can answer questions such as:
+
+```text
+Was this relationship considered previously?
+
+Why wasn't it added?
+
+Did the system previously believe the opposite?
+
+What evidence caused a reversal?
+```
+
+Keep these separate from the default current graph state.
+
+---
+
+# 22. Create a retrieval lineage ledger
+
+Extend the existing provenance system with retrieval provenance.
+
+For every GraphRAG operation record:
+
+```text
+retrieval_query_id
+query text / structured query
+requesting component
+graph version
+retrieval strategies
+candidate nodes
+candidate edges
+candidate paths
+candidate communities
+ranking scores
+selected context
+discarded context
+reason selected/discarded
+token budget
+latency
+cost
+timestamp
+```
+
+This allows:
+
+```text
+Why did this evidence reach Jev?
+
+Why was this graph path included?
+
+Why was another path excluded?
+```
+
+---
+
+# 23. Integrate retrieval with Decision IR
+
+Each Decision IR record should reference:
+
+```text
+graph_retrieval_query_ids
+graph_context_ids
+source_retrieval_ids
+evidence_closure_id
+```
+
+This creates lineage:
+
+```text
+GraphRAG query
+      ↓
+Graph Context IR
+      ↓
+Minimum Evidence Closure
+      ↓
+Question Pack
+      ↓
+Jev Decision
+      ↓
+Resolver Decision
+      ↓
+Mutation Plan
+      ↓
+Graph Commit
+```
+
+---
+
+# 24. Add GraphRAG-aware replay
+
+Counterfactual replay should now support retrieval changes.
+
+Examples:
+
+```text
+Replay using a different graph retrieval algorithm.
+
+Replay with max hop count = 1 instead of 3.
+
+Replay without vector retrieval.
+
+Replay without community search.
+
+Replay excluding historical decisions.
+
+Replay using an older graph snapshot.
+
+Replay with a different ranking strategy.
+```
+
+Measure how retrieval changes affect synthesis.
+
+---
+
+# 25. Add GraphRAG evaluation
+
+Extend the evaluation system to measure both:
+
+```text
+retrieval quality
+```
+
+and:
+
+```text
+effect on graph synthesis quality
+```
+
+Measure at least:
+
+### Retrieval metrics
+
+```text
+recall@k
+precision@k
+MRR where relevant
+nDCG where relevant
+path recall
+entity recall
+evidence recall
+contradiction recall
+provenance recall
+context redundancy
+context novelty
+retrieval saturation
+```
+
+### End-to-end metrics
+
+```text
+graph precision
+graph recall
+edge F1
+entity-resolution accuracy
+false merge rate
+false split rate
+unsupported assertion rate
+contradiction handling
+abstention quality
+human-review volume
+```
+
+### Efficiency metrics
+
+```text
+retrieval latency
+Jev latency
+total synthesis latency
+graph query count
+vector query count
+tokens supplied to Jev
+cost per accepted assertion
+cost per resolved candidate
+number of retrieval expansions
+average graph-context size
+```
+
+---
+
+# 26. Add GraphRAG ablations
+
+Evaluate at least:
+
+```text
+TRACE-GC without graph retrieval
+
+TRACE-GC + 1-hop neighborhood retrieval
+
+TRACE-GC + vector retrieval only
+
+TRACE-GC + graph retrieval only
+
+TRACE-GC + hybrid vector/graph retrieval
+
+TRACE-GC + hybrid retrieval + semantic reranking
+
+TRACE-GC + full uncertainty-triggered retrieval expansion
+```
+
+For downstream RAG:
+
+```text
+vector RAG
+
+plain graph retrieval
+
+GraphRAG
+
+TRACE-GC provenance-aware GraphRAG
+
+TRACE-GC contradiction-aware GraphRAG
+```
+
+---
+
+# 27. Add GraphRAG failure taxonomy
+
+Extend the existing error taxonomy with retrieval failures.
+
+Include:
+
+```text
+ENTITY_NOT_RETRIEVED
+RELEVANT_EDGE_NOT_RETRIEVED
+RELEVANT_PATH_NOT_RETRIEVED
+CONTRADICTION_NOT_RETRIEVED
+WRONG_COMMUNITY_RETRIEVED
+ONTOLOGY_CONTEXT_MISSING
+PROVENANCE_CONTEXT_MISSING
+HISTORICAL_CONTEXT_MISSING
+IRRELEVANT_GRAPH_CONTEXT
+GRAPH_CONTEXT_OVERLOAD
+VECTOR_RETRIEVAL_MISS
+GRAPH_TRAVERSAL_MISS
+RANKING_FAILURE
+STALE_GRAPH_CONTEXT
+SUPERSEDED_FACT_USED
+TEMPORALLY_INVALID_CONTEXT
+RETRIEVAL_LOOP
+RETRIEVAL_BUDGET_EXHAUSTED
+```
+
+Use these failures in the existing autoresearch / self-improvement pipeline.
+
+---
+
+# 28. Let autoresearch optimize retrieval questions and strategies
+
+The existing autoresearch loop should now be able to study:
+
+```text
+which graph neighborhoods are useful
+which relation types are useful
+optimal hop depth
+optimal path count
+when community retrieval helps
+when vector retrieval helps
+which semantic reranking questions improve performance
+which retrieval strategies cause noise
+```
+
+Potential learned policies:
+
+```text
+entity alignment
+    → alias + identifier + 1-hop neighborhood
+
+causal relation synthesis
+    → multi-hop relation paths + temporal context
+
+ontology placement
+    → ontology ancestors + siblings + entity examples
+
+contradiction resolution
+    → provenance + temporal + source conflict retrieval
+```
+
+Do not hardcode one retrieval strategy for every synthesis problem.
+
+---
+
+# 29. Add a Retrieval Planner
+
+Introduce an explicit:
+
+```text
+Retrieval Planner
+```
+
+before Hybrid Evidence & Graph Retrieval.
+
+Its input should include:
+
+```text
+candidate type
+question type
+risk class
+known entities
+known relations
+existing uncertainty
+retrieval history
+budget
+```
+
+Its output should be a structured retrieval plan.
+
+Example:
+
+```json
+{
+  "plan_id": "RP-91",
+  "candidate_id": "C-882",
+  "steps": [
+    {
+      "strategy": "ENTITY_LOOKUP"
+    },
+    {
+      "strategy": "NEIGHBORHOOD",
+      "max_hops": 1
+    },
+    {
+      "strategy": "CONTRADICTION_SEARCH"
+    }
+  ],
+  "expansion_policy": "ON_UNCERTAINTY"
+}
+```
+
+---
+
+# 30. Add contextual retrieval tiers
+
+Implement or document progressive retrieval.
+
+Example:
+
+```text
+TIER 0
+exact identifiers / known source references
+
+TIER 1
+vector similarity + direct graph neighbors
+
+TIER 2
+2-hop traversal + relevant provenance
+
+TIER 3
+multi-hop path search + contradiction search
+
+TIER 4
+community/global GraphRAG
+
+TIER 5
+human-guided / external evidence acquisition
+```
+
+Start cheap.
+
+Escalate only when required by uncertainty or risk.
+
+---
+
+# 31. Introduce GraphRAG caching
+
+Because many candidates will touch overlapping graph regions, cache:
+
+```text
+entity neighborhoods
+ontology fragments
+schema fragments
+community summaries
+path searches
+provenance chains
+embedding results
+retrieval plans
+```
+
+Cache keys should include:
+
+```text
+graph_version
+query structure
+entity IDs
+relation filters
+temporal scope
+retrieval strategy version
+```
+
+Invalidate caches when relevant graph mutations occur.
+
+---
+
+# 32. Do not use lossy summaries as canonical evidence
+
+GraphRAG may generate summaries for context efficiency.
+
+Treat those summaries as:
+
+```text
+retrieval artifacts
+```
+
+not canonical evidence.
+
+Maintain pointers to:
+
+```text
+original graph assertions
+original decisions
+original source evidence
+```
+
+The principle should be:
+
+> Summaries help locate and compress context; canonical evidence remains authoritative.
+
+This extends our earlier semantic-context principle.
+
+---
+
+# 33. Add GraphRAG community summaries carefully
+
+If implementing global/community GraphRAG, community summaries should be:
+
+```text
+versioned
+traceable
+regenerable
+linked to member assertions
+linked to source evidence
+```
+
+They must not silently become graph truth.
+
+A community summary can support retrieval but should not automatically become a source assertion unless separately synthesized and validated.
+
+---
+
+# 34. Add GraphRAG security boundaries
+
+Because graph context can contain untrusted source material, ensure that retrieved source-derived text cannot override system behavior.
+
+Continue using the Evidence Firewall for source material.
+
+For GraphRAG-generated context:
+
+```text
+separate data from instructions
+preserve source boundaries
+mark generated summaries
+mark user-authored data
+mark external text
+do not execute instructions found in evidence
+```
+
+Graph retrieval is a data operation, not an instruction channel.
+
+---
+
+# 35. Add access-control-aware GraphRAG
+
+Design for graphs containing data with different access levels.
+
+GraphRAG must support retrieval filtering by:
+
+```text
+tenant
+workspace
+user
+role
+security classification
+source ACL
+entity ACL
+edge ACL
+```
+
+Never retrieve inaccessible graph content merely because it is connected.
+
+Security filtering must occur **before semantic-model context construction**.
+
+---
+
+# 36. Update the canonical architecture
+
+The architecture should now resemble:
+
+```text
+                         SOURCE CORPUS
+                              │
+                              ▼
+                    Candidate Generation
+                              │
+                              ▼
+                     Retrieval Planner
+                              │
+                              ▼
+       ┌──────────────────────────────────────────┐
+       │    HYBRID EVIDENCE + GRAPH RETRIEVAL   │
+       │                                          │
+       │ lexical                                  │
+       │ vectors                                  │
+       │ entity search                            │
+       │ graph neighborhoods                      │
+       │ paths                                    │
+       │ communities                              │
+       │ ontology                                 │
+       │ provenance                               │
+       │ contradictions                           │
+       │ prior decisions                          │
+       └────────────────────┬─────────────────────┘
+                            │
+                            ▼
+                    Evidence Firewall
+                            │
+                            ▼
+                  Minimum Evidence Closure
+                            │
+                            ▼
+                  Question Packing Planner
+                            │
+                            ▼
+                           JEV
+                            │
+                            ▼
+                       Decision IR
+                            │
+                            ▼
+                 Synthesizer / Resolver
+                            │
+              ┌─────────────┴──────────────┐
+              │                            │
+        enough evidence              uncertainty
+              │                            │
+              │                            ▼
+              │                 Retrieve More Evidence
+              │                            │
+              │                      GraphRAG expansion
+              │                            │
+              └──────────────◄─────────────┘
+                            │
+                            ▼
+                 Constraint Compiler
+                            │
+                            ▼
+                    Mutation Planner
+                            │
+                            ▼
+                 Claim/Evidence Verify
+                            │
+                            ▼
+                  Transaction Engine
+                            │
+                            ▼
+                COMPILED EVIDENCE GRAPH
+                            │
+       ┌────────────────────┼──────────────────────┐
+       │                    │                      │
+       ▼                    ▼                      ▼
+ Provenance /          Evaluation /          Downstream
+ Decision Ledger       Autoresearch           GraphRAG
+                                                  │
+                       ┌──────────────────────────┼───────────────┐
+                       ▼                          ▼               ▼
+                     Search                       QA             Agents
+                       │                          │               │
+                       └──────────────┬───────────┴───────────────┘
+                                      │
+                                      ▼
+                               New questions /
+                               synthesis requests
+                                      │
+                                      └──────► TRACE-GC
+```
+
+---
+
+# 37. Define the continuous synthesis loop
+
+Make the feedback loop explicit:
+
+```text
+Existing graph
+      ↓
+GraphRAG retrieves context
+      ↓
+New evidence arrives
+      ↓
+TRACE-GC synthesizes candidate changes
+      ↓
+Compiler validates
+      ↓
+Transaction commits graph
+      ↓
+Graph indexes update
+      ↓
+GraphRAG sees new graph version
+      ↓
+future retrieval improves
+```
+
+This should be treated as:
+
+```text
+incremental graph compilation
+```
+
+rather than one-time graph construction.
+
+---
+
+# 38. Update the research framing
+
+Update the TRACE-GC research description to include graph-aware retrieval.
+
+A useful formulation is:
+
+> TRACE-GC is an evidence-gated typed probabilistic graph compiler in which hybrid document and graph retrieval constructs bounded evidence contexts, Jev supplies atomic semantic judgments, a resolver reconciles uncertain hypotheses, deterministic compilation enforces graph invariants, and reversible transactions update an evidence graph that subsequently serves as both a GraphRAG knowledge substrate and a retrieval source for future synthesis.
+
+Potential research contributions now include:
+
+```text
+Minimum Evidence Closure over both text and graph state
+
+Graph-aware evidence acquisition
+
+Uncertainty-triggered GraphRAG expansion
+
+Risk-aware graph retrieval budgets
+
+Decision-aware GraphRAG
+
+Provenance-aware GraphRAG
+
+Contradiction-aware GraphRAG
+
+GraphRAG over rejected and historical hypotheses
+
+Retrieval lineage
+
+GraphRAG-driven incremental graph compilation
+
+Autoresearch optimization of graph retrieval strategies
+```
+
+Clearly distinguish:
+
+```text
+known GraphRAG techniques
+known hybrid retrieval techniques
+TypeSafe/Jev-derived practices
+TRACE-GC-specific integrations
+potentially novel contributions
+unvalidated hypotheses
+```
+
+Do not overclaim novelty.
+
+---
+
+# 39. Update schemas
+
+Create or modify schemas for at least:
+
+```text
+GraphRetrievalQuery
+RetrievalPlan
+GraphContextIR
+RetrievalResult
+RetrievalExpansion
+RetrievalLineage
+GraphRAGAnswerContext
+```
+
+Integrate these with existing:
+
+```text
+Evidence IR
+Candidate Graph IR
+Decision IR
+Mutation Plan
+Provenance Ledger
+Replay records
+Evaluation records
+```
+
+Avoid schema duplication.
+
+---
+
+# 40. Update implementation modules
+
+Inspect the current codebase and map these concepts into existing modules.
+
+Do not create unnecessary new layers if equivalent abstractions already exist.
+
+Expected conceptual modules include:
+
+```text
+retrieval planner
+hybrid retriever
+graph retriever
+vector retriever
+graph query adapter
+reranker
+evidence firewall integration
+minimum-evidence-closure integration
+retrieval budget manager
+retrieval expansion controller
+retrieval cache
+GraphRAG query service
+GraphRAG provenance service
+GraphRAG evaluation
+```
+
+Use interfaces so storage/retrieval backends remain replaceable.
+
+---
+
+# 41. Add tests
+
+Add comprehensive tests covering:
+
+```text
+1-hop graph retrieval
+multi-hop retrieval
+hybrid vector + graph retrieval
+contradiction retrieval
+temporal retrieval
+ontology retrieval
+provenance retrieval
+superseded-fact handling
+access-control filtering
+retrieval budgets
+retrieval expansion
+saturation stopping
+cache invalidation
+graph-version changes
+Minimum Evidence Closure integration
+Decision IR lineage
+transaction → graph → GraphRAG visibility
+replay under different retrieval strategies
+```
+
+Also test failure cases.
+
+---
+
+# 42. Add end-to-end scenarios
+
+Create representative end-to-end examples.
+
+At least:
+
+### Scenario A — Entity resolution
+
+```text
+new entity mention
+→ graph neighborhood retrieval
+→ alias/provenance retrieval
+→ Jev identity judgments
+→ resolver
+→ sameAs or separate entity
+→ transaction
+→ downstream GraphRAG sees result
+```
+
+### Scenario B — Contradictory evidence
+
+```text
+new source contradicts existing relation
+→ retrieve current graph assertion
+→ retrieve provenance
+→ retrieve temporal state
+→ Evidence Firewall
+→ Jev support/contradiction judgments
+→ resolver
+→ supersede / preserve conflict / abstain
+```
+
+### Scenario C — Research-paper synthesis
+
+```text
+new paper
+→ claims extracted
+→ retrieve related claims/papers/entities
+→ retrieve supporting/contradicting paths
+→ semantic judgments
+→ graph compilation
+→ scientific evidence graph
+→ downstream GraphRAG query
+```
+
+### Scenario D — Uncertainty-triggered expansion
+
+```text
+initial context insufficient
+→ Jev low confidence
+→ RETRIEVE_MORE_EVIDENCE
+→ additional graph path search
+→ second decision round
+→ successful resolution
+```
+
+---
+
+# 43. Add benchmark experiments
+
+Extend the research benchmark with experiments specifically testing whether graph retrieval improves synthesis.
+
+Compare:
+
+```text
+A. No prior graph context
+
+B. Vector retrieval only
+
+C. Local graph neighborhood only
+
+D. Graph paths only
+
+E. Vector + graph hybrid
+
+F. Hybrid + semantic reranking
+
+G. Full TRACE-GC adaptive GraphRAG retrieval
+```
+
+Test across:
+
+```text
+entity alignment
+relation synthesis
+claim reconciliation
+ontology typing
+temporal updates
+contradiction handling
+scientific knowledge synthesis
+```
+
+Measure whether GraphRAG improves:
+
+```text
+accuracy
+precision
+recall
+false merge rate
+false edge rate
+abstention quality
+required human review
+context size
+cost
+latency
+```
+
+---
+
+# 44. Add retrieval quality to autoresearch
+
+The existing autoresearch loop should be able to propose and test retrieval changes.
+
+Examples:
+
+```text
+Should entity resolution retrieve siblings?
+
+Does 2-hop search outperform 1-hop search for acquisitions?
+
+Does provenance retrieval reduce false relationship updates?
+
+Do community summaries help scientific synthesis?
+
+Does contradiction-first retrieval improve claim reconciliation?
+
+Does ontology-neighbor retrieval improve typing?
+```
+
+Only retain changes that improve held-out performance.
+
+---
+
+# 45. Preserve reproducibility
+
+Every experimental synthesis run should record:
+
+```text
+graph snapshot/version
+retrieval algorithm version
+embedding model/version
+graph retrieval parameters
+ranking parameters
+cache state/version where relevant
+Jev version
+question-set version
+resolver version
+constraint version
+policy version
+```
+
+A result should be replayable.
+
+---
+
+# 46. Required architectural principle
+
+Add this principle prominently:
+
+> **The graph is both an output of compilation and an input to future compilation.**
+
+TRACE-GC should therefore treat graph synthesis as an incremental process:
+
+```text
+G0
+ ↓ compile evidence
+G1
+ ↓ retrieve from G1
+ ↓ compile new evidence
+G2
+ ↓ retrieve from G2
+ ↓ ...
+Gn
+```
+
+Each graph version should retain lineage.
+
+---
+
+# 47. Do not conflate GraphRAG with graph synthesis
+
+The documentation must explicitly state:
+
+```text
+GraphRAG does not synthesize authoritative graph state.
+
+GraphRAG retrieves graph context.
+
+TRACE-GC synthesizes proposed graph state.
+
+The compiler validates structural correctness.
+
+The transaction layer changes authoritative state.
+```
+
+This boundary is mandatory.
+
+---
+
+# 48. Deliverables
+
+After implementing the GraphRAG integration, produce or update:
+
+1. Canonical TRACE-GC architecture document
+2. Main architecture diagram
+3. GraphRAG subsystem diagram
+4. Retrieval Planner specification
+5. Hybrid Retrieval specification
+6. Graph Retrieval Query schema
+7. Graph Context IR schema
+8. Retrieval lineage schema
+9. Retrieval expansion specification
+10. retrieval-budget policy
+11. cache/invalidation design
+12. downstream GraphRAG API/design
+13. provenance-aware GraphRAG design
+14. contradiction-aware GraphRAG design
+15. temporal GraphRAG design
+16. decision-aware GraphRAG design
+17. replay updates
+18. evaluation updates
+19. benchmark/ablation plan
+20. GraphRAG error taxonomy
+21. implementation roadmap
+22. updated research contribution section
+23. updated paper outline
+24. end-to-end examples
+25. comprehensive tests
+
+---
+
+# 49. Report architectural deltas
+
+Because this work is being added **after the earlier TRACE-GC improvement pass**, provide a concise change matrix:
+
+```text
+EXISTING COMPONENT
+What TRACE-GC already has
+
+GRAPHRAG EXTENSION
+What is being added
+
+INTEGRATION POINT
+Where it connects
+
+WHY
+Why the change improves TRACE-GC
+
+RISK
+Potential downside or failure mode
+
+VALIDATION
+How the improvement will be tested
+```
+
+Do this only for material changes.
+
+Do not describe already implemented Evidence Firewall, Decision IR, autoresearch, calibration, etc. as newly introduced features.
+
+---
+
+# 50. Final architectural target
+
+The completed architecture should operate approximately as:
+
+```text
+                         EXTERNAL SOURCES
+                               │
+                               ▼
+                      Candidate Generation
+                               │
+                               ▼
+                       Retrieval Planner
+                               │
+                               ▼
+              Hybrid Evidence + Graph Retrieval
+                  │          │           │
+               lexical     vector      GraphRAG
+                  │          │           │
+                  └──────────┼───────────┘
+                             ▼
+                      Evidence Firewall
+                             │
+                             ▼
+                  Minimum Evidence Closure
+                             │
+                             ▼
+                  Question Packing Planner
+                             │
+                             ▼
+                            JEV
+                             │
+                             ▼
+                       Decision IR
+                             │
+                             ▼
+                   Synthesizer / Resolver
+                             │
+                  ┌──────────┴──────────┐
+                  │                     │
+              resolved              uncertain
+                  │                     │
+                  │              GraphRAG expansion
+                  │                     │
+                  └──────────◄──────────┘
+                             │
+                             ▼
+                   Constraint Compiler
+                             │
+                             ▼
+                    Mutation Planner
+                             │
+                             ▼
+                 Claim/Source Verification
+                             │
+                             ▼
+                   Transaction Engine
+                             │
+                             ▼
+                   VERSIONED EVIDENCE GRAPH
+                             │
+       ┌─────────────────────┼──────────────────────┐
+       │                     │                      │
+       ▼                     ▼                      ▼
+ Provenance/Decision     Evaluation &         Downstream
+      Ledger             Autoresearch          GraphRAG
+                                                  │
+                          ┌───────────────────────┼───────────────┐
+                          ▼                       ▼               ▼
+                        Search                    QA             Agents
+                          │                       │               │
+                          └─────────────┬─────────┴───────────────┘
+                                        │
+                                        ▼
+                              new questions/evidence
+                                        │
+                                        └────────► TRACE-GC
+```
+
+The goal is **not to bolt GraphRAG onto the end**.
+
+The goal is to make the graph itself an actively queried evidence substrate for subsequent graph synthesis while also exposing the compiled graph as a high-quality, provenance-aware GraphRAG substrate for downstream users and agents.
+
+The finished TRACE-GC system should therefore support the complete cycle:
+
+> **retrieve from evidence and graph state → evaluate evidence → synthesize candidate knowledge → compile and validate → transactionally update the graph → expose the improved graph through GraphRAG → use that graph to improve future synthesis.**

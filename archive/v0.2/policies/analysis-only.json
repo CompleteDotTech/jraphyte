@@ -1,0 +1,54 @@
+{
+  "schema_version": "0.2-design",
+  "policy_id": "policy-analysis-only",
+  "policy_version": "analysis-only-v1",
+  "mode": "ANALYSIS_ONLY",
+  "expected_model_version": "jev-1.13.0",
+  "question_program_version": "fixture-program-v1",
+  "calibration_ref": null,
+  "allow_synthetic_accepted_writes": false,
+  "rules": [
+    {
+      "risk_class": "R0",
+      "automatic": false,
+      "threshold": null,
+      "calibration_ref": null,
+      "fallback": "ANALYSIS"
+    },
+    {
+      "risk_class": "R1",
+      "automatic": false,
+      "threshold": null,
+      "calibration_ref": null,
+      "fallback": "QUARANTINE_ONLY"
+    },
+    {
+      "risk_class": "R2",
+      "automatic": false,
+      "threshold": null,
+      "calibration_ref": null,
+      "fallback": "ABSTAIN"
+    },
+    {
+      "risk_class": "R3",
+      "automatic": false,
+      "threshold": null,
+      "calibration_ref": null,
+      "fallback": "ABSTAIN"
+    },
+    {
+      "risk_class": "R4",
+      "automatic": false,
+      "threshold": null,
+      "calibration_ref": null,
+      "fallback": "HUMAN_REVIEW"
+    },
+    {
+      "risk_class": "R5",
+      "automatic": false,
+      "threshold": null,
+      "calibration_ref": null,
+      "fallback": "HUMAN_REVIEW"
+    }
+  ]
+}

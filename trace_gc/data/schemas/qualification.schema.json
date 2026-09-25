@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:qualification",
+  "title": "TRACE-GC qualification v0.3.0",
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": "string",
+          "minLength": 1
+        },
+        "predicate": {
+          "type": "string",
+          "minLength": 1
+        },
+        "population": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_generator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "question_program": {
+          "type": "string",
+          "minLength": 1
+        },
+        "materializer_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "packing_policy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tokenizer_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resolver_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "risk_class": {
+          "enum": [
+            "R0",
+            "R1",
+            "R2",
+            "R3",
+            "R4",
+            "R5"
+          ]
+        },
+        "security_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "execution_mode": {
+          "enum": [
+            "SYNTHETIC",
+            "RECORDED",
+            "LIVE"
+          ]
+        }
+      },
+      "required": [
+        "task",
+        "predicate",
+        "population",
+        "candidate_generator",
+        "model_version",
+        "question_program",
+        "materializer_version",
+        "packing_policy",
+        "tokenizer_version",
+        "resolver_version",
+        "policy_version",
+        "risk_class",
+        "security_scope",
+        "execution_mode"
+      ],
+      "additionalProperties": false
+    },
+    "metric": {
+      "const": "ERRORS_PER_ACCEPTED_ACTION"
+    },
+    "threshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "risk_limit": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "upper_risk_bound": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "minimum_coverage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "measured_coverage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "n_eligible": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "n_accepted": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "n_errors": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "dataset_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "protocol_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "pipeline_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "evaluation_unit": {
+      "const": "INDEPENDENT_ACTION_GROUP"
+    },
+    "split": {
+      "const": "LOCKED_HOLDOUT"
+    },
+    "independent_labels": {
+      "const": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "drift_status": {
+      "enum": [
+        "CLEAR",
+        "DETECTED",
+        "UNKNOWN"
+      ]
+    }
+  },
+  "required": [
+    "scope",
+    "metric",
+    "threshold",
+    "risk_limit",
+    "upper_risk_bound",
+    "confidence",
+    "minimum_coverage",
+    "measured_coverage",
+    "n_eligible",
+    "n_accepted",
+    "n_errors",
+    "dataset_hash",
+    "protocol_hash",
+    "pipeline_hash",
+    "evaluation_unit",
+    "split",
+    "independent_labels",
+    "created_at",
+    "expires_at",
+    "drift_status"
+  ],
+  "additionalProperties": false
+}

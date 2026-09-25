@@ -1,0 +1,14 @@
+__pycache__/
+.env
+.env.*
+!.env.example
+*.py[cod]
+*.sqlite3*
+*.sqlite
+*.sqlite-*
+*.db
+.venv/
+build/
+dist/
+*.egg-info/
+trace-gc-demo/

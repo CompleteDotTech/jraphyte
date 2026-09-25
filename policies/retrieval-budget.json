@@ -1,0 +1,41 @@
+{
+  "version": "trace-retrieval-v1",
+  "policy_version": "reference-retrieval-budget-v1",
+  "scope": "REFERENCE_DEFAULTS_NOT_PRODUCTION_QUALIFICATION",
+  "limits": {
+    "maximum_hops": 2,
+    "maximum_paths": 12,
+    "maximum_nodes": 40,
+    "maximum_edges": 40,
+    "maximum_communities": 3,
+    "maximum_provenance_depth": 4,
+    "maximum_decisions": 12,
+    "maximum_source_spans": 20,
+    "maximum_tokens": 16000,
+    "maximum_latency_ms": 2000,
+    "maximum_cost_units": 10000,
+    "maximum_candidates": 1000,
+    "maximum_rounds": 4,
+    "maximum_semantic_items": 8
+  },
+  "hard_safety_caps": {
+    "maximum_hops": 8,
+    "maximum_provenance_depth": 16,
+    "maximum_rounds": 8
+  },
+  "units": {
+    "maximum_tokens": "Conservative UTF-8 byte upper bound; not provider-billed tokens",
+    "maximum_latency_ms": "Monotonic cooperative wall-clock milliseconds; remote adapters must enforce I/O deadlines",
+    "maximum_cost_units": "Logical work units; not monetary cost"
+  },
+  "aggregate_expansion_limits": [
+    "maximum_rounds",
+    "maximum_cost_units",
+    "maximum_latency_ms"
+  ],
+  "resource_accounting": "Unique selected canonical resources; paths and conflicts consume member edge/node budgets.",
+  "conflict_policy": "Reserve both sides of a discovered contradiction as an atomic selection; report exclusion rather than return one side as a fallback.",
+  "defaults_are_tunable": true,
+  "production_policy_requires_heldout_validation": true,
+  "specification": "docs/16_retrieval_planner_budget_cache.md"
+}

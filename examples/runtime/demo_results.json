@@ -1,0 +1,138 @@
+{
+  "status": "PASS",
+  "execution_mode": "SYNTHETIC",
+  "backend": "isolated-sqlite-reference-v1",
+  "provider_calls": 0,
+  "production_graph_writes": 0,
+  "test_transactions": 4,
+  "initial_validation": {
+    "status": "PASS",
+    "format_version": "0.3.0",
+    "profile": "FINALIZED_ANALYSIS",
+    "record_count": 23,
+    "lineage_complete": true,
+    "checkpoint_authenticated": true,
+    "events": 23,
+    "authorization_granted": false,
+    "model_calls": 0,
+    "graph_commits": 0,
+    "scope": "Structural/provenance verification; publication requires the trusted service and current-state transaction rechecks."
+  },
+  "historical_replay": {
+    "status": "PASS",
+    "format_version": "0.3.0",
+    "profile": "HISTORICAL_REPLAY",
+    "record_count": 28,
+    "lineage_complete": true,
+    "checkpoint_authenticated": true,
+    "events": 28,
+    "authorization_granted": false,
+    "model_calls": 0,
+    "graph_commits": 0,
+    "scope": "Structural/provenance verification; publication requires the trusted service and current-state transaction rechecks."
+  },
+  "backend_audit": {
+    "events": 4,
+    "head_hash": "93961bee2c1c0a898ed6d84b3f78e051753ec95e088c4b08064a22e2a73459f4",
+    "state_hash": "c806853f07188fbedbd141787e30b4b69fc9f5f251735902fbd27cebec30d738",
+    "sandbox": true,
+    "erased_record_count": 0
+  },
+  "idempotent_retry": true,
+  "proofs_before_withdrawal": 2,
+  "proofs_after_first_withdrawal": 1,
+  "edges_after_second_withdrawal": 0,
+  "unqualified_policy_outcomes": [
+    "ABSTAIN",
+    "ABSTAIN"
+  ],
+  "lifecycle": [
+    {
+      "sequence": 1,
+      "plan_hash": "d46ea86ee21b3ffa59a94cdbafd48deab695b93c686b956941949309f192d88b",
+      "from": "DRAFT",
+      "to": "RESOLVED",
+      "receipt_hash": null,
+      "checks": null,
+      "created_at": "2026-09-25T09:45:19.744414Z",
+      "previous_hash": null,
+      "hash": "9f3715be42401011ca0451f20c69b78db7e678a9d473ba89043952800d8fb9be"
+    },
+    {
+      "sequence": 2,
+      "plan_hash": "d46ea86ee21b3ffa59a94cdbafd48deab695b93c686b956941949309f192d88b",
+      "from": "RESOLVED",
+      "to": "PREFLIGHT_VALIDATED",
+      "receipt_hash": "b5ea147797068eddfe18bdad61aec782da34e836606409c096b01f81b3940fd8",
+      "checks": {
+        "GRAPH_AND_SCHEMA_VERSION": true,
+        "OBSERVATION_PROVENANCE": true,
+        "EXACT_MATERIALIZATION": true,
+        "EFFECTIVE_RISK": true,
+        "CAUSAL_DEPENDENCIES": true,
+        "COMPLETE_CLOSURE": true,
+        "CURRENT_SOURCE_STATUS": true,
+        "TYPED_RECORDS": true,
+        "GLOBAL_FEASIBILITY": true,
+        "POLICY_APPLICABILITY": true
+      },
+      "created_at": "2026-09-25T09:45:19.744490Z",
+      "previous_hash": "9f3715be42401011ca0451f20c69b78db7e678a9d473ba89043952800d8fb9be",
+      "hash": "e233a05368b05654cb7896e4db2309703b6b160853bb269b593aa0ec9bfe710a"
+    },
+    {
+      "sequence": 3,
+      "plan_hash": "d46ea86ee21b3ffa59a94cdbafd48deab695b93c686b956941949309f192d88b",
+      "from": "PREFLIGHT_VALIDATED",
+      "to": "AUTHORIZED",
+      "receipt_hash": "558dbb2ede384a3a1eb2f48af5c9dd76b80b90b5d79a4751925f33766ed3ef2a",
+      "checks": null,
+      "created_at": "2026-09-25T09:45:19.744548Z",
+      "previous_hash": "e233a05368b05654cb7896e4db2309703b6b160853bb269b593aa0ec9bfe710a",
+      "hash": "e6e9f737aaec83244c7485a0b2b3666877672ecc08ef3594355e0b2aee405e95"
+    },
+    {
+      "sequence": 4,
+      "plan_hash": "d46ea86ee21b3ffa59a94cdbafd48deab695b93c686b956941949309f192d88b",
+      "from": "AUTHORIZED",
+      "to": "COMMIT_RECHECK",
+      "receipt_hash": null,
+      "checks": null,
+      "created_at": "2026-09-25T09:45:19.744565Z",
+      "previous_hash": "e6e9f737aaec83244c7485a0b2b3666877672ecc08ef3594355e0b2aee405e95",
+      "hash": "8bc49186d87a8364d107d6d41c9577345f6d17384375e24a8006915e4f442572"
+    },
+    {
+      "sequence": 5,
+      "plan_hash": "d46ea86ee21b3ffa59a94cdbafd48deab695b93c686b956941949309f192d88b",
+      "from": "COMMIT_RECHECK",
+      "to": "COMMITTED",
+      "receipt_hash": "cbd56ad51d1b4b36ea13976334e9cec0d84938354aa6ebd4cc2fe7fa91941979",
+      "checks": null,
+      "created_at": "2026-09-25T09:45:19.744599Z",
+      "previous_hash": "8bc49186d87a8364d107d6d41c9577345f6d17384375e24a8006915e4f442572",
+      "hash": "74a83650f74dbdc1840a72afbf92e3968c3d35eb453745bcf4524b7d193cfc20"
+    }
+  ],
+  "budget": {
+    "run_id": "isolated-lifecycle-demo",
+    "limits": {
+      "model_calls": 20,
+      "request_bytes": 10000000,
+      "retries": 20,
+      "retrieval_requests": 20,
+      "review_actions": 20,
+      "solver_expansions": 10000
+    },
+    "used": {
+      "model_calls": 0,
+      "request_bytes": 0,
+      "retries": 0,
+      "retrieval_requests": 0,
+      "review_actions": 1,
+      "solver_expansions": 4
+    }
+  },
+  "qualification": "NOT_QUALIFIED: synthetic fixture only",
+  "legacy_conformance": "NOT_RUN: pinned upstream checkout required"
+}

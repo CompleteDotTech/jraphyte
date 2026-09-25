@@ -1,0 +1,44 @@
+{
+  "scenario": "B_contradictory_evidence",
+  "status": "PASS",
+  "execution_mode": "SYNTHETIC",
+  "provider_calls": 0,
+  "production_graph_writes": 0,
+  "retrieval_rounds": 1,
+  "stop_reason_before_review": "HUMAN_REVIEW_REQUIRED",
+  "policy_outcome_before_review": "ABSTAIN",
+  "selected_candidates": [
+    "paper-b-refutation"
+  ],
+  "resolver_decisions": [
+    "resolution:defe71ddb09d86353db473b1362dcc7d2fccea9020d0bf2045537ca17eb30db3"
+  ],
+  "retrieval_results": [
+    "retrieval-result:ac2c334f8ce44c9431e9eef761cb4a26673dc218a6e41600247bd50e8f12fc8d"
+  ],
+  "expansions": [
+    "retrieval-expansion:bef9c83b42723605c46257dd420f13994121d24d8098bea031e56363ddb10f7f"
+  ],
+  "commit_version": 4,
+  "downstream_graph_version": 4,
+  "downstream_assertions": [
+    "candidate-1",
+    "paper-b-refutation"
+  ],
+  "downstream_conflicts": 1,
+  "canonical_citations": 2,
+  "validation": {
+    "status": "PASS",
+    "format_version": "0.3.0",
+    "profile": "FINALIZED_ANALYSIS",
+    "record_count": 47,
+    "lineage_complete": true,
+    "checkpoint_authenticated": false,
+    "events": 47,
+    "authorization_granted": false,
+    "model_calls": 0,
+    "graph_commits": 0,
+    "scope": "Structural/provenance verification; publication requires the trusted service and current-state transaction rechecks."
+  },
+  "qualification": "NOT_QUALIFIED; explicit sandbox review only"
+}

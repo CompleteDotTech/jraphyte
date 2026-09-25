@@ -1,0 +1,335 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:retrieval-query",
+  "title": "TRACE-GC retrieval-query v0.3.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "trace-retrieval-v1"
+    },
+    "requesting_component": {
+      "type": "string",
+      "minLength": 1
+    },
+    "security_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "decision_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "text": {
+      "type": "string"
+    },
+    "focus_entities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "focus_relationships": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "target_information": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "hop_limit": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "allowed_relation_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "excluded_relation_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "temporal_scope": {
+      "type": "object",
+      "properties": {
+        "as_of": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "valid_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before_source": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "as_of",
+        "valid_at",
+        "before_source"
+      ],
+      "additionalProperties": false
+    },
+    "graph_version": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "ontology_scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "source_scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "community_scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "include_provenance": {
+      "type": "boolean"
+    },
+    "include_conflicts": {
+      "type": "boolean"
+    },
+    "include_historical": {
+      "type": "boolean"
+    },
+    "include_superseded": {
+      "type": "boolean"
+    },
+    "retrieval_strategy": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "ENTITY",
+          "LEXICAL",
+          "VECTOR",
+          "NEIGHBORHOOD",
+          "PATH",
+          "COMMUNITY",
+          "GLOBAL",
+          "ONTOLOGY",
+          "SCHEMA",
+          "RELATION",
+          "PROVENANCE",
+          "EVIDENCE",
+          "CONFLICT",
+          "DECISION",
+          "TEMPORAL",
+          "SOURCE",
+          "SIMILAR_CASE",
+          "CLAIM"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "ranking_strategy": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "CONSENSUS",
+        "BALANCED_EVIDENCE",
+        "CONTRADICTIONS_ONLY",
+        "PROVENANCE_ONLY",
+        "HISTORICAL",
+        "LATEST_VALID_STATE"
+      ]
+    },
+    "budget": {
+      "type": "object",
+      "properties": {
+        "maximum_hops": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_paths": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_nodes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_edges": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_communities": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_provenance_depth": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_decisions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_source_spans": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_latency_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_cost_units": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_candidates": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_rounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_semantic_items": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "maximum_hops",
+        "maximum_paths",
+        "maximum_nodes",
+        "maximum_edges",
+        "maximum_communities",
+        "maximum_provenance_depth",
+        "maximum_decisions",
+        "maximum_source_spans",
+        "maximum_tokens",
+        "maximum_latency_ms",
+        "maximum_cost_units",
+        "maximum_candidates",
+        "maximum_rounds",
+        "maximum_semantic_items"
+      ],
+      "additionalProperties": false
+    },
+    "retrieval_round": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "version",
+    "requesting_component",
+    "security_scope",
+    "candidate_id",
+    "decision_id",
+    "text",
+    "focus_entities",
+    "focus_relationships",
+    "target_information",
+    "hop_limit",
+    "allowed_relation_types",
+    "excluded_relation_types",
+    "temporal_scope",
+    "graph_version",
+    "ontology_scope",
+    "source_scope",
+    "community_scope",
+    "include_provenance",
+    "include_conflicts",
+    "include_historical",
+    "include_superseded",
+    "retrieval_strategy",
+    "ranking_strategy",
+    "mode",
+    "budget",
+    "retrieval_round",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

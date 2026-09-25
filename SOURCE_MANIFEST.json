@@ -1,0 +1,74 @@
+{
+  "prepared_at": "2026-09-25T05:44:43.784317+00:00",
+  "original_requirements": [
+    {
+      "name": "Pasted text(8).txt",
+      "content_file_id": "file_000000005bac81f5ad2dc3dab6f083ae",
+      "sha256": "8019cfacb5de9101e137e31e52ddadf44544d7903d55e139ab9a98a7f1e6defc",
+      "byte_count": 23811
+    },
+    {
+      "name": "Pasted text(9).txt",
+      "content_file_id": "file_0000000073ac81f590db8331747da06b",
+      "sha256": "8019cfacb5de9101e137e31e52ddadf44544d7903d55e139ab9a98a7f1e6defc",
+      "byte_count": 23811
+    }
+  ],
+  "deduplicated_requirements": "sources/revision_requirements.txt",
+  "prior_library_report": {
+    "title": "Autonomous Graph Synthesis as a Typed Probabilistic Graph Compiler",
+    "content_file_id": "file_0000000065f881f7b40304ecd254ebee",
+    "version": "1",
+    "scope": "Entire rendered report read; original left unchanged."
+  },
+  "inspected_repository": "CompleteDotTech/paper-package",
+  "inspected_blobs": {
+    "README.md": "a6afcbd988d12efc0bf17faf21a40d9977abcdaa",
+    "GRAPH_SYNTHESIS.md": "89b5ea262dbcef79905b55a5b6647fb11a1d673d",
+    "graph_synthesis/README.md": "515993d23a36c92c77d2b70e700993b7c109ae86",
+    "graph_synthesis/core.py": "68217feec539d37e4a524432c93df035f9a0fe39"
+  },
+  "repository_mutations": 0,
+  "original_experiments_modified": false,
+  "model_calls": 0,
+  "implementation_release": {
+    "version": "0.3.0",
+    "baseline_archive": "TRACE-GC_Revision_Package.zip",
+    "baseline_sha256": "72a4973ea6e843ad29df9c68fc3f2b5814e77ccf8891b2774ffd745d7f65d870",
+    "original_design_preserved": "archive/v0.2",
+    "review": "review/Design_Review.md",
+    "pinned_legacy_executable_bytes_verified": false,
+    "pinned_legacy_conformance": "NOT_RUN",
+    "upstream_source_vendored": false,
+    "live_provider_calls": 0,
+    "production_graph_writes": 0
+  },
+  "graphrag_extension_release": {
+    "version": "0.4.0",
+    "baseline_archive": "TRACE-GC_Implemented_Project(1).zip",
+    "baseline_sha256": "5fdb420a3d927cc6ca247f8013bdbebfb608dc18788a4ff4ef1528690fed62db",
+    "request": "sources/graphrag_requirements.txt",
+    "request_sha256": "4d437024654bcfa45cdd5d2ee1f70877a0184488c5c6400adecb0323add9078d",
+    "prior_documentation_preserved": "archive/v0.3",
+    "baseline_audit": "review/graphrag_baseline_audit.json",
+    "original_test_files_unchanged": true,
+    "remote_repository_mutations": 0,
+    "live_provider_calls": 0,
+    "production_graph_writes": 0,
+    "primary_research_references": [
+      {
+        "title": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
+        "url": "https://arxiv.org/abs/2404.16130"
+      },
+      {
+        "title": "Microsoft GraphRAG local search",
+        "url": "https://microsoft.github.io/graphrag/query/local_search/"
+      },
+      {
+        "title": "Microsoft GraphRAG global search",
+        "url": "https://microsoft.github.io/graphrag/query/global_search/"
+      }
+    ],
+    "qualification": "NOT_ESTABLISHED; synthetic experiments are not real-model accuracy evidence."
+  }
+}

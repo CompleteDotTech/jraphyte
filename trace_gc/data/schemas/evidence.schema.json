@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:evidence",
+  "title": "TRACE-GC evidence v0.3.0",
+  "type": "object",
+  "properties": {
+    "source_snapshot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "end": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "quote": {
+      "type": "string",
+      "minLength": 1
+    },
+    "offset_unit": {
+      "const": "UNICODE_CODEPOINT"
+    },
+    "transformation": {
+      "const": "identity-v1"
+    }
+  },
+  "required": [
+    "source_snapshot_id",
+    "source_hash",
+    "start",
+    "end",
+    "quote",
+    "offset_unit",
+    "transformation"
+  ],
+  "additionalProperties": false
+}

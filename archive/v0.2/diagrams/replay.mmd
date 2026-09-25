@@ -1,0 +1,11 @@
+flowchart TD
+    A[Original run manifest and immutable inputs] --> B{Requested intervention}
+    B -->|No semantic change| C[Artifact reconstruction from stored responses]
+    B -->|Policy only, all required observations exist| D[Frozen-observation policy replay]
+    B -->|Changed model, question, evidence or state| E[New semantic inference in a fork]
+    B -->|Graph changes later retrieval or candidates| F[Closed-loop alternate trajectory]
+    E --> F
+    C --> G[Compare artifact and accepted-view outputs]
+    D --> G
+    F --> G
+    G --> H[Preserve both branches and decision lineage]

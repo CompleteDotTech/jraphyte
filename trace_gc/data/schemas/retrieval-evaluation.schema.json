@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:retrieval-evaluation",
+  "title": "TRACE-GC retrieval-evaluation v0.3.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dataset_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "split": {
+      "type": "string",
+      "minLength": 1
+    },
+    "label_origin": {
+      "type": "string",
+      "minLength": 1
+    },
+    "metrics": {
+      "type": "object"
+    },
+    "configuration": {
+      "type": "object"
+    },
+    "result_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "production_qualified": {
+      "const": false
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "version",
+    "dataset_hash",
+    "split",
+    "label_origin",
+    "metrics",
+    "configuration",
+    "result_ids",
+    "production_qualified",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

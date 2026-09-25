@@ -1,0 +1,271 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:observation",
+  "title": "TRACE-GC observation v0.3.0",
+  "type": "object",
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_mode": {
+      "enum": [
+        "SYNTHETIC",
+        "RECORDED",
+        "LIVE"
+      ]
+    },
+    "security_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pack_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pack_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "question_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "question_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "semantic_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "wire_request_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "wire_response_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "cache_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "adapter_version": {
+      "const": "typesafe-http-v1"
+    },
+    "model_requested": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_returned": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "enum": [
+        "OK",
+        "ERROR"
+      ]
+    },
+    "raw_answer": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "probabilities": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "raw_confidence": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "semantic_outcome": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "prior_observation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "supersedes": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "wire": {
+      "type": "object",
+      "properties": {
+        "request_base64": {
+          "type": "string",
+          "minLength": 1
+        },
+        "response_base64": {
+          "type": "string"
+        },
+        "http_status": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "response_headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "request_base64",
+        "response_base64",
+        "http_status",
+        "response_headers"
+      ],
+      "additionalProperties": false
+    },
+    "graph_retrieval_query_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "graph_context_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "source_retrieval_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "evidence_closure_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retrieval_fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "run_id",
+    "execution_mode",
+    "security_scope",
+    "pack_id",
+    "pack_hash",
+    "question_id",
+    "question_hash",
+    "candidate_id",
+    "candidate_hash",
+    "semantic_hash",
+    "wire_request_hash",
+    "wire_response_hash",
+    "cache_key",
+    "adapter_version",
+    "model_requested",
+    "model_returned",
+    "status",
+    "raw_answer",
+    "probabilities",
+    "raw_confidence",
+    "semantic_outcome",
+    "error",
+    "evidence_ids",
+    "prior_observation_ids",
+    "supersedes",
+    "created_at",
+    "completed_at",
+    "wire"
+  ],
+  "additionalProperties": false
+}

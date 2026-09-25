@@ -1,0 +1,44 @@
+{
+  "scenario": "A_entity_resolution",
+  "status": "PASS",
+  "execution_mode": "SYNTHETIC",
+  "provider_calls": 0,
+  "production_graph_writes": 0,
+  "retrieval_rounds": 1,
+  "stop_reason_before_review": "HUMAN_REVIEW_REQUIRED",
+  "policy_outcome_before_review": "ABSTAIN",
+  "selected_candidates": [
+    "new-mention"
+  ],
+  "resolver_decisions": [
+    "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35"
+  ],
+  "retrieval_results": [
+    "retrieval-result:b131b070f512fc6865dd2417f97583e2eafede050abbd38db90a717a8ae0a28d"
+  ],
+  "expansions": [
+    "retrieval-expansion:0fbb2f5493b99d020448ec378b9c2e7e8039b73d1832becb59eaaee49f2ff67c"
+  ],
+  "commit_version": 4,
+  "downstream_graph_version": 4,
+  "downstream_assertions": [
+    "known-alias",
+    "new-mention"
+  ],
+  "downstream_conflicts": 0,
+  "canonical_citations": 1,
+  "validation": {
+    "status": "PASS",
+    "format_version": "0.3.0",
+    "profile": "FINALIZED_ANALYSIS",
+    "record_count": 63,
+    "lineage_complete": true,
+    "checkpoint_authenticated": false,
+    "events": 63,
+    "authorization_granted": false,
+    "model_calls": 0,
+    "graph_commits": 0,
+    "scope": "Structural/provenance verification; publication requires the trusted service and current-state transaction rechecks."
+  },
+  "qualification": "NOT_QUALIFIED; explicit sandbox review only"
+}

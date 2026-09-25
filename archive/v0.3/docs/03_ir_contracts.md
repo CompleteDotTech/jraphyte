@@ -1,0 +1,19 @@
+# Runtime IR contracts — v0.3.0
+
+Every catalog record is `{id, kind, hash, body}`. Its hash is TRACE-C14N-1 SHA-256 over `{kind, body}`. Existing IDs cannot be rebound in a catalog or persisted store. Caller-readable IDs are permitted, but all dependencies additionally bind immutable content; generated identities are content-addressed. Unknown fields are rejected by standalone offline schemas.
+
+The 16 record kinds are `source`, `claim`, `evidence`, `candidate`, `schema`, `graph-snapshot`, `policy`, `pack`, `observation`, `evaluation`, `resolution-batch`, `resolution`, `plan`, `qualification`, `receipt`, and `transaction`. The other two schemas are `record` and `bundle` envelopes.
+
+**Sources and claims.** A source contains logical identity, version, representation, text/hash, parser version, security scope and optional raw-document hash. Multiple versions of one source coexist. Evidence binds the snapshot hash and exact half-open Unicode-codepoint span. Claims have immutable text/revision; support/refute assertions target the claim ID and cite that document's source snapshots. Source permissions/withdrawal epochs are separate trusted mutable state, not edits to historical text.
+
+**Candidates and packs.** Semantic candidate content does not carry mutable lifecycle status. Candidate prerequisites, alternatives and evidence are typed references. Packs bind exact snapshot/schema, installed question program, model, state construction, tokenizer/packing, closure edges, materialization traces, semantic input, wire bytes and cache identity. Questions identify targets explicitly and dependencies by run/pack/question. Required earlier results must be available, successful and snapshot-compatible before execution.
+
+**Observations and policies.** An observation records raw bytes, parsed typed result or operational error, evidence, parent observations, exact model/adapter and request bindings, and timestamps. It does not authorize action. Evaluations separately bind a policy record/version, population-specific context, observation branch, joint resolution, qualification reference, result and reason. Multiple versions can coexist and be replayed without new model calls. Bundle policy identifies the active branch, not a requirement to overwrite historical evaluations.
+
+**Joint resolution.** A batch binds all candidate/observation hashes, exact graph snapshot, hard constraints, deterministic solver configuration, objective, selected candidates, expansion count, status and component impact. Individual resolutions are projections. Incomplete solves have no selected mutation set. Certificates independently verify feasibility and input/impact consistency; a claimed objective optimum is not write authority.
+
+**Operations.** `ADD_ASSERTION` binds complete assertion content; `ADD_IDENTITY_ASSERTION` additionally binds a checked component certificate. `RETRACT_ASSERTION` names an existing assertion and expected revision. `ATTACH_CANDIDATE_METADATA` changes a distinct metadata projection. `PROPOSE_SCHEMA_MIGRATION` and `APPLY_SCHEMA_MIGRATION` bind a target schema, explicit mapping, exact impact and review reason. IDs are unique inside a plan. Risk and candidate-kind/predicate projections must agree. A joint selected batch cannot be partially cherry-picked into publication.
+
+**Trust and transactions.** Qualification is a scoped statistical artifact, not a signature or permission. Receipts bind purpose, issuer, exact payload, validity interval and Ed25519 signature. Enrolled issuer capabilities live outside bundles. A transaction receipt binds the plan, operation, authorizations, before/after state, graph version, idempotency key and precommit provenance anchor. A bundle manifest enumerates all records and explicit source status plus lineage/checkpoint metadata.
+
+The original v0.2 schemas at the top of `schemas/` support only the separate compatibility checker; current runtime schemas are under `schemas/runtime/`.

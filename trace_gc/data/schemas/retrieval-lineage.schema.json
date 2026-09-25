@@ -1,0 +1,284 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:retrieval-lineage",
+  "title": "TRACE-GC retrieval-lineage v0.3.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "query_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "graph_context_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "plan_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "requesting_component": {
+      "type": "string",
+      "minLength": 1
+    },
+    "graph_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "retrieval_strategies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "strategy_versions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1
+          },
+          "score": {
+            "type": "number"
+          },
+          "features": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "methods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "item_id",
+          "kind",
+          "score",
+          "features",
+          "methods"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "selected": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "item_id",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "discarded": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "item_id",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "budget": {
+      "type": "object",
+      "properties": {
+        "maximum_hops": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_paths": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_nodes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_edges": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_communities": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_provenance_depth": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_decisions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_source_spans": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_latency_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_cost_units": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_candidates": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_rounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum_semantic_items": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "maximum_hops",
+        "maximum_paths",
+        "maximum_nodes",
+        "maximum_edges",
+        "maximum_communities",
+        "maximum_provenance_depth",
+        "maximum_decisions",
+        "maximum_source_spans",
+        "maximum_tokens",
+        "maximum_latency_ms",
+        "maximum_cost_units",
+        "maximum_candidates",
+        "maximum_rounds",
+        "maximum_semantic_items"
+      ],
+      "additionalProperties": false
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "cache_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "cache_hit": {
+      "type": "boolean"
+    },
+    "cache_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "embedding_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ranking_strategy": {
+      "type": "string",
+      "minLength": 1
+    },
+    "score_type": {
+      "const": "POLICY_UTILITY_NOT_PROBABILITY"
+    },
+    "stop_reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "latency_ms": {
+      "type": "number"
+    },
+    "cost_units": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "version",
+    "query_id",
+    "graph_context_id",
+    "plan_id",
+    "requesting_component",
+    "graph_version",
+    "retrieval_strategies",
+    "strategy_versions",
+    "candidates",
+    "selected",
+    "discarded",
+    "budget",
+    "usage",
+    "cache_key",
+    "cache_hit",
+    "cache_version",
+    "embedding_version",
+    "ranking_strategy",
+    "score_type",
+    "stop_reason",
+    "latency_ms",
+    "cost_units",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

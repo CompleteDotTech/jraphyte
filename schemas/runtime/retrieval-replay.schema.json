@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:retrieval-replay",
+  "title": "TRACE-GC retrieval-replay v0.3.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "original_result_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "replayed_result_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changed_parameters": {
+      "type": "object"
+    },
+    "original_graph_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "replayed_graph_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "original_selected_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "replayed_selected_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "added_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "removed_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "observation_hashes_preserved": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "new_observation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "synthesis_comparison": {
+      "type": "object"
+    },
+    "authorization_granted": {
+      "const": false
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "version",
+    "original_result_id",
+    "replayed_result_id",
+    "changed_parameters",
+    "original_graph_version",
+    "replayed_graph_version",
+    "original_selected_ids",
+    "replayed_selected_ids",
+    "added_ids",
+    "removed_ids",
+    "observation_hashes_preserved",
+    "new_observation_ids",
+    "synthesis_comparison",
+    "authorization_granted",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

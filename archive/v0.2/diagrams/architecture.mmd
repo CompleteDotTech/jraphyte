@@ -1,0 +1,33 @@
+flowchart TD
+    S[Input sources] --> P[Deterministic parsing and immutable source snapshots]
+    P --> C[Candidate generators: LLM, specialist, retrieval and graph ML]
+    C --> R[Bounded evidence retrieval]
+    R --> F[Evidence Firewall: integrity admission and candidate-relative tags]
+    F --> E[Minimum Evidence Closure: declared dependency fixed point]
+    E --> Q[Question Packing Planner: dependency stages and shared state]
+    Q --> J[Jev or alternative bounded semantic backend]
+    J --> D[Decision IR: raw observations and model identity]
+    D --> Y[Synthesizer / Resolver: alternatives, beam, constraints and abstention]
+    C --> Y
+    G[(Versioned accepted graph)] --> E
+    Y -->|Need more evidence and budget remains| R
+    Y -->|Unresolved or restricted| H[Authorized human review]
+    H --> Y
+    Y -->|Accept for planning, not commit| V[Deterministic constraint compiler]
+    V --> M[Mutation Plan: exact actions, risk and expected versions]
+    M --> K[Authorized commit-time source, policy and snapshot recheck]
+    K --> T[Transactional publication: state and journal atomically]
+    T --> G
+    F -.-> L[(Evidence and decision ledger)]
+    Q -.-> L
+    D -.-> L
+    Y -.-> L
+    M -.-> L
+    T -.-> L
+    G --> A[Event-driven audit and dependency-aware repair]
+    L --> A
+    A --> C
+    L --> X[Offline evaluation and error corpus]
+    X --> U[Question-set research on development data]
+    U --> Z[Independent calibration and release qualification]
+    Z -->|Reviewed version promotion| Q

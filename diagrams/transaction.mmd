@@ -1,0 +1,23 @@
+%% Historical v0.2 conceptual diagram; docs/12_implementation.md defines the implemented v0.3 scope.
+sequenceDiagram
+    participant R as Resolver
+    participant P as Trusted planner
+    participant E as Evidence store
+    participant T as Transaction engine
+    participant G as Graph and journal
+    R->>P: Candidate eligible for planning
+    P->>E: Resolve exact active source and decision references
+    E-->>P: Versioned receipts or missing evidence
+    P->>P: Constraints, effective risk, policy qualification
+    P->>T: Explicit plan, expected graph/schema, idempotency key
+    T->>T: Authenticate authority and begin atomic transaction
+    T->>G: Check idempotency and current versions
+    T->>E: Recheck required source status in coordinated snapshot
+    alt Valid and authorized
+        T->>G: Publish accepted state plus journal
+        G-->>T: Commit receipt
+        T-->>P: COMMITTED
+    else Stale, unqualified, unauthorized or invalid
+        T->>G: Roll back without partial publication
+        T-->>P: STALE / ABSTAIN / REJECTED
+    end

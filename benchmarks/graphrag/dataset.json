@@ -1,0 +1,161 @@
+{
+  "dataset_hash": "453d8d088b70e79a21fd1306bcb94cc394c359b68d129aaba9b045144f46c13c",
+  "cases": [
+    {
+      "id": "entity_alignment",
+      "task": "IDENTITY",
+      "text": "Acme and Acme Holdings are aliases of the same organization.",
+      "focus": [
+        "Acme"
+      ],
+      "gold_edges": [
+        "e-alias"
+      ],
+      "gold_entities": [
+        "Acme",
+        "Acme-Holdings"
+      ]
+    },
+    {
+      "id": "relation_synthesis",
+      "task": "ASSERTION",
+      "text": "What indirect ownership path connects Acme through Bar to Foo?",
+      "focus": [
+        "Acme"
+      ],
+      "gold_edges": [
+        "e-owns",
+        "e-path"
+      ],
+      "gold_entities": [
+        "Acme",
+        "Bar",
+        "Foo"
+      ],
+      "gold_paths": [
+        [
+          "e-owns",
+          "e-path"
+        ]
+      ]
+    },
+    {
+      "id": "claim_reconciliation",
+      "task": "CLAIM_RECONCILIATION",
+      "text": "Intervention X improves outcome Y in population P: compare supporting and refuting claims.",
+      "focus": [
+        "$claim"
+      ],
+      "gold_edges": [
+        "e-support",
+        "e-refute"
+      ],
+      "gold_entities": [
+        "Paper-A",
+        "Paper-B",
+        "$claim"
+      ],
+      "gold_conflicts": [
+        [
+          "e-refute",
+          "e-support"
+        ]
+      ]
+    },
+    {
+      "id": "ontology_typing",
+      "task": "ONTOLOGY",
+      "text": "Organization is a subtype of Entity; retrieve the type hierarchy.",
+      "focus": [
+        "Organization"
+      ],
+      "gold_edges": [
+        "e-ontology"
+      ],
+      "gold_entities": [
+        "Organization",
+        "Entity"
+      ],
+      "query": {
+        "ontology_scope": [
+          "Organization",
+          "Entity"
+        ]
+      }
+    },
+    {
+      "id": "temporal_updates",
+      "task": "TEMPORAL",
+      "text": "How did Foo change from subsidiary of Baz to subsidiary of Acme in March 2024?",
+      "focus": [
+        "Foo"
+      ],
+      "gold_edges": [
+        "e-old",
+        "e-new"
+      ],
+      "gold_entities": [
+        "Foo",
+        "Baz",
+        "Acme"
+      ],
+      "query": {
+        "include_historical": true,
+        "include_superseded": true
+      }
+    },
+    {
+      "id": "contradiction_handling",
+      "task": "CLAIM_RECONCILIATION",
+      "text": "Find the conflicting support and refutation for intervention X outcome Y.",
+      "focus": [
+        "$claim"
+      ],
+      "gold_edges": [
+        "e-support",
+        "e-refute"
+      ],
+      "gold_entities": [
+        "Paper-A",
+        "Paper-B"
+      ],
+      "gold_conflicts": [
+        [
+          "e-refute",
+          "e-support"
+        ]
+      ]
+    },
+    {
+      "id": "scientific_knowledge",
+      "task": "SCIENTIFIC",
+      "text": "Compare the randomized method, Dataset P, replication and conflicting evidence in Papers A, B and C.",
+      "focus": [
+        "Paper-A",
+        "Paper-B",
+        "$claim"
+      ],
+      "gold_edges": [
+        "e-support",
+        "e-refute",
+        "e-replicate",
+        "e-method",
+        "e-dataset"
+      ],
+      "gold_entities": [
+        "Paper-A",
+        "Paper-B",
+        "Paper-C",
+        "Method-randomized",
+        "Dataset-P"
+      ],
+      "gold_conflicts": [
+        [
+          "e-refute",
+          "e-support"
+        ]
+      ]
+    }
+  ],
+  "label_origin": "HAND_AUTHORED_SYNTHETIC"
+}

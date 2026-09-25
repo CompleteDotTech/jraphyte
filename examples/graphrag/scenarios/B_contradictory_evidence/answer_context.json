@@ -1,0 +1,555 @@
+{
+  "answer_context_id": "graphrag-answer:01c5184eb0c8d2790a9cf9b9c2beb69070c0d6579376b0af3d77d7b9107abf39",
+  "context": {
+    "version": "trace-retrieval-v1",
+    "query_id": "retrieval-query:d14054edf0d3e94c868d75adba039623bae5711e5eba498abe348a0ecd873fa0",
+    "result_id": "retrieval-result:fdc2bc8e16aaaa064d122fb5ab63ba357d337cd8476287ba82d3f79110b59721",
+    "graph_context_id": "graph-context:5bcce20630f250315836d8c78fcb9f830fd20cd96b5b2873c414839f5c8e91cf",
+    "graph_version": 4,
+    "mode": "BALANCED_EVIDENCE",
+    "answer_status": "CONTEXT_ONLY",
+    "items": [
+      {
+        "id": "conflict:47847aecee966cd1791a9a14",
+        "kind": "CONFLICT",
+        "canonical_ref": "a9e14e431c5eb96014f473e3a8b7c008c01659e62f79e63ce14884f7d39beef4",
+        "member_assertion_ids": [
+          "candidate-1",
+          "paper-b-refutation"
+        ],
+        "assertion_ids": [
+          "candidate-1",
+          "paper-b-refutation"
+        ],
+        "entity_ids": [
+          "Paper-A",
+          "Paper-B",
+          "claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07"
+        ],
+        "evidence_ids": [
+          "evidence:b2362635d5afd1b3ca0c43d49d642a4d854033ff0c8cf24b28938898ae5ffa68",
+          "evidence:b7b6d407e5dddb505f327d182592f916d4881c2674acf78c67f7b2a121ac4af4"
+        ],
+        "source_ids": [
+          "source:745cc8733c9004ec34f54f34def08dbe3eef16d854ab724b201cb909f3cf9041",
+          "source:aeffa143a41b5fb9586ebfe174cf3f603c037cc02920a82979db938eb64335b3"
+        ],
+        "decision_ids": [
+          "resolution:19155372d27780e5003d463720d9cf45ae3a67f5556819f20e6113e684953bda",
+          "resolution:defe71ddb09d86353db473b1362dcc7d2fccea9020d0bf2045537ca17eb30db3"
+        ],
+        "observation_ids": [
+          "observation:21f4b610451595ef55665bc19342a5ad22bc147403b8a62c2b00cbf4f8a29271",
+          "observation:6259cf8e88c7aefbd6f375ed7dd807360a1f431610a545036e49a49331408335"
+        ],
+        "transaction_ids": [
+          "transaction:bb103fa07c3e1029142e49e91b7e1ec52da2df2836bbb3d0f36d0f4b16261039",
+          "transaction:e7ba799bc9367011865cf584340e58b71c41c5e6059187b60e0fd95cf9de7b5e"
+        ],
+        "plan_ids": [
+          "plan:ac314c6c492286ca8371dd0fb88187c9b2391fab99dce239c06f44afe2a8fffe",
+          "plan:c563784e09def4157c613fbe002adb287f04c528a33b3da015db2fc2c3614455"
+        ],
+        "record_refs": [
+          "evidence:b2362635d5afd1b3ca0c43d49d642a4d854033ff0c8cf24b28938898ae5ffa68",
+          "evidence:b7b6d407e5dddb505f327d182592f916d4881c2674acf78c67f7b2a121ac4af4",
+          "observation:21f4b610451595ef55665bc19342a5ad22bc147403b8a62c2b00cbf4f8a29271",
+          "observation:6259cf8e88c7aefbd6f375ed7dd807360a1f431610a545036e49a49331408335",
+          "plan:ac314c6c492286ca8371dd0fb88187c9b2391fab99dce239c06f44afe2a8fffe",
+          "plan:c563784e09def4157c613fbe002adb287f04c528a33b3da015db2fc2c3614455",
+          "resolution:19155372d27780e5003d463720d9cf45ae3a67f5556819f20e6113e684953bda",
+          "resolution:defe71ddb09d86353db473b1362dcc7d2fccea9020d0bf2045537ca17eb30db3",
+          "source:745cc8733c9004ec34f54f34def08dbe3eef16d854ab724b201cb909f3cf9041",
+          "source:aeffa143a41b5fb9586ebfe174cf3f603c037cc02920a82979db938eb64335b3",
+          "transaction:bb103fa07c3e1029142e49e91b7e1ec52da2df2836bbb3d0f36d0f4b16261039",
+          "transaction:e7ba799bc9367011865cf584340e58b71c41c5e6059187b60e0fd95cf9de7b5e"
+        ],
+        "relation_types": [
+          "refutes",
+          "supports"
+        ],
+        "text": "[{\"assertion_id\":\"candidate-1\",\"object\":\"claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07\",\"predicate\":\"supports\",\"qualifiers\":{},\"subject\":\"Paper-A\"},{\"assertion_id\":\"paper-b-refutation\",\"object\":\"claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07\",\"predicate\":\"refutes\",\"qualifiers\":{},\"subject\":\"Paper-B\"}]",
+        "trust_class": "CONFLICTED_GRAPH_FACT",
+        "current_status": "ACTIVE",
+        "graph_version": 4,
+        "created_at": "2026-09-25T09:45:20.600558Z",
+        "superseded_at": null,
+        "provenance_complete": true,
+        "risk_class": "R2",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      },
+      {
+        "id": "edge:b1bb6bc3a075df15f4dc4988",
+        "kind": "EDGE",
+        "canonical_ref": "paper-b-refutation",
+        "member_assertion_ids": [],
+        "assertion_ids": [
+          "paper-b-refutation"
+        ],
+        "entity_ids": [
+          "Paper-B",
+          "claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07"
+        ],
+        "evidence_ids": [
+          "evidence:b2362635d5afd1b3ca0c43d49d642a4d854033ff0c8cf24b28938898ae5ffa68"
+        ],
+        "source_ids": [
+          "source:745cc8733c9004ec34f54f34def08dbe3eef16d854ab724b201cb909f3cf9041"
+        ],
+        "decision_ids": [
+          "resolution:defe71ddb09d86353db473b1362dcc7d2fccea9020d0bf2045537ca17eb30db3"
+        ],
+        "observation_ids": [
+          "observation:21f4b610451595ef55665bc19342a5ad22bc147403b8a62c2b00cbf4f8a29271"
+        ],
+        "transaction_ids": [
+          "transaction:bb103fa07c3e1029142e49e91b7e1ec52da2df2836bbb3d0f36d0f4b16261039"
+        ],
+        "plan_ids": [
+          "plan:c563784e09def4157c613fbe002adb287f04c528a33b3da015db2fc2c3614455"
+        ],
+        "record_refs": [
+          "evidence:b2362635d5afd1b3ca0c43d49d642a4d854033ff0c8cf24b28938898ae5ffa68",
+          "observation:21f4b610451595ef55665bc19342a5ad22bc147403b8a62c2b00cbf4f8a29271",
+          "plan:c563784e09def4157c613fbe002adb287f04c528a33b3da015db2fc2c3614455",
+          "resolution:defe71ddb09d86353db473b1362dcc7d2fccea9020d0bf2045537ca17eb30db3",
+          "source:745cc8733c9004ec34f54f34def08dbe3eef16d854ab724b201cb909f3cf9041",
+          "transaction:bb103fa07c3e1029142e49e91b7e1ec52da2df2836bbb3d0f36d0f4b16261039"
+        ],
+        "relation_types": [
+          "refutes"
+        ],
+        "text": "[{\"assertion_id\":\"paper-b-refutation\",\"object\":\"claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07\",\"predicate\":\"refutes\",\"qualifiers\":{},\"subject\":\"Paper-B\"}]",
+        "trust_class": "CONFLICTED_GRAPH_FACT",
+        "current_status": "ACTIVE",
+        "graph_version": 4,
+        "created_at": "2026-09-25T09:45:20.736807Z",
+        "superseded_at": null,
+        "provenance_complete": true,
+        "risk_class": "R2",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      },
+      {
+        "id": "edge:c82a60553662eb1cd6c38200",
+        "kind": "EDGE",
+        "canonical_ref": "candidate-1",
+        "member_assertion_ids": [],
+        "assertion_ids": [
+          "candidate-1"
+        ],
+        "entity_ids": [
+          "Paper-A",
+          "claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07"
+        ],
+        "evidence_ids": [
+          "evidence:b7b6d407e5dddb505f327d182592f916d4881c2674acf78c67f7b2a121ac4af4"
+        ],
+        "source_ids": [
+          "source:aeffa143a41b5fb9586ebfe174cf3f603c037cc02920a82979db938eb64335b3"
+        ],
+        "decision_ids": [
+          "resolution:19155372d27780e5003d463720d9cf45ae3a67f5556819f20e6113e684953bda"
+        ],
+        "observation_ids": [
+          "observation:6259cf8e88c7aefbd6f375ed7dd807360a1f431610a545036e49a49331408335"
+        ],
+        "transaction_ids": [
+          "transaction:e7ba799bc9367011865cf584340e58b71c41c5e6059187b60e0fd95cf9de7b5e"
+        ],
+        "plan_ids": [
+          "plan:ac314c6c492286ca8371dd0fb88187c9b2391fab99dce239c06f44afe2a8fffe"
+        ],
+        "record_refs": [
+          "evidence:b7b6d407e5dddb505f327d182592f916d4881c2674acf78c67f7b2a121ac4af4",
+          "observation:6259cf8e88c7aefbd6f375ed7dd807360a1f431610a545036e49a49331408335",
+          "plan:ac314c6c492286ca8371dd0fb88187c9b2391fab99dce239c06f44afe2a8fffe",
+          "resolution:19155372d27780e5003d463720d9cf45ae3a67f5556819f20e6113e684953bda",
+          "source:aeffa143a41b5fb9586ebfe174cf3f603c037cc02920a82979db938eb64335b3",
+          "transaction:e7ba799bc9367011865cf584340e58b71c41c5e6059187b60e0fd95cf9de7b5e"
+        ],
+        "relation_types": [
+          "supports"
+        ],
+        "text": "[{\"assertion_id\":\"candidate-1\",\"object\":\"claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07\",\"predicate\":\"supports\",\"qualifiers\":{},\"subject\":\"Paper-A\"}]",
+        "trust_class": "CONFLICTED_GRAPH_FACT",
+        "current_status": "ACTIVE",
+        "graph_version": 4,
+        "created_at": "2026-09-25T09:45:20.600558Z",
+        "superseded_at": null,
+        "provenance_complete": true,
+        "risk_class": "R2",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      },
+      {
+        "id": "provenance:b1bb6bc3a075df15f4dc4988",
+        "kind": "PROVENANCE",
+        "canonical_ref": "paper-b-refutation",
+        "member_assertion_ids": [],
+        "assertion_ids": [
+          "paper-b-refutation"
+        ],
+        "entity_ids": [
+          "Paper-B",
+          "claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07"
+        ],
+        "evidence_ids": [
+          "evidence:b2362635d5afd1b3ca0c43d49d642a4d854033ff0c8cf24b28938898ae5ffa68"
+        ],
+        "source_ids": [
+          "source:745cc8733c9004ec34f54f34def08dbe3eef16d854ab724b201cb909f3cf9041"
+        ],
+        "decision_ids": [
+          "resolution:defe71ddb09d86353db473b1362dcc7d2fccea9020d0bf2045537ca17eb30db3"
+        ],
+        "observation_ids": [
+          "observation:21f4b610451595ef55665bc19342a5ad22bc147403b8a62c2b00cbf4f8a29271"
+        ],
+        "transaction_ids": [
+          "transaction:bb103fa07c3e1029142e49e91b7e1ec52da2df2836bbb3d0f36d0f4b16261039"
+        ],
+        "plan_ids": [
+          "plan:c563784e09def4157c613fbe002adb287f04c528a33b3da015db2fc2c3614455"
+        ],
+        "record_refs": [
+          "evidence:b2362635d5afd1b3ca0c43d49d642a4d854033ff0c8cf24b28938898ae5ffa68",
+          "observation:21f4b610451595ef55665bc19342a5ad22bc147403b8a62c2b00cbf4f8a29271",
+          "plan:c563784e09def4157c613fbe002adb287f04c528a33b3da015db2fc2c3614455",
+          "resolution:defe71ddb09d86353db473b1362dcc7d2fccea9020d0bf2045537ca17eb30db3",
+          "source:745cc8733c9004ec34f54f34def08dbe3eef16d854ab724b201cb909f3cf9041",
+          "transaction:bb103fa07c3e1029142e49e91b7e1ec52da2df2836bbb3d0f36d0f4b16261039"
+        ],
+        "relation_types": [
+          "refutes"
+        ],
+        "text": "NONCANONICAL RETRIEVAL SUMMARY: [{\"assertion_id\":\"paper-b-refutation\",\"object\":\"claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07\",\"predicate\":\"refutes\",\"qualifiers\":{},\"subject\":\"Paper-B\"}]",
+        "trust_class": "CONFLICTED_GRAPH_FACT",
+        "current_status": "ACTIVE",
+        "graph_version": 4,
+        "created_at": "2026-09-25T09:45:20.736807Z",
+        "superseded_at": null,
+        "provenance_complete": true,
+        "risk_class": "R2",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": true,
+        "data_origin": "GENERATED_SUMMARY",
+        "instruction_authority": false
+      },
+      {
+        "id": "provenance:c82a60553662eb1cd6c38200",
+        "kind": "PROVENANCE",
+        "canonical_ref": "candidate-1",
+        "member_assertion_ids": [],
+        "assertion_ids": [
+          "candidate-1"
+        ],
+        "entity_ids": [
+          "Paper-A",
+          "claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07"
+        ],
+        "evidence_ids": [
+          "evidence:b7b6d407e5dddb505f327d182592f916d4881c2674acf78c67f7b2a121ac4af4"
+        ],
+        "source_ids": [
+          "source:aeffa143a41b5fb9586ebfe174cf3f603c037cc02920a82979db938eb64335b3"
+        ],
+        "decision_ids": [
+          "resolution:19155372d27780e5003d463720d9cf45ae3a67f5556819f20e6113e684953bda"
+        ],
+        "observation_ids": [
+          "observation:6259cf8e88c7aefbd6f375ed7dd807360a1f431610a545036e49a49331408335"
+        ],
+        "transaction_ids": [
+          "transaction:e7ba799bc9367011865cf584340e58b71c41c5e6059187b60e0fd95cf9de7b5e"
+        ],
+        "plan_ids": [
+          "plan:ac314c6c492286ca8371dd0fb88187c9b2391fab99dce239c06f44afe2a8fffe"
+        ],
+        "record_refs": [
+          "evidence:b7b6d407e5dddb505f327d182592f916d4881c2674acf78c67f7b2a121ac4af4",
+          "observation:6259cf8e88c7aefbd6f375ed7dd807360a1f431610a545036e49a49331408335",
+          "plan:ac314c6c492286ca8371dd0fb88187c9b2391fab99dce239c06f44afe2a8fffe",
+          "resolution:19155372d27780e5003d463720d9cf45ae3a67f5556819f20e6113e684953bda",
+          "source:aeffa143a41b5fb9586ebfe174cf3f603c037cc02920a82979db938eb64335b3",
+          "transaction:e7ba799bc9367011865cf584340e58b71c41c5e6059187b60e0fd95cf9de7b5e"
+        ],
+        "relation_types": [
+          "supports"
+        ],
+        "text": "NONCANONICAL RETRIEVAL SUMMARY: [{\"assertion_id\":\"candidate-1\",\"object\":\"claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07\",\"predicate\":\"supports\",\"qualifiers\":{},\"subject\":\"Paper-A\"}]",
+        "trust_class": "CONFLICTED_GRAPH_FACT",
+        "current_status": "ACTIVE",
+        "graph_version": 4,
+        "created_at": "2026-09-25T09:45:20.600558Z",
+        "superseded_at": null,
+        "provenance_complete": true,
+        "risk_class": "R2",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": true,
+        "data_origin": "GENERATED_SUMMARY",
+        "instruction_authority": false
+      },
+      {
+        "id": "claim:0cbb43a888daff16e27579c1",
+        "kind": "CLAIM",
+        "canonical_ref": "claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07",
+        "member_assertion_ids": [],
+        "assertion_ids": [],
+        "entity_ids": [
+          "claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07"
+        ],
+        "evidence_ids": [],
+        "source_ids": [],
+        "decision_ids": [],
+        "observation_ids": [],
+        "transaction_ids": [],
+        "plan_ids": [],
+        "record_refs": [
+          "claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07"
+        ],
+        "relation_types": [],
+        "text": "Intervention X improves outcome Y in population P.",
+        "trust_class": "UNVERIFIED_GRAPH_CONTEXT",
+        "current_status": "CONTEXT",
+        "graph_version": 4,
+        "created_at": null,
+        "superseded_at": null,
+        "provenance_complete": false,
+        "risk_class": "R0",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      },
+      {
+        "id": "decision:5ab3e69d4294c3a55b30d795",
+        "kind": "DECISION",
+        "canonical_ref": "observation:6259cf8e88c7aefbd6f375ed7dd807360a1f431610a545036e49a49331408335",
+        "member_assertion_ids": [],
+        "assertion_ids": [],
+        "entity_ids": [
+          "Paper-A",
+          "claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07"
+        ],
+        "evidence_ids": [
+          "evidence:b7b6d407e5dddb505f327d182592f916d4881c2674acf78c67f7b2a121ac4af4"
+        ],
+        "source_ids": [
+          "source:aeffa143a41b5fb9586ebfe174cf3f603c037cc02920a82979db938eb64335b3"
+        ],
+        "decision_ids": [
+          "observation:6259cf8e88c7aefbd6f375ed7dd807360a1f431610a545036e49a49331408335"
+        ],
+        "observation_ids": [],
+        "transaction_ids": [],
+        "plan_ids": [],
+        "record_refs": [
+          "evidence:b7b6d407e5dddb505f327d182592f916d4881c2674acf78c67f7b2a121ac4af4",
+          "observation:6259cf8e88c7aefbd6f375ed7dd807360a1f431610a545036e49a49331408335",
+          "source:aeffa143a41b5fb9586ebfe174cf3f603c037cc02920a82979db938eb64335b3"
+        ],
+        "relation_types": [],
+        "text": "{\"candidate_id\":\"candidate-1\",\"semantic_outcome\":\"SUPPORTS\",\"status\":\"OK\"}",
+        "trust_class": "HISTORICAL_GRAPH_FACT",
+        "current_status": "SUPPORTS",
+        "graph_version": 4,
+        "created_at": "2026-09-25T09:45:20.572411Z",
+        "superseded_at": null,
+        "provenance_complete": false,
+        "risk_class": "R0",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      },
+      {
+        "id": "decision:80732b6bebc8046da2a0ee2b",
+        "kind": "DECISION",
+        "canonical_ref": "observation:21f4b610451595ef55665bc19342a5ad22bc147403b8a62c2b00cbf4f8a29271",
+        "member_assertion_ids": [],
+        "assertion_ids": [],
+        "entity_ids": [
+          "Paper-B",
+          "claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07"
+        ],
+        "evidence_ids": [
+          "evidence:b2362635d5afd1b3ca0c43d49d642a4d854033ff0c8cf24b28938898ae5ffa68"
+        ],
+        "source_ids": [
+          "source:745cc8733c9004ec34f54f34def08dbe3eef16d854ab724b201cb909f3cf9041"
+        ],
+        "decision_ids": [
+          "observation:21f4b610451595ef55665bc19342a5ad22bc147403b8a62c2b00cbf4f8a29271"
+        ],
+        "observation_ids": [],
+        "transaction_ids": [],
+        "plan_ids": [],
+        "record_refs": [
+          "evidence:b2362635d5afd1b3ca0c43d49d642a4d854033ff0c8cf24b28938898ae5ffa68",
+          "observation:21f4b610451595ef55665bc19342a5ad22bc147403b8a62c2b00cbf4f8a29271",
+          "source:745cc8733c9004ec34f54f34def08dbe3eef16d854ab724b201cb909f3cf9041"
+        ],
+        "relation_types": [],
+        "text": "{\"candidate_id\":\"paper-b-refutation\",\"semantic_outcome\":\"CONTRADICTS\",\"status\":\"OK\"}",
+        "trust_class": "HISTORICAL_GRAPH_FACT",
+        "current_status": "CONTRADICTS",
+        "graph_version": 4,
+        "created_at": "2026-09-25T09:45:20.665124Z",
+        "superseded_at": null,
+        "provenance_complete": false,
+        "risk_class": "R0",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      },
+      {
+        "id": "decision:a4c06121b1c265ac09aa0e62",
+        "kind": "DECISION",
+        "canonical_ref": "resolution:19155372d27780e5003d463720d9cf45ae3a67f5556819f20e6113e684953bda",
+        "member_assertion_ids": [],
+        "assertion_ids": [],
+        "entity_ids": [
+          "Paper-A",
+          "claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07"
+        ],
+        "evidence_ids": [
+          "evidence:b7b6d407e5dddb505f327d182592f916d4881c2674acf78c67f7b2a121ac4af4"
+        ],
+        "source_ids": [
+          "source:aeffa143a41b5fb9586ebfe174cf3f603c037cc02920a82979db938eb64335b3"
+        ],
+        "decision_ids": [
+          "resolution:19155372d27780e5003d463720d9cf45ae3a67f5556819f20e6113e684953bda"
+        ],
+        "observation_ids": [],
+        "transaction_ids": [],
+        "plan_ids": [],
+        "record_refs": [
+          "evidence:b7b6d407e5dddb505f327d182592f916d4881c2674acf78c67f7b2a121ac4af4",
+          "resolution:19155372d27780e5003d463720d9cf45ae3a67f5556819f20e6113e684953bda",
+          "source:aeffa143a41b5fb9586ebfe174cf3f603c037cc02920a82979db938eb64335b3"
+        ],
+        "relation_types": [],
+        "text": "{\"candidate_id\":\"candidate-1\",\"outcome\":\"SELECTED\",\"risk_class\":\"R2\"}",
+        "trust_class": "HISTORICAL_GRAPH_FACT",
+        "current_status": "SELECTED",
+        "graph_version": 4,
+        "created_at": null,
+        "superseded_at": null,
+        "provenance_complete": false,
+        "risk_class": "R2",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      },
+      {
+        "id": "decision:e5ab58f09e13e7932d7f92f8",
+        "kind": "DECISION",
+        "canonical_ref": "resolution:defe71ddb09d86353db473b1362dcc7d2fccea9020d0bf2045537ca17eb30db3",
+        "member_assertion_ids": [],
+        "assertion_ids": [],
+        "entity_ids": [
+          "Paper-B",
+          "claim:259a9bdb96bebcbbad8ffefe3908ab0023b12542bdd286b851e22b8397d36f07"
+        ],
+        "evidence_ids": [
+          "evidence:b2362635d5afd1b3ca0c43d49d642a4d854033ff0c8cf24b28938898ae5ffa68"
+        ],
+        "source_ids": [
+          "source:745cc8733c9004ec34f54f34def08dbe3eef16d854ab724b201cb909f3cf9041"
+        ],
+        "decision_ids": [
+          "resolution:defe71ddb09d86353db473b1362dcc7d2fccea9020d0bf2045537ca17eb30db3"
+        ],
+        "observation_ids": [],
+        "transaction_ids": [],
+        "plan_ids": [],
+        "record_refs": [
+          "evidence:b2362635d5afd1b3ca0c43d49d642a4d854033ff0c8cf24b28938898ae5ffa68",
+          "resolution:defe71ddb09d86353db473b1362dcc7d2fccea9020d0bf2045537ca17eb30db3",
+          "source:745cc8733c9004ec34f54f34def08dbe3eef16d854ab724b201cb909f3cf9041"
+        ],
+        "relation_types": [],
+        "text": "{\"candidate_id\":\"paper-b-refutation\",\"outcome\":\"SELECTED\",\"risk_class\":\"R2\"}",
+        "trust_class": "HISTORICAL_GRAPH_FACT",
+        "current_status": "SELECTED",
+        "graph_version": 4,
+        "created_at": null,
+        "superseded_at": null,
+        "provenance_complete": false,
+        "risk_class": "R2",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      }
+    ],
+    "citations": [
+      {
+        "evidence_id": "evidence:b2362635d5afd1b3ca0c43d49d642a4d854033ff0c8cf24b28938898ae5ffa68",
+        "source_snapshot_id": "source:745cc8733c9004ec34f54f34def08dbe3eef16d854ab724b201cb909f3cf9041",
+        "source_id": "Paper-B",
+        "source_hash": "745cc8733c9004ec34f54f34def08dbe3eef16d854ab724b201cb909f3cf9041",
+        "start": 0,
+        "end": 89,
+        "quote": "Intervention X did not improve outcome Y in population P; method N differs from method M."
+      },
+      {
+        "evidence_id": "evidence:b7b6d407e5dddb505f327d182592f916d4881c2674acf78c67f7b2a121ac4af4",
+        "source_snapshot_id": "source:aeffa143a41b5fb9586ebfe174cf3f603c037cc02920a82979db938eb64335b3",
+        "source_id": "Paper-A",
+        "source_hash": "aeffa143a41b5fb9586ebfe174cf3f603c037cc02920a82979db938eb64335b3",
+        "start": 0,
+        "end": 50,
+        "quote": "Intervention X improves outcome Y in population P."
+      }
+    ],
+    "warnings": [
+      "CONFLICTING_EVIDENCE_PRESENT",
+      "HISTORICAL_OR_SUPERSEDED_CONTEXT",
+      "SUMMARIES_ARE_NOT_CANONICAL_EVIDENCE"
+    ],
+    "can_mutate_graph": false,
+    "created_at": "2026-09-25T09:45:20.825060Z"
+  }
+}

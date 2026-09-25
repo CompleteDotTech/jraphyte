@@ -1,0 +1,229 @@
+{
+  "created_at": "2026-09-25T08:57:55.597542+00:00",
+  "baseline_release": "0.3.0",
+  "extension_release": "0.4.0",
+  "baseline_archive": "TRACE-GC_Implemented_Project(1).zip",
+  "baseline_archive_sha256": "5fdb420a3d927cc6ca247f8013bdbebfb608dc18788a4ff4ef1528690fed62db",
+  "requirements_file": "sources/graphrag_requirements.txt",
+  "requirements_sha256": "4d437024654bcfa45cdd5d2ee1f70877a0184488c5c6400adecb0323add9078d",
+  "baseline_tests_executed": 197,
+  "baseline_tests_passed": 196,
+  "baseline_tests_skipped": 1,
+  "baseline_skip": "Pinned upstream conformance gate: TRACE_GC_LEGACY_CORE not supplied.",
+  "baseline_observation": "Original suite also emitted a non-failing unclosed SQLite ResourceWarning; no unrelated original test rewrite was made.",
+  "original_test_files": [
+    {
+      "path": "tests/test_contracts.py",
+      "sha256_original": "576d132fb3df6b4c7d6e53ff73187c194e81ad2af85de4d50c6619999dcf967f",
+      "sha256_current": "576d132fb3df6b4c7d6e53ff73187c194e81ad2af85de4d50c6619999dcf967f",
+      "unchanged": true
+    },
+    {
+      "path": "tests/test_runtime_contracts.py",
+      "sha256_original": "4bbcd87a1081f72a7e9e238bee33fdf6d4a123a04303bbb933a3f407efccbefc",
+      "sha256_current": "4bbcd87a1081f72a7e9e238bee33fdf6d4a123a04303bbb933a3f407efccbefc",
+      "unchanged": true
+    },
+    {
+      "path": "tests/test_runtime_qualification.py",
+      "sha256_original": "9a8b7eb9089341368f7e19bd3abc853a27071ff7d5177a1f14d76d34d6b2d725",
+      "sha256_current": "9a8b7eb9089341368f7e19bd3abc853a27071ff7d5177a1f14d76d34d6b2d725",
+      "unchanged": true
+    },
+    {
+      "path": "tests/test_runtime_transactions.py",
+      "sha256_original": "ba47eeab4b2e33095c40f0e57856d1f8a17b33ce06b0862f8df087f5eab94c12",
+      "sha256_current": "ba47eeab4b2e33095c40f0e57856d1f8a17b33ce06b0862f8df087f5eab94c12",
+      "unchanged": true
+    },
+    {
+      "path": "tests/test_runtime_workflows.py",
+      "sha256_original": "fe7797c46a625cba3f4c79a7578dfc512e74bf800652b0433bfbf62fba9b4f32",
+      "sha256_current": "fe7797c46a625cba3f4c79a7578dfc512e74bf800652b0433bfbf62fba9b4f32",
+      "unchanged": true
+    }
+  ],
+  "original_runtime_modules": [
+    {
+      "path": "trace_gc/__init__.py",
+      "sha256_original": "aa1495c5f92df67eb06605006b3d53e142eba5804f3675302b0ab325830820fb",
+      "sha256_current": "2129ff6e56d1d2b10c8c630bebc73440d5356a49eaa62e4a50f1e143997d3812",
+      "status": "EXTENDED"
+    },
+    {
+      "path": "trace_gc/__main__.py",
+      "sha256_original": "79ee6f134c5c5193377cf9b189cbdcc3e2095e49ba9cec310114441c15a917c4",
+      "sha256_current": "79ee6f134c5c5193377cf9b189cbdcc3e2095e49ba9cec310114441c15a917c4",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "trace_gc/adapter.py",
+      "sha256_original": "9f70b29f3156aebbf52371e019f4c3c4029023bdfeff99b0531a8e3dd4dafbe9",
+      "sha256_current": "f713d945884f02ad16a8f71bc446635bab4f58d5a2c626387892c6cf4345b0a1",
+      "status": "EXTENDED"
+    },
+    {
+      "path": "trace_gc/backend.py",
+      "sha256_original": "ed23ecee08e681504003e737a640ba372d2aa6ad7bd956fa6c85f0a430747596",
+      "sha256_current": "ed23ecee08e681504003e737a640ba372d2aa6ad7bd956fa6c85f0a430747596",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "trace_gc/budget.py",
+      "sha256_original": "f8b9740906e2efd3a6b80a65b741447005e323171c007013b50175007d17717c",
+      "sha256_current": "f8b9740906e2efd3a6b80a65b741447005e323171c007013b50175007d17717c",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "trace_gc/canonical.py",
+      "sha256_original": "2ab85ad82e4a193306ecd3b485d559634a0a870f22a1385ce0512b7cc6cfe7df",
+      "sha256_current": "2ab85ad82e4a193306ecd3b485d559634a0a870f22a1385ce0512b7cc6cfe7df",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "trace_gc/catalog.py",
+      "sha256_original": "44c7937bb6d469dcfe43d4bf92e9167e4cf53cf013d2a25825fe1f07dbadd00f",
+      "sha256_current": "3fc1fe669cf886e163ceb890720b1e62b49f7aaa9afb27a85b864a25d342b96c",
+      "status": "EXTENDED"
+    },
+    {
+      "path": "trace_gc/cli.py",
+      "sha256_original": "2ee3130e61e87b85efafa8615a54c83ae59fe47cc0e1cb7b08ab979152dbcde4",
+      "sha256_current": "259456f2e2b9a134e6022400146aac9aea2a895286da5cb8b87f14096b07c938",
+      "status": "EXTENDED"
+    },
+    {
+      "path": "trace_gc/compiler.py",
+      "sha256_original": "c2aed54a64f91a769c9d8f1d621cf729eaa9a24e89e9884a72fa83fe91921cb3",
+      "sha256_current": "087a849f8c01e2e4bd67e9860fd71adb21fcd6ae56a6f596281b27f44d70140d",
+      "status": "EXTENDED"
+    },
+    {
+      "path": "trace_gc/conformance.py",
+      "sha256_original": "208bfe0eb7736cf462b23b439b4d68ad322b89b354c8ae23683bc8a2afd31388",
+      "sha256_current": "208bfe0eb7736cf462b23b439b4d68ad322b89b354c8ae23683bc8a2afd31388",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "trace_gc/constraints.py",
+      "sha256_original": "17ca63d4e24fe2627ef18dfb2070d7c4f5eddb8d42fb329ef00550a228ccaacd",
+      "sha256_current": "17ca63d4e24fe2627ef18dfb2070d7c4f5eddb8d42fb329ef00550a228ccaacd",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "trace_gc/demo.py",
+      "sha256_original": "55d51b76833aba4790d94638da2e3cb9079e47dc3c866afbc9396cd976916692",
+      "sha256_current": "ab8c88246e8b7fdcd71f2535c44cf1f770f91ab8810bcdadce7cf4a96253e182",
+      "status": "EXTENDED"
+    },
+    {
+      "path": "trace_gc/errors.py",
+      "sha256_original": "383af80f7faa7b05b63c2bb07d48bca0edccb1657e73ed1bc47d7a722010d29e",
+      "sha256_current": "383af80f7faa7b05b63c2bb07d48bca0edccb1657e73ed1bc47d7a722010d29e",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "trace_gc/ledger.py",
+      "sha256_original": "c28ec05e52679174bd87dc3396fc110d72a9367489bf85bd607f63b76663d0fa",
+      "sha256_current": "4b6fe05872364aec7f3b30d18b5ab3b67dc1123ed6b101bdfd3ef41e5efa7c30",
+      "status": "EXTENDED"
+    },
+    {
+      "path": "trace_gc/legacy.py",
+      "sha256_original": "930cc2366ef6fd37563dd603085a23181e41b1eb4bfc86d1b18cb32d56484ede",
+      "sha256_current": "930cc2366ef6fd37563dd603085a23181e41b1eb4bfc86d1b18cb32d56484ede",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "trace_gc/plans.py",
+      "sha256_original": "baa19a6ee298243c60481e7d4f439fdbf3d2cedd65e4ea6f0cbf6b3d4e36e4ff",
+      "sha256_current": "81487cd8ab5a09b9837371470dad4f10aea612a63b664256d1ae335500a28588",
+      "status": "EXTENDED"
+    },
+    {
+      "path": "trace_gc/policy.py",
+      "sha256_original": "2816728ffa28c3a0578f328d08b3e56c3c8b3f6f95868420d8658c5a922bf4a1",
+      "sha256_current": "2816728ffa28c3a0578f328d08b3e56c3c8b3f6f95868420d8658c5a922bf4a1",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "trace_gc/programs.py",
+      "sha256_original": "e3aab57a9c24bac55dbe4a22b4f58c10b90a8ffcbeaa26c1ba56a5e220f2433a",
+      "sha256_current": "7a0155324e571a65bff06c27e537d2b34e12e7e1af0ab18b7ef0abe439695965",
+      "status": "EXTENDED"
+    },
+    {
+      "path": "trace_gc/qualification.py",
+      "sha256_original": "1611bc0cbc9a8831db6174054a228b056b71a6f0b2dd298f50916911f785027e",
+      "sha256_current": "1611bc0cbc9a8831db6174054a228b056b71a6f0b2dd298f50916911f785027e",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "trace_gc/references.py",
+      "sha256_original": "3b3d19164c92ec61845ba182dbb907a293c949cceff2f640d0a6a767854471dc",
+      "sha256_current": "3b3d19164c92ec61845ba182dbb907a293c949cceff2f640d0a6a767854471dc",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "trace_gc/replay.py",
+      "sha256_original": "d11c2154b4beab9906980d16c9eefa29fde996ee97075232222d9c564a14c380",
+      "sha256_current": "515186fd3fded00294cb16e662ea723f19643fdce8777da658eca61e5ce543cd",
+      "status": "EXTENDED"
+    },
+    {
+      "path": "trace_gc/resolver.py",
+      "sha256_original": "aec0721996b3d65bb82a59868a8c8de11b14eee4daea7c73c585b7fb65a983ee",
+      "sha256_current": "7374f618c24f983b4ee829d20d543050a5b0764fe64de8b336e017e5e75630c3",
+      "status": "EXTENDED"
+    },
+    {
+      "path": "trace_gc/schema.py",
+      "sha256_original": "0512e0b0b5a1bf9dc50537e5dbf2b85deaf04f9adebd58fc9e9020376ce84dbf",
+      "sha256_current": "0512e0b0b5a1bf9dc50537e5dbf2b85deaf04f9adebd58fc9e9020376ce84dbf",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "trace_gc/trust.py",
+      "sha256_original": "966be0404d57cb2abf551feaa27d0636b52788d83672200fb8bf854ccbf4b16d",
+      "sha256_current": "966be0404d57cb2abf551feaa27d0636b52788d83672200fb8bf854ccbf4b16d",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "trace_gc/validation.py",
+      "sha256_original": "7416c81c553622f7308fd0260075ac8f1bf430cb278979e1cfffbe09e33360e6",
+      "sha256_current": "fb36c61c8b0cb5efb32d09159279d07fb456cae29d8641c9994d4dbcf5ae6db8",
+      "status": "EXTENDED"
+    }
+  ],
+  "original_program_assignments_preserved": {
+    "VERSION": true,
+    "RUBRICS": true,
+    "TEMPLATES": true,
+    "PROGRAM_HASH": true
+  },
+  "preserved_documentation": "archive/v0.3/",
+  "inspection_findings": [
+    "Catalog already provided immutable exact source, evidence, claim, candidate, graph and decision records.",
+    "Compiler already provided source verification, recursive evidence closure, question packing and immutable byte receipts.",
+    "Resolver, risk qualification, signed plan/preflight authorization and reversible transactions were already implemented.",
+    "SQLite authority and its journal remain the only authoritative mutable graph; retrieval adds read adapters, not a second writer.",
+    "Existing autoresearch was a research protocol with qualification infrastructure, not an executed autonomous optimization service.",
+    "Original fixed semantic tasks are support/refutation and identity; retrieval extensibility does not silently add unqualified synthesis tasks."
+  ],
+  "modified_existing_modules": [
+    "trace_gc/__init__.py",
+    "trace_gc/adapter.py",
+    "trace_gc/catalog.py",
+    "trace_gc/cli.py",
+    "trace_gc/compiler.py",
+    "trace_gc/demo.py",
+    "trace_gc/ledger.py",
+    "trace_gc/plans.py",
+    "trace_gc/programs.py",
+    "trace_gc/replay.py",
+    "trace_gc/resolver.py",
+    "trace_gc/validation.py"
+  ],
+  "new_retrieval_tests": 108,
+  "current_validation_report": "VALIDATION_REPORT.json"
+}

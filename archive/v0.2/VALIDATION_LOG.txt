@@ -1,0 +1,47 @@
+test_01_valid_synthetic_bundle (test_contracts.ContractTests.test_01_valid_synthetic_bundle) ... ok
+test_02_source_bytes_changed (test_contracts.ContractTests.test_02_source_bytes_changed) ... ok
+test_03_wrong_quote (test_contracts.ContractTests.test_03_wrong_quote) ... ok
+test_04_span_out_of_bounds (test_contracts.ContractTests.test_04_span_out_of_bounds) ... ok
+test_05_source_version_changed (test_contracts.ContractTests.test_05_source_version_changed) ... ok
+test_06_withdrawn_source (test_contracts.ContractTests.test_06_withdrawn_source) ... ok
+test_07_missing_source (test_contracts.ContractTests.test_07_missing_source) ... ok
+test_08_noul_has_no_vendor_confidence (test_contracts.ContractTests.test_08_noul_has_no_vendor_confidence) ... ok
+test_09_noul_raw_unknown_field (test_contracts.ContractTests.test_09_noul_raw_unknown_field) ... ok
+test_10_score_mean_not_category (test_contracts.ContractTests.test_10_score_mean_not_category) ... ok
+test_11_score_wrong_expected_value (test_contracts.ContractTests.test_11_score_wrong_expected_value) ... ok
+test_12_distribution_sum (test_contracts.ContractTests.test_12_distribution_sum) ... ok
+test_13_boolean_probability (test_contracts.ContractTests.test_13_boolean_probability) ... ok
+test_14_missing_distribution_label (test_contracts.ContractTests.test_14_missing_distribution_label) ... ok
+test_15_wrong_choice_polarity (test_contracts.ContractTests.test_15_wrong_choice_polarity) ... ok
+test_16_model_version_mismatch (test_contracts.ContractTests.test_16_model_version_mismatch) ... ok
+test_17_candidate_mutated_after_decision (test_contracts.ContractTests.test_17_candidate_mutated_after_decision) ... ok
+test_18_question_mutated_without_new_request (test_contracts.ContractTests.test_18_question_mutated_without_new_request) ... ok
+test_19_state_changed_without_new_request (test_contracts.ContractTests.test_19_state_changed_without_new_request) ... ok
+test_20_same_pack_answer_dependency (test_contracts.ContractTests.test_20_same_pack_answer_dependency) ... ok
+test_21_total_request_budget (test_contracts.ContractTests.test_21_total_request_budget) ... ok
+test_22_state_longest_budget (test_contracts.ContractTests.test_22_state_longest_budget) ... ok
+test_23_question_target_cannot_be_only_map_key (test_contracts.ContractTests.test_23_question_target_cannot_be_only_map_key) ... ok
+test_24_incomplete_closure (test_contracts.ContractTests.test_24_incomplete_closure) ... ok
+test_25_omitted_evidence_dependency (test_contracts.ContractTests.test_25_omitted_evidence_dependency) ... ok
+test_26_fake_calibration_band (test_contracts.ContractTests.test_26_fake_calibration_band) ... ok
+test_27_auto_rule_without_qualification (test_contracts.ContractTests.test_27_auto_rule_without_qualification) ... ok
+test_28_plan_cannot_be_ready (test_contracts.ContractTests.test_28_plan_cannot_be_ready) ... ok
+test_29_accepted_view_cannot_be_published (test_contracts.ContractTests.test_29_accepted_view_cannot_be_published) ... ok
+test_30_stale_plan_graph_version (test_contracts.ContractTests.test_30_stale_plan_graph_version) ... ok
+test_31_risk_cannot_be_lowered_by_operation (test_contracts.ContractTests.test_31_risk_cannot_be_lowered_by_operation) ... ok
+test_32_duplicate_record_id (test_contracts.ContractTests.test_32_duplicate_record_id) ... ok
+test_33_manifest_must_enumerate_records (test_contracts.ContractTests.test_33_manifest_must_enumerate_records) ... ok
+test_34_ledger_payload_tampering (test_contracts.ContractTests.test_34_ledger_payload_tampering) ... ok
+test_35_ledger_chain_tampering (test_contracts.ContractTests.test_35_ledger_chain_tampering) ... ok
+test_36_mode_cannot_impersonate_live (test_contracts.ContractTests.test_36_mode_cannot_impersonate_live) ... ok
+test_37_error_receipt_is_not_semantic_negative (test_contracts.ContractTests.test_37_error_receipt_is_not_semantic_negative) ... ok
+test_38_contradictory_evidence_is_preserved_not_dropped (test_contracts.ContractTests.test_38_contradictory_evidence_is_preserved_not_dropped) ... ok
+test_39_acyclic_candidate_dependencies (test_contracts.ContractTests.test_39_acyclic_candidate_dependencies) ... ok
+test_40_empty_evidence_cannot_support_operation (test_contracts.ContractTests.test_40_empty_evidence_cannot_support_operation) ... ok
+test_41_score_probability_distribution_not_rewritten (test_contracts.ContractTests.test_41_score_probability_distribution_not_rewritten) ... ok
+test_42_unknown_fields_are_not_silently_accepted (test_contracts.ContractTests.test_42_unknown_fields_are_not_silently_accepted) ... ok
+
+----------------------------------------------------------------------
+Ran 42 tests in 4.774s
+
+OK

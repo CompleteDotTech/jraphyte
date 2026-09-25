@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.2:evidence",
+  "title": "TRACE-GC evidence 0.2-design",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "0.2-design"
+    },
+    "evidence_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "document_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "raw_document_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "representation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parser_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "span_start": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "span_end": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "offset_unit": {
+      "const": "UNICODE_CODEPOINT"
+    },
+    "interval": {
+      "const": "HALF_OPEN"
+    },
+    "quoted_span": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retrieval_timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_origin": {
+      "type": "string",
+      "minLength": 1
+    },
+    "origin_authentication": {
+      "enum": [
+        "UNVERIFIED",
+        "AUTHENTICATED",
+        "FAILED"
+      ]
+    },
+    "source_kind": {
+      "enum": [
+        "PRIMARY",
+        "SECONDARY",
+        "INFERRED",
+        "GENERATED",
+        "UNKNOWN"
+      ]
+    },
+    "integrity_status": {
+      "enum": [
+        "VERIFIED",
+        "FAILED",
+        "UNAVAILABLE"
+      ]
+    },
+    "semantic_tags": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "SUPPORTED_EVIDENCE",
+          "CONTRADICTING_EVIDENCE",
+          "RELATED_NON_EVIDENCE",
+          "IRRELEVANT",
+          "ADVERSARIAL_OR_INSTRUCTIONAL",
+          "UNVERIFIABLE",
+          "DUPLICATE",
+          "STALE_OR_OUT_OF_SCOPE"
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "security_tags": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "UNTRUSTED_DATA",
+          "INSTRUCTIONAL_CONTENT",
+          "RETRIEVAL_POLICY_VIOLATION",
+          "QUARANTINED"
+        ]
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "duplicate_group_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "temporal_applicability": {
+      "enum": [
+        "APPLICABLE",
+        "INAPPLICABLE",
+        "UNKNOWN"
+      ]
+    },
+    "validity_start": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "validity_end": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "assessment_decision_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0,
+      "uniqueItems": true
+    },
+    "assessment_basis": {
+      "enum": [
+        "SYNTHETIC_FIXTURE",
+        "MODEL",
+        "HUMAN",
+        "RULE"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "evidence_id",
+    "candidate_id",
+    "source_id",
+    "source_version",
+    "document_hash",
+    "raw_document_hash",
+    "representation_id",
+    "parser_version",
+    "span_start",
+    "span_end",
+    "offset_unit",
+    "interval",
+    "quoted_span",
+    "retrieval_timestamp",
+    "source_origin",
+    "origin_authentication",
+    "source_kind",
+    "integrity_status",
+    "semantic_tags",
+    "security_tags",
+    "duplicate_group_id",
+    "temporal_applicability",
+    "validity_start",
+    "validity_end",
+    "assessment_decision_refs",
+    "assessment_basis"
+  ],
+  "additionalProperties": false
+}

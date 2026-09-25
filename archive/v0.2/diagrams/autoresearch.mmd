@@ -1,0 +1,14 @@
+flowchart LR
+    A[Development error corpus] --> B[Propose questions or nonsemantic fixes]
+    B --> C[Run bounded development experiments]
+    C --> D[Graph recompilation and error-cost analysis]
+    D --> E[Redundancy and removal ablations]
+    E --> F[Selection validation of bounded finalists]
+    F --> G[Freeze semantic program]
+    G --> H[Independent calibration and risk qualification]
+    H --> I[Locked confirmatory test]
+    I --> J[Reviewed promotion or reject]
+    J --> K[Immutable production program version]
+    D -->|Development feedback only| B
+    K --> L[Shadow monitoring and drift detection]
+    L --> A

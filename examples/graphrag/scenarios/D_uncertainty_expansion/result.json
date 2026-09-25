@@ -1,0 +1,46 @@
+{
+  "scenario": "D_uncertainty_expansion",
+  "status": "PASS",
+  "execution_mode": "SYNTHETIC",
+  "provider_calls": 0,
+  "production_graph_writes": 0,
+  "retrieval_rounds": 2,
+  "stop_reason_before_review": "HUMAN_REVIEW_REQUIRED",
+  "policy_outcome_before_review": "ABSTAIN",
+  "selected_candidates": [
+    "expanded-candidate"
+  ],
+  "resolver_decisions": [
+    "resolution:370ffbadf3f697563fd96c21440cee7deb22c3e4489f23675a98c11f26fd0221"
+  ],
+  "retrieval_results": [
+    "retrieval-result:6fc2c8e71f1954844f232b8f7bd822ddc2ff9bfdbd23197624acd1a7d829b1b8",
+    "retrieval-result:ee34c3e850c2fa44dfdbe46eef2bfef5bbd3a77aaa5576b52a49ef27f7da4f83"
+  ],
+  "expansions": [
+    "retrieval-expansion:9a1e6904c4323b5eca5baf2c1d9dc9eda24dd34bddf2842b9e170dfd15d849a2",
+    "retrieval-expansion:4559f6256f1feaaab62b8ad04e35278d66c7ec89b5419eaeb1cf861f7cb1b357"
+  ],
+  "commit_version": 3,
+  "downstream_graph_version": 3,
+  "downstream_assertions": [
+    "candidate-1",
+    "expanded-candidate"
+  ],
+  "downstream_conflicts": 0,
+  "canonical_citations": 1,
+  "validation": {
+    "status": "PASS",
+    "format_version": "0.3.0",
+    "profile": "FINALIZED_ANALYSIS",
+    "record_count": 55,
+    "lineage_complete": true,
+    "checkpoint_authenticated": false,
+    "events": 55,
+    "authorization_granted": false,
+    "model_calls": 0,
+    "graph_commits": 0,
+    "scope": "Structural/provenance verification; publication requires the trusted service and current-state transaction rechecks."
+  },
+  "qualification": "NOT_QUALIFIED; explicit sandbox review only"
+}

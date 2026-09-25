@@ -1,0 +1,192 @@
+{
+  "version": "0.2-design",
+  "algorithm": "SHA-256",
+  "self_excluded": "MANIFEST.json",
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 26,
+      "sha256": "4cad133d4f0a6cf4bba15f1b8bbae48d6a55f20b94f75487c51a93cc6a5af59f"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4461,
+      "sha256": "95503ef121a639c7c022fb8a98a4672b3c5b1a64be5540ed2ff4cf092fc88d2b"
+    },
+    {
+      "path": "SOURCE_MANIFEST.json",
+      "bytes": 1336,
+      "sha256": "eac88df6dc7564ed57469ddf8eb6c2fc596925ce2d669500698df5162e0fc160"
+    },
+    {
+      "path": "TRACE-GC_Architecture_Revision.md",
+      "bytes": 99906,
+      "sha256": "241a820a2e8e4d41c069cf172f3826303ef81fd9ed4ad154621eceba91dee3e8"
+    },
+    {
+      "path": "VALIDATION_LOG.txt",
+      "bytes": 4659,
+      "sha256": "70cf5540f372ee4f1144c0faf543dca7644216ba8a2364c7581a0d9719d394e1"
+    },
+    {
+      "path": "VALIDATION_REPORT.json",
+      "bytes": 5731,
+      "sha256": "0e5e64e3cf5b9e7b75e3b7b47ebe63d4c48c3b506bb4df21b513c42123ec6b43"
+    },
+    {
+      "path": "diagrams/architecture.mmd",
+      "bytes": 1519,
+      "sha256": "cc27ddf09b13f794e7c582b64f62b796a3e663d947a2e3cf5ecc3df3b8bf3e16"
+    },
+    {
+      "path": "diagrams/autoresearch.mmd",
+      "bytes": 627,
+      "sha256": "9b7882e423a11cf2d76b2f1849009a4491c4f73f2dd845ec2614b04a53daf3f0"
+    },
+    {
+      "path": "diagrams/replay.mmd",
+      "bytes": 594,
+      "sha256": "bf53fa7d170c17ecab789410eb7d099ab28027906696df11dce1903b28eb298b"
+    },
+    {
+      "path": "diagrams/transaction.mmd",
+      "bytes": 954,
+      "sha256": "2f54046336f18db18a06a0657eeb67608e2299db0577711f2b0e01ecd1092304"
+    },
+    {
+      "path": "docs/01_architecture.md",
+      "bytes": 15937,
+      "sha256": "4a176a6ff272cd9d3b416cd13456c2ba9bfa938944b4dce67525df43084d32f7"
+    },
+    {
+      "path": "docs/02_deltas.md",
+      "bytes": 11652,
+      "sha256": "0b6a07326fa2ffcc5693ea479add9915d4c8ddcaadc3e3552e59d5726fd2b555"
+    },
+    {
+      "path": "docs/03_ir_contracts.md",
+      "bytes": 9244,
+      "sha256": "607712ec860980402898512db2cb40b07edf2fb6892cc03cd739ca3fe599871e"
+    },
+    {
+      "path": "docs/04_risk_calibration.md",
+      "bytes": 8008,
+      "sha256": "8574d7f96aad79eb1379997340c04349a6837f1b437fde0a56dfef8f3fe64714"
+    },
+    {
+      "path": "docs/05_provenance_replay.md",
+      "bytes": 7777,
+      "sha256": "7f8fd465390532d36867de20bb2a7f133ee1fa5318f99aa98e1b5a86c8c18dbc"
+    },
+    {
+      "path": "docs/06_evaluation.md",
+      "bytes": 10315,
+      "sha256": "4f6387b79362c8c187c05831c18dd3fa5f4445773e2dbc5c23c8d17bc08d19a4"
+    },
+    {
+      "path": "docs/07_autoresearch.md",
+      "bytes": 5320,
+      "sha256": "e8d92ae2d44dbb42a24eead7238840f699649362b632687bf416c9fcb84eb663"
+    },
+    {
+      "path": "docs/08_roadmap.md",
+      "bytes": 6976,
+      "sha256": "9a7b0917fb42a61db999c78df306387b58774a4fe82a360d5abc938c3d908b58"
+    },
+    {
+      "path": "docs/09_paper_novelty.md",
+      "bytes": 9019,
+      "sha256": "9601a3b570bf592a1ade0c75422e0657ef81ffd56f4772e6a105775da4e090f9"
+    },
+    {
+      "path": "docs/10_error_taxonomy.md",
+      "bytes": 4328,
+      "sha256": "f4181ed537254cb18aa821c8366f8c0494e4ec66bc22a39a6e10ea0989f9a325"
+    },
+    {
+      "path": "docs/11_sources.md",
+      "bytes": 6064,
+      "sha256": "f7caa2f284d5067a310084e97c7e9d92e3947a09c0b02bf07e7e4eb08576870c"
+    },
+    {
+      "path": "examples/bundle.json",
+      "bytes": 20437,
+      "sha256": "35a3414b6ed4b85a544a057b1d6b41658a938fdf8a90107b2139872d2505a3cc"
+    },
+    {
+      "path": "policies/analysis-only.json",
+      "bytes": 1238,
+      "sha256": "ad3e951c676b43155c3909620e8b0ce142683f0b32a581cb722d6fb6ebbe1dd5"
+    },
+    {
+      "path": "requirements-validation.txt",
+      "bytes": 19,
+      "sha256": "756cc9e506ae4ee1a6f6c0507088b5cfc0dc8ba350fb2d2d46f1ffa72033adb6"
+    },
+    {
+      "path": "schemas/candidate.schema.json",
+      "bytes": 2508,
+      "sha256": "4e207c491df5a5cec804dc606933fae391f8f2ae24aef6ffa4eb011d9a58c564"
+    },
+    {
+      "path": "schemas/decision.schema.json",
+      "bytes": 13843,
+      "sha256": "c35001be296f69f6c881b4c7d649ea872f8a80d4f63eee7ec47df460c7fab8f8"
+    },
+    {
+      "path": "schemas/evidence.schema.json",
+      "bytes": 4184,
+      "sha256": "3874e01efce82b81491aadb315a33344948ed4fa678f31891bbbb4047e9f506c"
+    },
+    {
+      "path": "schemas/graph.schema.json",
+      "bytes": 2653,
+      "sha256": "3cc0b0dc43bc1b7a1747e0ef55315e2f77d4bd5fc479c2f53bf3d2936b4a738d"
+    },
+    {
+      "path": "schemas/ledger-event.schema.json",
+      "bytes": 1847,
+      "sha256": "511dd096dc2bd38f802b9d07f006454c416bf1fa14540d983293538b6a9681c4"
+    },
+    {
+      "path": "schemas/mutation-plan.schema.json",
+      "bytes": 4593,
+      "sha256": "3922ff56fe19a96b395ebd08fe3aa0b403ccb27ebd555804607f611a0aed99db"
+    },
+    {
+      "path": "schemas/question-pack.schema.json",
+      "bytes": 7926,
+      "sha256": "14668f564c1e2a293b9f15db3adc77d48041e8528bfeece1e2d066540ab67e1d"
+    },
+    {
+      "path": "schemas/resolution.schema.json",
+      "bytes": 6994,
+      "sha256": "dfe64246d06334f510a0fdf341e5bebf6069f9bb54823824ebb448236727f8f1"
+    },
+    {
+      "path": "schemas/risk-policy.schema.json",
+      "bytes": 2463,
+      "sha256": "4456444f313bb1ae30eb886c0540d6dce4bad85f0bed718750cb2e95910b70eb"
+    },
+    {
+      "path": "sources/revision_requirements.txt",
+      "bytes": 23811,
+      "sha256": "8019cfacb5de9101e137e31e52ddadf44544d7903d55e139ab9a98a7f1e6defc"
+    },
+    {
+      "path": "tests/test_contracts.py",
+      "bytes": 9653,
+      "sha256": "576d132fb3df6b4c7d6e53ff73187c194e81ad2af85de4d50c6619999dcf967f"
+    },
+    {
+      "path": "tools/run_validation.py",
+      "bytes": 2361,
+      "sha256": "6581624f3d86b9849743380170428e7d38cf2013b3c5a3db0d06b9f3466aab46"
+    },
+    {
+      "path": "tools/validate_package.py",
+      "bytes": 20601,
+      "sha256": "40783d19737fc7e06551c3da70d68798c97ea6bb07b180b6d740712a3a61a5be"
+    }
+  ]
+}

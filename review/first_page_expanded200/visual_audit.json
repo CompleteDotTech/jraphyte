@@ -1,0 +1,31 @@
+{
+  "reviewer": "assistant",
+  "independent_human_review": "outstanding",
+  "selector_tuned": false,
+  "cases": [
+    {
+      "id": "f119",
+      "finding": "Separate colored synopsis appended to the bold abstract.",
+      "source_image_sha256": "38559eac759a00126d99f34da9fee5ea7b5264c9038defef74137d1e0b776f9a",
+      "assessment_sha256": "a9eccb1d9fa1c446c688c01c0317f25d1508be133c88b882136fc737fab999c2"
+    },
+    {
+      "id": "f150",
+      "finding": "Wrong right-column body selected in place of the left-column bold abstract.",
+      "source_image_sha256": "547a0f227ab365faa23d6f3e8a6aa3a08e8e5bd01b6e4422c3b30c2268a029f0",
+      "assessment_sha256": "e6333e092ab3c167ae7fa1447b70926a9d6ff80901305f32f98eb18d5ae67483"
+    },
+    {
+      "id": "f192",
+      "finding": "Dedication appended after the abstract.",
+      "source_image_sha256": "af54cda8049223c97f12a57f1ad9f9a8ff3b2f9ff2d79562aa3d671b749798c9",
+      "assessment_sha256": "c4bc2cf44a14017f0666b9e7ed828136a93a910f92ae10a5386df6a3070e543d"
+    },
+    {
+      "id": "f199",
+      "finding": "Authors and contribution note mistaken for an unlabelled abstract.",
+      "source_image_sha256": "9d5f9d3fc45552ee4b71269b33c3efb2c7184bbf4ecf0b8610338f02a085a26c",
+      "assessment_sha256": "bb126c388086fd1d4f739aa008d12391bbc57f61db208cf580032dfffd1fd42f"
+    }
+  ]
+}

@@ -1,0 +1,267 @@
+{
+  "automatic_promotion": false,
+  "independent_review": "outstanding",
+  "reviewer": "assistant",
+  "extraction": {
+    "current": {
+      "pages": 200,
+      "complete_available": 146,
+      "near_complete_98_recovered": 98,
+      "boundary_and_98_recovered": 98,
+      "admitted": 120,
+      "correct_admissions_98": 98,
+      "admission_precision_98": 0.8166666666666667,
+      "correct_admission_recall_98": 0.6712328767123288,
+      "wrong_admissions": [
+        "h003",
+        "h006",
+        "h008",
+        "h009",
+        "h011",
+        "h012",
+        "h014",
+        "h016",
+        "h018",
+        "h019",
+        "h021",
+        "h023",
+        "h024",
+        "h026",
+        "h030",
+        "h031",
+        "h032",
+        "h033",
+        "h062",
+        "h083",
+        "h086",
+        "h092"
+      ],
+      "absent_admitted": [
+        "h062",
+        "h083",
+        "h086",
+        "h092"
+      ],
+      "partial_admitted": [
+        "h006"
+      ],
+      "states": {
+        "complete": 120,
+        "absent": 80
+      }
+    },
+    "old_docling": {
+      "pages": 200,
+      "complete_available": 146,
+      "near_complete_98_recovered": 124,
+      "boundary_and_98_recovered": 124,
+      "admitted": 152,
+      "correct_admissions_98": 124,
+      "admission_precision_98": 0.8157894736842105,
+      "correct_admission_recall_98": 0.8493150684931506,
+      "wrong_admissions": [
+        "h003",
+        "h006",
+        "h012",
+        "h016",
+        "h018",
+        "h019",
+        "h026",
+        "h027",
+        "h030",
+        "h031",
+        "h033",
+        "h062",
+        "h070",
+        "h078",
+        "h083",
+        "h086",
+        "h098",
+        "h110",
+        "h117",
+        "h124",
+        "h128",
+        "h181",
+        "h182",
+        "h183",
+        "h185",
+        "h188",
+        "h189",
+        "h191"
+      ],
+      "absent_admitted": [
+        "h062",
+        "h083",
+        "h086",
+        "h182"
+      ],
+      "partial_admitted": [
+        "h006",
+        "h124",
+        "h181",
+        "h183",
+        "h185",
+        "h188",
+        "h189",
+        "h191"
+      ],
+      "states": {
+        "complete": 152,
+        "absent": 48
+      }
+    },
+    "geometry_v1": {
+      "pages": 200,
+      "complete_available": 146,
+      "near_complete_98_recovered": 124,
+      "boundary_and_98_recovered": 123,
+      "admitted": 136,
+      "correct_admissions_98": 122,
+      "admission_precision_98": 0.8970588235294118,
+      "correct_admission_recall_98": 0.8356164383561644,
+      "wrong_admissions": [
+        "h003",
+        "h009",
+        "h012",
+        "h016",
+        "h030",
+        "h033",
+        "h083",
+        "h086",
+        "h126",
+        "h129",
+        "h139",
+        "h148",
+        "h171",
+        "h172"
+      ],
+      "absent_admitted": [
+        "h083",
+        "h086",
+        "h126",
+        "h139",
+        "h148"
+      ],
+      "partial_admitted": [],
+      "states": {
+        "complete": 136,
+        "partial": 8,
+        "uncertain": 14,
+        "error": 1,
+        "absent": 41
+      }
+    }
+  },
+  "retrieval": {
+    "native_tfidf": {
+      "queries": 100,
+      "documents": 10000,
+      "recall_at_1": 0.73,
+      "recall_at_3": 0.82,
+      "recall_at_10": 0.91,
+      "mrr": 0.788897955264378,
+      "ndcg_at_10": 0.8160293609525346
+    },
+    "gemini_embedding_2": {
+      "queries": 100,
+      "documents": 10000,
+      "recall_at_1": 0.9,
+      "recall_at_3": 0.97,
+      "recall_at_10": 1.0,
+      "mrr": 0.9380952380952381,
+      "ndcg_at_10": 0.953493352173374
+    },
+    "rrf_60": {
+      "queries": 100,
+      "documents": 10000,
+      "recall_at_1": 0.85,
+      "recall_at_3": 0.95,
+      "recall_at_10": 0.98,
+      "mrr": 0.8960476190476191,
+      "ndcg_at_10": 0.9153380841615705
+    }
+  },
+  "cost": {
+    "calls": 10005,
+    "reserved_usd": 9.915000000000001,
+    "estimated_usd": 1.1498312,
+    "states": {
+      "error": 5,
+      "ok": 10000
+    },
+    "reservation_cap_usd": 12.0
+  },
+  "audit_actions": {
+    "reuse_exact_request": 94,
+    "evaluate_changed_evidence": 21,
+    "hold_review_partial": 8,
+    "hold_review_absent": 46,
+    "evaluate_recovered_evidence": 31
+  },
+  "jev_calls": 0,
+  "protocol_sha256": "ed7b7acacb3ac4384a8f9a2c19eb807b50ed7f7154bf68b35c03ebc239066872",
+  "reference_freeze": {
+    "frozen_at": "2026-09-25T21:11:38.933852+00:00",
+    "reviewer": "assistant",
+    "independent_human_review": "outstanding",
+    "method": "source page images and native block boundaries reviewed before opening holdout predictions",
+    "counts": {
+      "complete": 146,
+      "partial_on_page_one": 8,
+      "no_abstract_text": 46
+    },
+    "files": {
+      "labels.json": "24f857e5923261ad51cded528e3a1e3a0e156c30f7da5083dad17acd573f3b87",
+      "review/specs.json": "d80c476bb6e45ef0050d16301d8f40a92cb1602669717e7077d70aa266ef643c",
+      "holdout_manifest.json": "42a5746edd07152bfea850a15745ab7484bbe20781c8e557c1a43507168b68eb"
+    }
+  },
+  "environment": {
+    "python": "3.12.10",
+    "packages": {
+      "docling": "2.130.0",
+      "docling-core": "2.99.0",
+      "pymupdf": "1.28.2",
+      "torch": "2.14.0",
+      "transformers": "4.57.6",
+      "rapidocr": "3.9.2",
+      "numpy": "2.5.3",
+      "scikit-learn": "1.9.1",
+      "requests": "2.34.2",
+      "pillow": "12.3.0"
+    }
+  },
+  "embedding_reconciliation": {
+    "states": {
+      "error": 5,
+      "ok": 10000
+    },
+    "successful_calls_by_key_prefix": {
+      "page": 9900,
+      "q": 100
+    },
+    "unresolved_failed_keys": 0,
+    "duplicate_successful_keys": [],
+    "cached_pages": 10000,
+    "cached_queries": 100,
+    "imported_cached_pages": 100,
+    "failed_http_status": 429
+  },
+  "tests": {
+    "full_suite": {
+      "python": "C:/Python314/python.exe",
+      "tests_run": 325,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 27.406,
+      "skip_reason": "External pinned core.py not supplied; not a passed integration gate"
+    },
+    "additional_focused_tests": {
+      "tests_run": 3,
+      "failures": 0,
+      "errors": 0,
+      "runtime": "optional Python 3.12 benchmark environment"
+    }
+  }
+}

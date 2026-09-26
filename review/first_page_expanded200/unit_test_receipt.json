@@ -1,0 +1,7 @@
+{
+  "command": "python -X utf8 -m unittest discover -s tests -p test_expanded_retrieval.py -v",
+  "tests": 1,
+  "passed": 1,
+  "test_source_sha256": "409bf8e0edb9ffcd106ec17efbb9f95801e3b159751a3e406afa2834540e4219",
+  "purpose": "Missing shortlist target receives zero ranking credit, with no arbitrary tie-order hit."
+}

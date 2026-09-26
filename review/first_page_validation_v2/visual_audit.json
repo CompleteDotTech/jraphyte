@@ -1,0 +1,101 @@
+{
+  "reviewed_at": "2026-09-25T23:54:15.628781+00:00",
+  "reviewer": "assistant visual inspection of original first-page renders",
+  "selection": "Six deliberately selected diagnostic cases; not a random sample or a population accuracy estimate.",
+  "independent_human_review": "outstanding",
+  "scope": "These findings supplement the frozen character metric and do not alter its labels or scores.",
+  "cases": [
+    {
+      "id": "f030",
+      "kind": "boundary",
+      "hold_source_transcription": false,
+      "finding": "The structure-v2 proposal includes body text after the inline 1. Overview. heading. The frozen reference correctly ends before that heading.",
+      "source_sha256": "6520d713e64ac34997870f47b42fb287cb75b6cf449e85d039ceaf26daee6564",
+      "page_sha256": "386787ce750cf589ce70ee487f49a9d6f7eb229aa587a22f74751cc91ca370eb",
+      "image_sha256": "dcdbc55f5f26c49cf15a6630c4f85bad9e0b7d501d20ea42a0f653089d22b0d4",
+      "reference_text_sha256": "49631f206ce6e36099dc86ae1cbb3875c8685e42147c93cfaa7936a7eabaeecc",
+      "assessment_hashes": {
+        "structure_v2": "b7624fc93d9babb6431bbcd9f506d7d607887d8745eb907a0bc9f754d6741042"
+      }
+    },
+    {
+      "id": "f041",
+      "kind": "document_role",
+      "hold_source_transcription": false,
+      "finding": "Page one contains title, authors, affiliations and contact details only. MinerU plus the selector proposes affiliations 6 through 9 as an abstract. Native agreement verifies the words, not their role.",
+      "source_sha256": "564d4b790b1a017054146302363892fe885185023364b30e841ed24d48458b00",
+      "page_sha256": "40ae31884b6e8cd11bab6d9c6b6bb91f87787f3bc0e9e1f862251698a93ae40c",
+      "image_sha256": "d95150c16e690fd0475e8b20217bbe1e5aec8e92cd5a429187e4eab43d5a4f24",
+      "reference_text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "assessment_hashes": {
+        "structure_v2": "7ee12f7ad9a949eb177c06b8716559bea3eb2ac06446feec264d9e82f01396f0",
+        "mineru": "be395cc56766ba3f5e05db03b0bb29e33e8d3efb1a930b2c92ebb4412336c70d",
+        "olmocr": "57db600884f933f97125d0d6849e315ef0e687c35fc5b30449373bb8737b58f3"
+      }
+    },
+    {
+      "id": "f026",
+      "kind": "mathematics",
+      "hold_source_transcription": true,
+      "finding": "The source places 1/(2h) in the density exponent and sqrt(d) in the complexity bound. Native linear text loses fraction/exponent structure; the v2 proposal additionally moves the radical into the earlier density expression. Alphanumeric scoring misses this scientific change.",
+      "source_sha256": "1bf9d98726fddbc3392761f808f4d71231809172186fdc60e8c17453c81ba52c",
+      "page_sha256": "c026561627b09f0e2cc9b0c68759b97bc02cf56a735de5987914dba01acf6940",
+      "image_sha256": "6fdcbe61e895a9b1d61924d8fb158197d4cbd57639efccb12a9e58cd4abd241a",
+      "reference_text_sha256": "39d6947b97ef442920f0c7ebec5e20e45fd527cd8da51c771505a40ccb3f99ee",
+      "assessment_hashes": {
+        "structure_v2": "d4fa6ab3cd649f5c15ca16e37c962cd61c1370617a2527401a01f36c759861f7"
+      }
+    },
+    {
+      "id": "f033",
+      "kind": "mathematics",
+      "hold_source_transcription": true,
+      "finding": "The source has floor((delta-4k)/2) and floor(delta/4). The native reference uses control characters for floor brackets and loses fraction structure. The v2 output further scatters fragments and is held as partial.",
+      "source_sha256": "65973029301905612370255bf53fc2aee0f55b2f1fce103c4f68b13a2da9296b",
+      "page_sha256": "0d503a3f4c0a17694db56a76814846b757ea0847d98ef3daad9eccfbd6a2e2fb",
+      "image_sha256": "8a01e171eb6daf0d108caa8df2bc54baec96bc738996adfd2947453ac666a968",
+      "reference_text_sha256": "6b3fe54fd35c6477cd9560c72f31556508cf5fea540e80785009625cb5cbc205",
+      "assessment_hashes": {
+        "structure_v2": "f1ff490f14d6a8aa21d38534d3c713351ba42bba7263778a513392400a271a83"
+      }
+    },
+    {
+      "id": "h171",
+      "kind": "mathematics",
+      "hold_source_transcription": true,
+      "finding": "Native linearization interleaves form-factor fragments. In the checked CKM expression the page prints 0.009, while the olmOCR output gives 0.0009 and changes some form-factor subscripts. MinerU preserves the checked expressions but is held by native/LaTeX disagreement.",
+      "source_sha256": "f906b65b4f5c89f141610737a6f17888954f3f2851f16cd7e062ba481344d0ef",
+      "page_sha256": "4b3d58f8e7968e915607d3f525a5f928837996ebe8e1a467dce7659215338597",
+      "image_sha256": "953e8130d61189701fb919b07f1ad546974382f525d7dc3852029eb43005b96f",
+      "reference_text_sha256": "1860df21ccba41f47e30890a28769f335635821415e6201755ec1dbfa71571a8",
+      "assessment_hashes": {
+        "structure_v2": "19644814010d39a122f80076f48026158c8819dbd0dec54dbdcda29f6637d5af",
+        "mineru": "5892de2aedfeb24df0bb27af5ba063943a356f77581d95b7bd6b2bd4639ebf38",
+        "olmocr": "87e5073f57c07823bdad4baa006c1305e85fc6c2e596352f2950d27bd72f4ebd"
+      }
+    },
+    {
+      "id": "h172",
+      "kind": "mathematics",
+      "hold_source_transcription": true,
+      "finding": "The page gives R(r)=sqrt(r^2+A^2). Raw MinerU and olmOCR preserve that expression. Structure-v2 and the MinerU adapter substitute native text with a detached leading radical and flattened exponents, yet pass the alphanumeric metric.",
+      "source_sha256": "a8319802381b7df65eac0c30c7aeb85ba05746ff008ec98feb3e6d9cde7c21c3",
+      "page_sha256": "fab3aa33cccccd270d3b9b7ff30a2eb30db85b97bb395513fc5f471f87c68fd9",
+      "image_sha256": "7c6f6ea5e351d74d39d71db431cc4b522828a97e5d09892d37b86226035c04f1",
+      "reference_text_sha256": "d312fbd8d61c14fee02ea53e45eaa1bda68c329dff43816730389922648c4dd1",
+      "assessment_hashes": {
+        "structure_v2": "0348414da2eb5fb5ecbd34e75bede99aad3c83ae5109fcb1bfb613a8b9d05921",
+        "mineru": "243cfb4eff8d08cce96b75add13f284e82f54e450d77b94c89fd134e9e9c1de1",
+        "olmocr": "922e03d2d40dae2c9218077ec2bf660b660b0f710626c1d54b6bf486e3e785b5"
+      }
+    }
+  ],
+  "fresh_request_holds": [
+    "f026",
+    "f033"
+  ],
+  "prior_run_execution_holds": [
+    "h171",
+    "h172"
+  ]
+}

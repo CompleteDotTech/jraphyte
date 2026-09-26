@@ -1,0 +1,33 @@
+{
+  "frozen_at": "2026-09-26T00:24:20.076098+00:00",
+  "reviewer": "assistant",
+  "independent_human_review": "outstanding",
+  "method": "Added100 original page images and native source spans reviewed before opening their predictions. Prior100 labels reused unchanged. Methods frozen before selection; no tuning on added100.",
+  "math_note": "Canonical text matching does not certify mathematical notation; flagged sources require visual review.",
+  "boundary_sensitive_reference": "f151 has an Executive Summary, classified as no abstract; report sensitivity separately.",
+  "counts": {
+    "prior100": {
+      "no_abstract_text": 39,
+      "complete": 56,
+      "partial_on_page_one": 5
+    },
+    "added100": {
+      "complete": 55,
+      "no_abstract_text": 43,
+      "partial_on_page_one": 2
+    },
+    "combined200": {
+      "no_abstract_text": 82,
+      "complete": 111,
+      "partial_on_page_one": 7
+    }
+  },
+  "source_specs_sha256": "a4069f517b25d46d9bcf99388b3097955a546322193599ec1ad801927826cc2a",
+  "source_queries_sha256": "baff13079e536520073ce2496e003cf295c9d8c3dbd59fbfc0beb5887dc65b39",
+  "files": {
+    "labels.json": "9d4990a746a6cbcd29639a56937f7dd71a36cfc8fd1cdc3075b66565c2e180b8",
+    "queries.json": "dc521d6ad32440db2df130abc54f1771ff5aa845442ae2d62a1616e67b0ca8ac",
+    "source_hashes.json": "f5defbb1eff71ebc3e7b4ea5de35dcf0f41d2271cfc12f77f3a12b6f8ef78ae8",
+    "manifest.json": "727489d8d2c89bd9d0f93d0595396853e92cf9b64fde261d7d65a92af30f3fae"
+  }
+}

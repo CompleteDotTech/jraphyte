@@ -119,6 +119,9 @@ The [expanded local comparison](docs/25_first_page_expanded200.md) evaluates all
 six extraction pipelines on 200 papers and local retrieval on 60 queries, with
 no new paid API calls. The [failure audit](docs/26_first_page_failure_root_causes.md)
 traces missed and incorrect proposals to their source-page and parser causes.
+The [parallel source experiment](docs/30_first_page_parallel_experiment.md)
+compares a separate review-only selector on the known 200 papers and a small
+source-first sample; its preservation gate still fails.
 The [implementation prompt](NEXT_AGENT_PROMPT.md) defines the follow-up work and
 its GitHub delivery and verification steps.
 

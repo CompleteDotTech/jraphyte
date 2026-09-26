@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "status": "EXPERIMENTAL_PRESERVATION_GATE_FAILED",
+  "base_public_main": "4db35863e5eb10d05c07f7bfff6591f3e37ee422",
+  "incoming_archive_sha256": "9633b41bf8796f50b45335063ba1b89954bd46c517a0005377b136023579d9a5",
+  "external_evidence_sha256": {
+    "known200_preflight": "0a069907b03c10b6ebc6b36beb0011faa2cec556814e9e38029f75ed6cbdda2d",
+    "known200_protocol": "dd10292e4f8fdd13a565dd219751967b82739c8255414a9b599cc343719a4aa1",
+    "known200_results": "f9ee4f438c8cae7ce192970f7ff172ecbe7c24b3a383d48fe62cf75da7f4102b",
+    "fresh08_manifest": "f2bc9b0a4c0406f2a9295cd054e145a828fa414c669a582ca18a8fb579eb168c",
+    "fresh08_labels": "94cccf0251c905ae08dc5df64f09b4404b01e3f1c02baa35d9a5ad9dc4d55a37",
+    "fresh08_freeze": "f9db0ea001ebc8bd4fef65e2d26fb1d77c3faa73c2685e48106318cfc28562ac",
+    "fresh08_native_diagnostic": "7b33a582717185b746b6c92506d9400c8ec199f888cb28fe3c7abb969eabf076",
+    "synthetic_fixtures": "27c32a9f4003cbeb07041cddf43381cc5893962a3963b48520aa756647c8a97b"
+  },
+  "code_hashes": {
+    "trace_gc/pdf_source_parallel_v4.py": "df31e8d09cfe1502153ded6e87ca8ac9aad6d1b46012a6e7bf10b099a840f7e5",
+    "trace_gc/pdf_structure_parallel_v4.py": "9818f1ff0afda2350dc1a7e39fbe503c4ff8d9d23f7a2dcaea54b374f42258e7",
+    "src/parallel_source_v4/__init__.py": "7c433293ab7d45eba066ccf6a6351239b985a89621471403c4dabdbff0d48ae4",
+    "src/parallel_source_v4/adapters.py": "6279ace17b17372a784318741e03e977b7d9a1ace6c0562b0c44d6b454a8b7d9",
+    "src/parallel_source_v4/common.py": "d1ba0d0baa081ef1bd3280cc009b03121701b3b49184d6ee6ed98600af7c8f1f",
+    "src/parallel_source_v4/extraction.py": "bda230bece7a4b3cda308f9bebed3991e421d074b82d1770e21f748a4e17415b",
+    "src/parallel_source_v4/fields.py": "ee50cf230f4b7cba92a20b42a93fd66154a93439ec7ef2fb3b49854b5bab562a",
+    "src/parallel_source_v4/freeze.py": "2d84e014233b6c1e4cb4720a3344e26d3d86f002f73d558a61c6b2b2b19f18b6",
+    "src/parallel_source_v4/metrics.py": "da671b664c34598022c5fc1d20ab0ba77d004551909e49c3d0eaaf61285a8751",
+    "src/parallel_source_v4/prepare.py": "6197dadc16509d6cff7088dd79970126f4e18c75623da10f9668b33fc526bd98",
+    "src/parallel_source_v4/retrieval.py": "cbf0e2087b4fe0f728b98ef5ea08dea74d6426c462f07fc34a26c617e1ef1c9f"
+  },
+  "known200": {
+    "sources_verified": 200,
+    "complete_available": 111,
+    "partial_on_page_one": 7,
+    "no_first_page_abstract": 82,
+    "saved_v2_replay": "PASS",
+    "v2_baseline": {
+      "proposed": 96,
+      "correct_proposals_98": 91,
+      "false_proposals": 5
+    },
+    "methods": {
+      "parallel_grobid_v4": {
+        "proposed": 33,
+        "correct_proposals_98": 33,
+        "false_proposals": 0,
+        "complete_abstracts_withheld": 78,
+        "boundary_and_98_correct_proposals": 33,
+        "wrong_proposal_ids": [],
+        "conversion_states": {
+          "error": 1,
+          "success": 199
+        }
+      },
+      "parallel_mineru_v4": {
+        "proposed": 39,
+        "correct_proposals_98": 38,
+        "false_proposals": 1,
+        "complete_abstracts_withheld": 72,
+        "boundary_and_98_correct_proposals": 38,
+        "wrong_proposal_ids": [
+          "f039"
+        ],
+        "conversion_states": {
+          "success": 200
+        }
+      },
+      "parallel_olmocr_v4": {
+        "proposed": 40,
+        "correct_proposals_98": 40,
+        "false_proposals": 0,
+        "complete_abstracts_withheld": 71,
+        "boundary_and_98_correct_proposals": 40,
+        "wrong_proposal_ids": [],
+        "conversion_states": {
+          "success": 197,
+          "truncated": 3
+        }
+      },
+      "parallel_structure_v4": {
+        "proposed": 38,
+        "correct_proposals_98": 38,
+        "false_proposals": 0,
+        "complete_abstracts_withheld": 73,
+        "boundary_and_98_correct_proposals": 38,
+        "wrong_proposal_ids": [],
+        "conversion_states": {
+          "success": 200
+        }
+      }
+    },
+    "preserve_91_gate": "FAIL",
+    "lost_prior_correct": 55
+  },
+  "fresh08": {
+    "source_first_freeze_sha256": "3c2ba0be92f93534416d5fa4152992e8a1cd3e1a6740aede2e351ee6fb9dd1b1",
+    "review_attribution": "assistant_only",
+    "complete_available": 6,
+    "math_uncertain": 2,
+    "native_only_methods": {
+      "merged_v3_native_only": {
+        "proposed": 0,
+        "correct_proposals_98": 0,
+        "false_proposals": 0,
+        "complete_abstracts_withheld": 6
+      },
+      "parallel_v4_native_only": {
+        "proposed": 1,
+        "correct_proposals_98": 1,
+        "false_proposals": 0,
+        "complete_abstracts_withheld": 5
+      }
+    },
+    "full_conversion_pipeline_tested": false
+  },
+  "authored_fixtures": {
+    "pages": 5,
+    "confirmed": 5,
+    "independent_human_validation": "outstanding"
+  },
+  "full_validation": {
+    "status": "PASS_WITH_EXTERNAL_GATES",
+    "tests_run": 527,
+    "tests_passed": 523,
+    "skipped": 4,
+    "failures": 0,
+    "errors": 0
+  },
+  "new_paid_api_calls": 0,
+  "measured_api_spend_usd": 0,
+  "production_graph_writes": 0,
+  "automatic_promotion": false,
+  "independent_human_validation": "outstanding",
+  "retrieval_10000_measured": false
+}

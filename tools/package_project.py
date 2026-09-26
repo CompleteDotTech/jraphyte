@@ -14,7 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 RELEASE = "0.4.0"
 DENIED_DIRS = {".git", ".venv", "venv", "__pycache__", ".cache", ".pytest_cache", ".mypy_cache",
                ".ruff_cache", "build", "dist", "tmp", "temp", "outputs", "model_weights", "weights",
-               "models", "huggingface", "trace-gc_realpaper_test", "validation_v3_private"}
+               "models", "huggingface", "trace-gc_realpaper_test", "validation_v3_private",
+               "pages", "docling", "mineru", "olmocr", "grobid", "private"}
 DENIED_SUFFIXES = {".pdf", ".pt", ".pth", ".bin", ".safetensors", ".ckpt", ".gguf", ".onnx", ".h5",
                    ".hdf5", ".npy", ".npz", ".pkl", ".pickle", ".pyc", ".pyo", ".sqlite", ".sqlite3",
                    ".db", ".tmp", ".log", ".zip", ".whl", ".tar", ".gz", ".bz2", ".7z", ".pem", ".key"}

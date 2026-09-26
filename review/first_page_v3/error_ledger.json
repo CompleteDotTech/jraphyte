@@ -1,0 +1,266 @@
+{
+  "cases": [
+    {
+      "id": "f030",
+      "saved_audit_evidence": "Overview body text included with the abstract, including same-region text.",
+      "v3_change": "Structural source-line/run boundaries and inline heading separation; require a closing boundary.",
+      "focused_tests": [
+        "test_inline_overview_in_same_region_is_not_abstract",
+        "test_inline_overview_old_proposal_contains_body_new_excludes_it",
+        "test_bold_inline_heading_native_run_closes_same_region"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f119",
+      "saved_audit_evidence": "A separate colored synopsis was absorbed into the abstract.",
+      "v3_change": "Detect source style transition at paragraph boundary; retain safe prefix as uncertain, not a complete automatic proposal.",
+      "focused_tests": [
+        "test_colored_synopsis_old_accepts_new_holds_safe_prefix",
+        "test_vector_colored_panel_is_detected_when_font_color_is_unchanged"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f150",
+      "saved_audit_evidence": "Wrong column selected; the bold abstract is on the left.",
+      "v3_change": "Use native region anchors/style and bounded columns, not tree-first or universal left preference.",
+      "focused_tests": [
+        "test_wrong_tree_order_cannot_select_other_column",
+        "test_right_column_abstract_is_not_replaced_by_left_preference"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f192",
+      "saved_audit_evidence": "Dedication included in the selected abstract.",
+      "v3_change": "General dedication metadata boundary, including inline text.",
+      "focused_tests": [
+        "test_inline_dedication_is_not_abstract",
+        "test_inline_dedication_old_accepts_new_excludes"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f199",
+      "saved_audit_evidence": "Author list proposed as an abstract.",
+      "v3_change": "Author-list/affiliation/author-note roles cannot become abstract proposals from a matching scholarly field.",
+      "focused_tests": [
+        "test_author_list_is_not_unlabelled_abstract_even_with_field",
+        "test_affiliation_is_not_abstract_even_if_field_matches",
+        "test_author_note_field_cannot_create_abstract"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f076",
+      "saved_audit_evidence": "Image-only cover with empty index fields; GROBID HTTP 500.",
+      "v3_change": "Keep isolated conversion error and native-unlocated hold; permit retrieval-only source-image-reviewed transcription, never an invented abstract.",
+      "focused_tests": [
+        "test_grobid_error_is_isolated_even_with_nonempty_field",
+        "test_empty_image_page_needs_source_review"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f115",
+      "saved_audit_evidence": "Graphical Abstract used as title; real title only in body; historical full-page BM25 rank 44 versus BM25F 226.",
+      "v3_change": "Reject page labels as titles; retain native body channel; union full-page BM25 before reranking without target insertion.",
+      "focused_tests": [
+        "test_graphical_abstract_label_does_not_replace_article_title",
+        "test_full_page_channel_restores_candidate_lost_by_title_channels"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f020",
+      "saved_audit_evidence": "Labelled target ranked second by local reranker; competing result not judged.",
+      "v3_change": "Keep ranked competitor and target rank separate from relevance judgement. No target injection.",
+      "focused_tests": [
+        "test_unjudged_top_result_not_marked_irrelevant",
+        "test_metrics_reject_target_inserted_by_reranker"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f009",
+      "saved_audit_evidence": "GROBID non-abstract-field examples in the saved audit (highlights, key points, cover/jacket material or caption).",
+      "v3_change": "Field must match a bounded real first-page abstract region; field existence is not evidence of complete abstract.",
+      "focused_tests": [
+        "test_highlights_key_points_and_executive_summary_remain_absent",
+        "test_partial_is_not_complete_even_with_matching_grobid_field"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f152",
+      "saved_audit_evidence": "GROBID non-abstract-field examples in the saved audit (highlights, key points, cover/jacket material or caption).",
+      "v3_change": "Field must match a bounded real first-page abstract region; field existence is not evidence of complete abstract.",
+      "focused_tests": [
+        "test_highlights_key_points_and_executive_summary_remain_absent",
+        "test_partial_is_not_complete_even_with_matching_grobid_field"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f185",
+      "saved_audit_evidence": "GROBID non-abstract-field examples in the saved audit (highlights, key points, cover/jacket material or caption).",
+      "v3_change": "Field must match a bounded real first-page abstract region; field existence is not evidence of complete abstract.",
+      "focused_tests": [
+        "test_highlights_key_points_and_executive_summary_remain_absent",
+        "test_partial_is_not_complete_even_with_matching_grobid_field"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f104",
+      "saved_audit_evidence": "GROBID non-abstract-field examples in the saved audit (highlights, key points, cover/jacket material or caption).",
+      "v3_change": "Field must match a bounded real first-page abstract region; field existence is not evidence of complete abstract.",
+      "focused_tests": [
+        "test_highlights_key_points_and_executive_summary_remain_absent",
+        "test_partial_is_not_complete_even_with_matching_grobid_field"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f061",
+      "saved_audit_evidence": "Saved olmOCR 4096-token truncations on absent pages.",
+      "v3_change": "Keep generation truncation distinct from completeness and 4000-character request budget; never slice into a complete proposal.",
+      "focused_tests": [
+        "test_generation_cap_and_request_budget_are_separate",
+        "test_budget_over_4000_never_silently_slices_source"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f072",
+      "saved_audit_evidence": "Saved olmOCR 4096-token truncations on absent pages.",
+      "v3_change": "Keep generation truncation distinct from completeness and 4000-character request budget; never slice into a complete proposal.",
+      "focused_tests": [
+        "test_generation_cap_and_request_budget_are_separate",
+        "test_budget_over_4000_never_silently_slices_source"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f095",
+      "saved_audit_evidence": "Saved olmOCR 4096-token truncations on absent pages.",
+      "v3_change": "Keep generation truncation distinct from completeness and 4000-character request budget; never slice into a complete proposal.",
+      "focused_tests": [
+        "test_generation_cap_and_request_budget_are_separate",
+        "test_budget_over_4000_never_silently_slices_source"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f023",
+      "saved_audit_evidence": "Saved fallback outcomes on primary abstentions: MinerU +1 correct/+3 wrong; olmOCR +0 correct/+1 wrong.",
+      "v3_change": "Measure paired additions but leave automatic fallback disabled.",
+      "focused_tests": [
+        "test_fallback_measurement_never_enables_automatic_use"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f041",
+      "saved_audit_evidence": "Saved fallback outcomes on primary abstentions: MinerU +1 correct/+3 wrong; olmOCR +0 correct/+1 wrong.",
+      "v3_change": "Measure paired additions but leave automatic fallback disabled.",
+      "focused_tests": [
+        "test_fallback_measurement_never_enables_automatic_use"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f128",
+      "saved_audit_evidence": "Saved fallback outcomes on primary abstentions: MinerU +1 correct/+3 wrong; olmOCR +0 correct/+1 wrong.",
+      "v3_change": "Measure paired additions but leave automatic fallback disabled.",
+      "focused_tests": [
+        "test_fallback_measurement_never_enables_automatic_use"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f136",
+      "saved_audit_evidence": "Saved fallback outcomes on primary abstentions: MinerU +1 correct/+3 wrong; olmOCR +0 correct/+1 wrong.",
+      "v3_change": "Measure paired additions but leave automatic fallback disabled.",
+      "focused_tests": [
+        "test_fallback_measurement_never_enables_automatic_use"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f068",
+      "saved_audit_evidence": "Saved fallback outcomes on primary abstentions: MinerU +1 correct/+3 wrong; olmOCR +0 correct/+1 wrong.",
+      "v3_change": "Measure paired additions but leave automatic fallback disabled.",
+      "focused_tests": [
+        "test_fallback_measurement_never_enables_automatic_use"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    },
+    {
+      "id": "f151",
+      "saved_audit_evidence": "Executive Summary is a documented boundary-sensitive no-separate-abstract reference.",
+      "v3_change": "Preserve reference; do not relabel as Abstract to improve recall.",
+      "focused_tests": [
+        "test_highlights_key_points_and_executive_summary_remain_absent"
+      ],
+      "actual_source_case_status": "UNVERIFIED_SOURCE_UNAVAILABLE",
+      "needed": "Original first-page image, native spans, reading-order tree and relevant cached conversion/assessment; do not infer a corrected paper result from this fixture."
+    }
+  ],
+  "group_holds": [
+    {
+      "group": "structure_v2_withheld_complete",
+      "historical_count": 16,
+      "matching_text_count": 8,
+      "case_ids": null,
+      "status": "saved per-case assessments/source review required; do not invent IDs from aggregate counts"
+    },
+    {
+      "group": "olmocr_withheld_complete",
+      "historical_count": 69,
+      "matching_text_count": 41,
+      "native_agreement_failures_among_matching": 39,
+      "case_ids": null,
+      "status": "cached conversions/source review required; exact interval alignment is tested only on fixtures"
+    }
+  ],
+  "math_source_review_holds": [
+    "f026",
+    "f033",
+    "f103",
+    "f111",
+    "f122",
+    "f125",
+    "f131",
+    "f142",
+    "f146",
+    "f153",
+    "f154",
+    "f158",
+    "f166",
+    "f189"
+  ],
+  "independent_human_validation": "outstanding",
+  "reference_corrections_made": []
+}

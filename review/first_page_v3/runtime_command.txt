@@ -1,0 +1,10 @@
+{
+  "status": "PASS_WITH_EXTERNAL_GATES",
+  "tests_run": 391,
+  "tests_passed": 390,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 1,
+  "provider_calls": 0,
+  "production_graph_writes": 0
+}

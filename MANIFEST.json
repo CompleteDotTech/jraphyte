@@ -2,7 +2,8 @@
   "release": "0.4.0",
   "hash_algorithm": "SHA-256",
   "manifest_self_excluded": true,
-  "file_count": 334,
+  "source_only": true,
+  "file_count": 367,
   "files": [
     {
       "path": ".github/workflows/test.yml",
@@ -11,8 +12,8 @@
     },
     {
       "path": ".gitignore",
-      "bytes": 132,
-      "sha256": "6521f27edb68d2d4e0049db2ef637040450849645eedbb6dea5563f026928a28"
+      "bytes": 417,
+      "sha256": "15e2eeef2becea2dcbdb4db232f9529d2ccfe5664ae526fb74cf92bda9de9e14"
     },
     {
       "path": "CHANGELOG.md",
@@ -560,6 +561,21 @@
       "sha256": "d24044f301674f7ec98790728b0ee001e1d7513bf0a8817553f6be53d6d82f43"
     },
     {
+      "path": "docs/27_first_page_source_v3.md",
+      "bytes": 16606,
+      "sha256": "1e9b5404aa24bef413d1a7e8b7c2f85b0794c6c1d7c4fe2ef211a68929f1fc2f"
+    },
+    {
+      "path": "docs/28_first_page_v3_reproduction.md",
+      "bytes": 13131,
+      "sha256": "99bf9ea6dbb0964469d5a697c8a631d1b7dfa7de81e4c190710ed9446ce8e09e"
+    },
+    {
+      "path": "docs/29_first_page_v3_integration.md",
+      "bytes": 6151,
+      "sha256": "3b428ea0615e25ad111b0a14eac15b392cd59d77a6791a2cf4f1c2115dc9d2d8"
+    },
+    {
       "path": "examples/bundle.json",
       "bytes": 21159,
       "sha256": "e5444fa28bf7f67e3505de071ef968ff15ed677558aa59f005c23aa9505d95b1"
@@ -743,6 +759,81 @@
       "path": "review/first_page_expanded200/visual_audit.json",
       "bytes": 1364,
       "sha256": "95b0512d8bd3a93f215281fec35d5b9eb7724fa38726c375444a0dd63f6bb4f6"
+    },
+    {
+      "path": "review/first_page_v3/change_manifest.json",
+      "bytes": 6877,
+      "sha256": "60c9b3a286dce16e5ba24b748c121297d5643217aa301a8768303e7c7c01e525"
+    },
+    {
+      "path": "review/first_page_v3/comparison_status.json",
+      "bytes": 3922,
+      "sha256": "481d7cbaeaf144707985629f4482f07112d57db09becb07d5291d9dd6d968af8"
+    },
+    {
+      "path": "review/first_page_v3/delivery_gate.json",
+      "bytes": 1397,
+      "sha256": "62a2dcc183820f4158bb3acf2a67f2879112353fedb76a50effb78cdf3a4190a"
+    },
+    {
+      "path": "review/first_page_v3/error_ledger.json",
+      "bytes": 14947,
+      "sha256": "f2d3aef3a2b174403b8da2173948578c2656d0f496a503ad0b92acb5211de278"
+    },
+    {
+      "path": "review/first_page_v3/focused_tests.txt",
+      "bytes": 12855,
+      "sha256": "4ab3bc76485713e8f12a1412154f54022fdcb696208eccd92098ba0ce6d8e408"
+    },
+    {
+      "path": "review/first_page_v3/frozen_v2_tests.txt",
+      "bytes": 958,
+      "sha256": "e1e55c93b2ba1abd359161e7aa2b1889ef7169aedea92c3738f26321edba47ad"
+    },
+    {
+      "path": "review/first_page_v3/integration_result.json",
+      "bytes": 3131,
+      "sha256": "48afba6108ba2f435429e1d2dec83aad20fb8ec04c3804ad6d6dd1b99d5eb70d"
+    },
+    {
+      "path": "review/first_page_v3/package_validation.txt",
+      "bytes": 267,
+      "sha256": "6d27930b4bb6d14f39b216dc353335a07033db6e82ab9e03d61427418442d6eb"
+    },
+    {
+      "path": "review/first_page_v3/protocol.json",
+      "bytes": 2070,
+      "sha256": "50c2f14b0cfed6e65db9784c5248f83b1b90090265b61b996b1b2160fdb96c19"
+    },
+    {
+      "path": "review/first_page_v3/regression_command.txt",
+      "bytes": 87,
+      "sha256": "4fa77a2a4d94662d7c4e1d763a691e808ece6bff6f4f902f0793fc0b0fde3b3a"
+    },
+    {
+      "path": "review/first_page_v3/regression_gate.json",
+      "bytes": 547,
+      "sha256": "ca1cd39a0805f9f81ed56d806b1020aa8d2ab128baa8e185abae3d8007afacee"
+    },
+    {
+      "path": "review/first_page_v3/runtime_command.txt",
+      "bytes": 189,
+      "sha256": "935ddb6eed0a24f2c459ab8720c9cbbafeeeae9302f6f6dd72038f08501c90af"
+    },
+    {
+      "path": "review/first_page_v3/runtime_report.json",
+      "bytes": 68404,
+      "sha256": "a50f47e430c769ade1ea9d27ce9854cab272574480d4d720b076adcf8c542f77"
+    },
+    {
+      "path": "review/first_page_v3/validation_scope.json",
+      "bytes": 3090,
+      "sha256": "ccd07457aacaf5c1fe240bb9068c054b359a5c98cea393ebcc6b12a6acfa1a1a"
+    },
+    {
+      "path": "review/first_page_v3/verified_baseline_bytes.json",
+      "bytes": 1812,
+      "sha256": "2fe8265ea7caaea9167d1e57ece812f9b1a835fd165462987ca1c55e1bd50100"
     },
     {
       "path": "review/first_page_validation_200_10k.json",
@@ -1205,6 +1296,51 @@
       "sha256": "52731682eb2a5ad8dea2fb4ccf5bf443f29e10dcb00cdd09daf9ed7d4e2e39ad"
     },
     {
+      "path": "src/abstract_validation_v3/__init__.py",
+      "bytes": 84,
+      "sha256": "47bfcaca14ddd02c6e61dd76f277e7131f34d71cbc8fe631e82c2fcf199087fc"
+    },
+    {
+      "path": "src/abstract_validation_v3/adapters.py",
+      "bytes": 8208,
+      "sha256": "16a0418b3b9972daff7a10218b11f7233f6a2a33161971693f56840a48374249"
+    },
+    {
+      "path": "src/abstract_validation_v3/common.py",
+      "bytes": 2694,
+      "sha256": "2da9ee74a12530f623b783a31a2b50153b99cb23b4a674064a345b2336dace17"
+    },
+    {
+      "path": "src/abstract_validation_v3/evaluate.py",
+      "bytes": 16832,
+      "sha256": "fa40cfa6455aedb4209b4e9c53f10a285831bb5cd4188f6d3a30814342c0e013"
+    },
+    {
+      "path": "src/abstract_validation_v3/freeze.py",
+      "bytes": 9677,
+      "sha256": "5e80970b6f99699d9ef6f791ca6fcd0064bcfb68225ab37945eaced518f3101e"
+    },
+    {
+      "path": "src/abstract_validation_v3/local_reranker.py",
+      "bytes": 4571,
+      "sha256": "57b8337f3c65bdbfea0cd65a9710fd90b51ea88b3c5cdc68b959c90f479a465f"
+    },
+    {
+      "path": "src/abstract_validation_v3/prepare.py",
+      "bytes": 3267,
+      "sha256": "64baa6a85dcfb72f54832efafbf7836ea0367115ed3f04c34de8822c1fff31a6"
+    },
+    {
+      "path": "src/abstract_validation_v3/retrieval.py",
+      "bytes": 9082,
+      "sha256": "f2817276fbf2578555d14ffa4740362081876db2590096701c32ccc0508c1af8"
+    },
+    {
+      "path": "src/abstract_validation_v3/retrieval_experiment.py",
+      "bytes": 9749,
+      "sha256": "f665aa1f7c2b55cc00bbd5930d1c0847767ff696bc8aff59f4c4832ef8e45978"
+    },
+    {
       "path": "tests/test_abstract_validation.py",
       "bytes": 2304,
       "sha256": "61bfe534927e0d870b1b2003056d3a9650dd5ead4611c2718f9a4f14cf8d52da"
@@ -1218,6 +1354,26 @@
       "path": "tests/test_expanded_retrieval.py",
       "bytes": 1032,
       "sha256": "409bf8e0edb9ffcd106ec17efbb9f95801e3b159751a3e406afa2834540e4219"
+    },
+    {
+      "path": "tests/test_first_page_retrieval_v3.py",
+      "bytes": 7718,
+      "sha256": "b0adc0e375515c52757d7d439420122712251e414720dbc2f4da93ed1d806c8f"
+    },
+    {
+      "path": "tests/test_first_page_v3_differential.py",
+      "bytes": 4810,
+      "sha256": "72dd709be0560bbbaad0c47059a598de0ec51a0d4f2c8cd4e89b13d363a95c59"
+    },
+    {
+      "path": "tests/test_first_page_v3_io.py",
+      "bytes": 12673,
+      "sha256": "90738fcb98635598c5599e99482904da17cd4a3514a62432ddb17cea16289f70"
+    },
+    {
+      "path": "tests/test_first_page_v3_local_models.py",
+      "bytes": 5447,
+      "sha256": "e901a95bede06d6d2a2c16b04152267eb01265ca65420d1d8f8b38c2488f2c26"
     },
     {
       "path": "tests/test_graphrag_evaluation.py",
@@ -1248,6 +1404,11 @@
       "path": "tests/test_pdf_evidence.py",
       "bytes": 6249,
       "sha256": "2cf43b45e5d9844aaecd780d445a845a4cf2df7c6381ab8495f079078068442e"
+    },
+    {
+      "path": "tests/test_pdf_source_v3.py",
+      "bytes": 16450,
+      "sha256": "27dbb34dfaf7ed858d83ebc427389cddb3e9914ec116f63548a09b602a40b9e0"
     },
     {
       "path": "tests/test_pdf_structure.py",
@@ -1296,8 +1457,8 @@
     },
     {
       "path": "tools/package_project.py",
-      "bytes": 2587,
-      "sha256": "40c33dd6910d4439335087390d38b95a613ee5db40ec61901799a74ca2d6e89d"
+      "bytes": 8193,
+      "sha256": "557a537ba9cc2a6dbbbf084500a2c7ea2128bdbc51cefca14e21b4af19d1bb70"
     },
     {
       "path": "tools/retrieval_schemas.py",
@@ -1538,6 +1699,11 @@
       "path": "trace_gc/pdf_evidence.py",
       "bytes": 15367,
       "sha256": "5a76e52b0cc27e8e9c61ee28eb11b41b29d5b78233b7a4e91f0d93c8ff710aeb"
+    },
+    {
+      "path": "trace_gc/pdf_source_v3.py",
+      "bytes": 33218,
+      "sha256": "973a130a757e0483063ec167bb63a918a95114dc2f4be08c5ad857bfdc39a3d4"
     },
     {
       "path": "trace_gc/pdf_structure.py",

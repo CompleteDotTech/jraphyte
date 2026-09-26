@@ -1,0 +1,143 @@
+{
+  "cohort": "known_regression200",
+  "baseline_source": "docs/25_first_page_expanded200.md and review/first_page_expanded200/results.json at 02e9c1fc530bec1b9a766caa4282ada2e5b957bf",
+  "counts": {
+    "complete": 111,
+    "partial": 7,
+    "absent": 82
+  },
+  "historical_baseline_not_rerun": [
+    {
+      "method": "current",
+      "proposed": 100,
+      "correct_proposals_98": 77,
+      "withheld_complete": 13,
+      "false_proposals": 23,
+      "wrong_complete": 21,
+      "partial_or_absent_false_proposals": 2,
+      "boundary_and_98_correct_proposals": 70,
+      "proposal_precision_98": 0.77,
+      "correct_proposal_recall_98": 0.6936936936936937
+    },
+    {
+      "method": "geometry_v1",
+      "proposed": 99,
+      "correct_proposals_98": 80,
+      "withheld_complete": 19,
+      "false_proposals": 19,
+      "wrong_complete": 12,
+      "partial_or_absent_false_proposals": 7,
+      "boundary_and_98_correct_proposals": 80,
+      "proposal_precision_98": 0.8080808080808081,
+      "correct_proposal_recall_98": 0.7207207207207207
+    },
+    {
+      "method": "grobid",
+      "proposed": 113,
+      "correct_proposals_98": 92,
+      "withheld_complete": 13,
+      "false_proposals": 21,
+      "wrong_complete": 6,
+      "partial_or_absent_false_proposals": 15,
+      "boundary_and_98_correct_proposals": 89,
+      "proposal_precision_98": 0.8141592920353983,
+      "correct_proposal_recall_98": 0.8288288288288288
+    },
+    {
+      "method": "structure_v2",
+      "proposed": 96,
+      "correct_proposals_98": 91,
+      "withheld_complete": 16,
+      "false_proposals": 5,
+      "wrong_complete": 4,
+      "partial_or_absent_false_proposals": 1,
+      "boundary_and_98_correct_proposals": 90,
+      "proposal_precision_98": 0.9479166666666666,
+      "correct_proposal_recall_98": 0.8198198198198198
+    },
+    {
+      "method": "mineru",
+      "proposed": 83,
+      "correct_proposals_98": 77,
+      "withheld_complete": 30,
+      "false_proposals": 6,
+      "wrong_complete": 4,
+      "partial_or_absent_false_proposals": 2,
+      "boundary_and_98_correct_proposals": 75,
+      "proposal_precision_98": 0.927710843373494,
+      "correct_proposal_recall_98": 0.6936936936936937
+    },
+    {
+      "method": "olmocr",
+      "proposed": 43,
+      "correct_proposals_98": 41,
+      "withheld_complete": 69,
+      "false_proposals": 2,
+      "wrong_complete": 1,
+      "partial_or_absent_false_proposals": 1,
+      "boundary_and_98_correct_proposals": 34,
+      "proposal_precision_98": 0.9534883720930233,
+      "correct_proposal_recall_98": 0.36936936936936937
+    }
+  ],
+  "new_v3": {
+    "real_pages_evaluated": 0,
+    "proposal_precision_98": null,
+    "correct_proposal_recall_98": null,
+    "boundary_accuracy": null,
+    "false_proposals": null,
+    "withheld_complete": null,
+    "ocr_states": null,
+    "source_hash_verification": "NOT_RUN",
+    "preserve_91_gate": "NOT_RUN"
+  },
+  "new_unseen_cohort": {
+    "real_pages_frozen": 0,
+    "real_pages_evaluated": 0,
+    "precision": null,
+    "recall": null,
+    "status": "NOT_RUN"
+  },
+  "historical_retrieval": {
+    "queries": 60,
+    "documents": 10000,
+    "local_reranker": {
+      "top_1": 57,
+      "top_10": 58,
+      "mrr": 0.9583333333333334,
+      "candidate_coverage_count": 58
+    }
+  },
+  "new_retrieval": {
+    "queries": 0,
+    "documents": 0,
+    "top_1": null,
+    "top_10": null,
+    "mrr": null,
+    "candidate_coverage": null,
+    "reranker_model_run": false
+  },
+  "historical_fallback_on_primary_abstentions": {
+    "mineru": {
+      "correct": [
+        "f023"
+      ],
+      "wrong": [
+        "f041",
+        "f128",
+        "f136"
+      ]
+    },
+    "olmocr": {
+      "correct": [],
+      "wrong": [
+        "f068"
+      ]
+    }
+  },
+  "new_fallback_increment": null,
+  "automatic_fallback_enabled": false,
+  "paid_model_provider_calls": 0,
+  "paid_model_spend_usd": 0,
+  "independent_human_validation": "outstanding"
+}

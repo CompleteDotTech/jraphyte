@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "schema_count": 12,
+  "record_count": 17,
+  "model_calls": 0,
+  "graph_commits": 0,
+  "calibration_qualified": false,
+  "scope": "Hardened legacy synthetic fixture contracts; no publication authority. Runtime v0.3 uses trace_gc.validation."
+}

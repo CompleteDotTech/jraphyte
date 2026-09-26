@@ -1,0 +1,42 @@
+{
+  "main": "02e9c1fc530bec1b9a766caa4282ada2e5b957bf",
+  "files": {
+    "trace_gc/pdf_evidence.py": {
+      "git_blob": "b5893f8f2a7885a3e7e6dac15782e555f376ff5e",
+      "sha256": "5a76e52b0cc27e8e9c61ee28eb11b41b29d5b78233b7a4e91f0d93c8ff710aeb"
+    },
+    "trace_gc/pdf_structure.py": {
+      "git_blob": "659577c08d21d813c061622c41b6465d2f79498c",
+      "sha256": "ff84ed19946281f5d93d8cad3845ef1af0bccb03672ce71d05c80e23b03227f8"
+    },
+    "trace_gc/pdf_admission.py": {
+      "git_blob": "9c727ee777ea8040010de5284056967bd667fb2e",
+      "sha256": "9b0c1acde9323720905aa7509e6c66f592accf88a22327fe882d10882fc1b854"
+    },
+    "trace_gc/budget.py": {
+      "git_blob": "7efe007f1855873a0b5a2104075f9067e66f82f7",
+      "sha256": "cbb9e7cb4e15bbcafdc37e89d9eb95938580dcce6b20c67d7c5bd84d4a08aa88"
+    },
+    "trace_gc/backend.py": {
+      "git_blob": "ab1a9c349a743ece134a01c42b6b382d9ba466ec",
+      "sha256": "4e27a9da835803e7457ee4a9d75b1700752eb83b785ad54991c7cb7d6451afc9"
+    },
+    "trace_gc/adapter.py": {
+      "git_blob": "0b8285a9a5f620f0ae690684cbf095ab779fa77e",
+      "sha256": "97677b5d7b4e80d80bf9642c11bc868c773cf958e81ab93664933a1ef89e8b02"
+    },
+    "tools/run_validation.py": {
+      "git_blob": "d3a9981c952402b132243711d4d7fc347f2e1f69",
+      "sha256": "aea3f70fc525b1308d2254689a43c50a7ae8708bd0599a6d9c5ed880d0775df3"
+    },
+    "tools/validate_package.py": {
+      "git_blob": "d561fdc0ffbf363bc2c13bb23c5372292b1a2ccc",
+      "sha256": "d461d0c14365d97630ea216608cdbb095e3f8806e76a0a954ea2dfcdbbee655a"
+    },
+    "tests/test_pdf_structure.py": {
+      "git_blob": "09cb930fea2a32e8a1b549cdccdf463d421d43a2",
+      "sha256": "bc24e96e8daca24fa807649fd5b535cc27b3aa08ce5e197954705e82e8124e56"
+    }
+  },
+  "scope": "These exact files only; not a verified entire main snapshot."
+}

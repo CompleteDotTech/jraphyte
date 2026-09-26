@@ -1,0 +1,20 @@
+{
+  "api_calls": 0,
+  "api_spend_usd": 0,
+  "cohort": "known_regression200",
+  "gate": "regression_source_inputs_unavailable",
+  "graph_writes": 0,
+  "newly_unseen_pages": 0,
+  "pages_evaluated": 0,
+  "precision": null,
+  "recall": null,
+  "required_artifacts": [
+    "authorized source PDFs",
+    "retained page PDFs/renders/native spans",
+    "cached conversions and saved assessments",
+    "frozen labels/protocol/source hashes"
+  ],
+  "runtime_seconds": 3.0516000151692424e-05,
+  "source_hash_verification": "NOT_RUN",
+  "status": "BLOCKED"
+}

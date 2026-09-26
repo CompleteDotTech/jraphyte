@@ -3,7 +3,7 @@
   "hash_algorithm": "SHA-256",
   "manifest_self_excluded": true,
   "source_only": true,
-  "file_count": 367,
+  "file_count": 385,
   "files": [
     {
       "path": ".github/workflows/test.yml",
@@ -37,8 +37,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 11840,
-      "sha256": "b9eb65fd73afd4e75dbd78e48bf46da1420dc3da2fddb262004fd3cb3641d6b0"
+      "bytes": 12049,
+      "sha256": "7d5d78ce9f72dc259e2457cb79121d2e0723b63a99c3003ca0d82c37ebdf51b6"
     },
     {
       "path": "SECURITY.md",
@@ -576,6 +576,16 @@
       "sha256": "3b428ea0615e25ad111b0a14eac15b392cd59d77a6791a2cf4f1c2115dc9d2d8"
     },
     {
+      "path": "docs/30_first_page_parallel_experiment.md",
+      "bytes": 4005,
+      "sha256": "57af8136521d39f60e0714acf34f3de18321fb9d9948d644bb7129d983ea60d0"
+    },
+    {
+      "path": "docs/31_first_page_parallel_reproduction.md",
+      "bytes": 4197,
+      "sha256": "10f6b670a3c4b138d37de9173c41b689fd22f6807556a2237a3e64875999a366"
+    },
+    {
       "path": "examples/bundle.json",
       "bytes": 21159,
       "sha256": "e5444fa28bf7f67e3505de071ef968ff15ed677558aa59f005c23aa9505d95b1"
@@ -759,6 +769,11 @@
       "path": "review/first_page_expanded200/visual_audit.json",
       "bytes": 1364,
       "sha256": "95b0512d8bd3a93f215281fec35d5b9eb7724fa38726c375444a0dd63f6bb4f6"
+    },
+    {
+      "path": "review/first_page_parallel_v4/integration_result.json",
+      "bytes": 5125,
+      "sha256": "e3322a012b01f1619805e249f2e35d87d3e8f7f5b434c69f2c50873e131e10a3"
     },
     {
       "path": "review/first_page_v3/change_manifest.json",
@@ -1341,6 +1356,51 @@
       "sha256": "f665aa1f7c2b55cc00bbd5930d1c0847767ff696bc8aff59f4c4832ef8e45978"
     },
     {
+      "path": "src/parallel_source_v4/__init__.py",
+      "bytes": 79,
+      "sha256": "7c433293ab7d45eba066ccf6a6351239b985a89621471403c4dabdbff0d48ae4"
+    },
+    {
+      "path": "src/parallel_source_v4/adapters.py",
+      "bytes": 6855,
+      "sha256": "6279ace17b17372a784318741e03e977b7d9a1ace6c0562b0c44d6b454a8b7d9"
+    },
+    {
+      "path": "src/parallel_source_v4/common.py",
+      "bytes": 4716,
+      "sha256": "d1ba0d0baa081ef1bd3280cc009b03121701b3b49184d6ee6ed98600af7c8f1f"
+    },
+    {
+      "path": "src/parallel_source_v4/extraction.py",
+      "bytes": 15002,
+      "sha256": "bda230bece7a4b3cda308f9bebed3991e421d074b82d1770e21f748a4e17415b"
+    },
+    {
+      "path": "src/parallel_source_v4/fields.py",
+      "bytes": 2391,
+      "sha256": "ee50cf230f4b7cba92a20b42a93fd66154a93439ec7ef2fb3b49854b5bab562a"
+    },
+    {
+      "path": "src/parallel_source_v4/freeze.py",
+      "bytes": 7376,
+      "sha256": "2d84e014233b6c1e4cb4720a3344e26d3d86f002f73d558a61c6b2b2b19f18b6"
+    },
+    {
+      "path": "src/parallel_source_v4/metrics.py",
+      "bytes": 5254,
+      "sha256": "da671b664c34598022c5fc1d20ab0ba77d004551909e49c3d0eaaf61285a8751"
+    },
+    {
+      "path": "src/parallel_source_v4/prepare.py",
+      "bytes": 2435,
+      "sha256": "6197dadc16509d6cff7088dd79970126f4e18c75623da10f9668b33fc526bd98"
+    },
+    {
+      "path": "src/parallel_source_v4/retrieval.py",
+      "bytes": 17425,
+      "sha256": "cbf0e2087b4fe0f728b98ef5ea08dea74d6426c462f07fc34a26c617e1ef1c9f"
+    },
+    {
       "path": "tests/test_abstract_validation.py",
       "bytes": 2304,
       "sha256": "61bfe534927e0d870b1b2003056d3a9650dd5ead4611c2718f9a4f14cf8d52da"
@@ -1394,6 +1454,21 @@
       "path": "tests/test_graphrag_security.py",
       "bytes": 9973,
       "sha256": "31fd42828ecdd217c7d3f209f263282a5fb69c13437662b87b0efbd8556f8a24"
+    },
+    {
+      "path": "tests/test_parallel_source_io_v4.py",
+      "bytes": 13705,
+      "sha256": "f509f11a1cd5b302ec5addee9b3ef236e795ccca8914d2fcc330afa3407dfa07"
+    },
+    {
+      "path": "tests/test_parallel_source_retrieval_v4.py",
+      "bytes": 11877,
+      "sha256": "5dee26fd6e3676721b444a5148f6f5de98f530bab186c6b49cfe787fcc140cb1"
+    },
+    {
+      "path": "tests/test_parallel_source_v4.py",
+      "bytes": 21462,
+      "sha256": "aa3ddc0ff92a550b85ddd31e8f1fd960378226797c12bdaf8ee943386a1594ed"
     },
     {
       "path": "tests/test_pdf_admission.py",
@@ -1457,8 +1532,13 @@
     },
     {
       "path": "tools/package_project.py",
-      "bytes": 8193,
-      "sha256": "557a537ba9cc2a6dbbbf084500a2c7ea2128bdbc51cefca14e21b4af19d1bb70"
+      "bytes": 8269,
+      "sha256": "81162b596847ac8340c77bb4f463b5785f1b565f090613daa11bfc82cfc1e7ab"
+    },
+    {
+      "path": "tools/public_fixtures_parallel_v4.py",
+      "bytes": 8060,
+      "sha256": "b54e0dec9a6f1b14b52979b6910421b71b16a5551cf6c77e0189f26aa96e2c1b"
     },
     {
       "path": "tools/retrieval_schemas.py",
@@ -1701,6 +1781,11 @@
       "sha256": "5a76e52b0cc27e8e9c61ee28eb11b41b29d5b78233b7a4e91f0d93c8ff710aeb"
     },
     {
+      "path": "trace_gc/pdf_source_parallel_v4.py",
+      "bytes": 13171,
+      "sha256": "df31e8d09cfe1502153ded6e87ca8ac9aad6d1b46012a6e7bf10b099a840f7e5"
+    },
+    {
       "path": "trace_gc/pdf_source_v3.py",
       "bytes": 33218,
       "sha256": "973a130a757e0483063ec167bb63a918a95114dc2f4be08c5ad857bfdc39a3d4"
@@ -1709,6 +1794,11 @@
       "path": "trace_gc/pdf_structure.py",
       "bytes": 12028,
       "sha256": "ff84ed19946281f5d93d8cad3845ef1af0bccb03672ce71d05c80e23b03227f8"
+    },
+    {
+      "path": "trace_gc/pdf_structure_parallel_v4.py",
+      "bytes": 24631,
+      "sha256": "9818f1ff0afda2350dc1a7e39fbe503c4ff8d9d23f7a2dcaea54b374f42258e7"
     },
     {
       "path": "trace_gc/plans.py",

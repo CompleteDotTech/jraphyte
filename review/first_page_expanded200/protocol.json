@@ -1,0 +1,24 @@
+{
+  "frozen_at": "2026-09-26T00:09:50.695576+00:00",
+  "method_hashes": {
+    "trace_gc/pdf_structure.py": "ff84ed19946281f5d93d8cad3845ef1af0bccb03672ce71d05c80e23b03227f8",
+    "trace_gc/pdf_evidence.py": "5a76e52b0cc27e8e9c61ee28eb11b41b29d5b78233b7a4e91f0d93c8ff710aeb",
+    "src/abstract_validation_v2/adapters.py": "8dfc22b20476196be3c2ca207491821c3d9c67c665cde2c73ab58071ba7e7ec8",
+    "src/abstract_validation_v2/extraction.py": "f3359aeba1715edda8d3e0c1557f979de7ab70202ed6bc9986e13611f3573ae7",
+    "src/abstract_validation_v2/retrieval.py": "d4edb9a7080ecd3aeb89d563316eb253e632d7242bc4d7168f651ef4ac3c95b2"
+  },
+  "manifest_sha256": "727489d8d2c89bd9d0f93d0595396853e92cf9b64fde261d7d65a92af30f3fae",
+  "models": {
+    "opendatalab/MinerU2.5-2509-1.2B": "1aa090b41282e64fadd79c10572221f91ec21924",
+    "allenai/olmOCR-2-7B-1025": "e52d6f090b7a9007afffbbd6ce510876222fea93",
+    "allenai/specter2_base": "3447645e1def9117997203454fa4495937bfbd83",
+    "allenai/specter2": "2081559630a80fc5851d8f798a05ba81e9468089",
+    "allenai/specter2_adhoc_query": "3f4448817028388648a74349ece07af4518ec5bd",
+    "cross-encoder/ms-marco-MiniLM-L-6-v2": "233902d25c440f23af6f7d6e94d2946bac0bee0a"
+  },
+  "settings": "Same parser settings, selector, thresholds, fields, embeddings and reranker as validation_v2. No tuning on added 100.",
+  "evaluation": "Report prior100, added100, combined200 separately; >=98% canonical precision and recall plus separate boundary and visual checks.",
+  "review": "Assistant source review before opening added-page predictions; independent human validation outstanding.",
+  "cost_policy": "User requested local methods only: no new paid API calls or cloud compute.",
+  "retrieval_candidate_pool": "Union of top50 BM25F and SPECTER2 only. Existing Gemini rankings shown separately for prior queries."
+}

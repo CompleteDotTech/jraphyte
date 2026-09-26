@@ -1,0 +1,594 @@
+{
+  "f101": {
+    "status": "complete",
+    "block_ids": [
+      4
+    ]
+  },
+  "f102": {
+    "status": "complete",
+    "block_ids": [
+      12
+    ]
+  },
+  "f103": {
+    "status": "complete",
+    "block_ids": [
+      4
+    ],
+    "math_review_required": true
+  },
+  "f104": {
+    "status": "complete",
+    "block_ids": [
+      4
+    ]
+  },
+  "f105": {
+    "status": "no_abstract_text",
+    "block_ids": [],
+    "note": "Title, authors, figure and caption only."
+  },
+  "f106": {
+    "status": "complete",
+    "block_ids": [
+      8,
+      10
+    ],
+    "note": "Left-column abstract, including its closing code URL."
+  },
+  "f107": {
+    "status": "complete",
+    "block_ids": [
+      4
+    ]
+  },
+  "f108": {
+    "status": "no_abstract_text",
+    "block_ids": [],
+    "note": "Title, authors and affiliations only."
+  },
+  "f109": {
+    "status": "complete",
+    "block_ids": [
+      3
+    ]
+  },
+  "f110": {
+    "status": "complete",
+    "block_ids": [
+      2,
+      3,
+      4
+    ]
+  },
+  "f111": {
+    "status": "complete",
+    "block_ids": [
+      3,
+      4
+    ],
+    "math_review_required": true
+  },
+  "f112": {
+    "status": "complete",
+    "block_ids": [
+      6
+    ]
+  },
+  "f113": {
+    "status": "complete",
+    "block_ids": [
+      8
+    ]
+  },
+  "f114": {
+    "status": "complete",
+    "block_ids": [
+      4
+    ]
+  },
+  "f115": {
+    "status": "no_abstract_text",
+    "block_ids": [],
+    "note": "Graphical abstract only; no prose abstract on physical page one."
+  },
+  "f116": {
+    "status": "complete",
+    "block_ids": [
+      3
+    ]
+  },
+  "f117": {
+    "status": "complete",
+    "block_ids": [
+      7
+    ]
+  },
+  "f118": {
+    "status": "no_abstract_text",
+    "block_ids": [],
+    "note": "Copyright cover."
+  },
+  "f119": {
+    "status": "complete",
+    "block_ids": [
+      4
+    ],
+    "note": "Unlabelled bold abstract; excludes separate colored synopsis."
+  },
+  "f120": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f121": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f122": {
+    "status": "complete",
+    "block_ids": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "math_review_required": true
+  },
+  "f123": {
+    "status": "complete",
+    "block_ids": [
+      6
+    ]
+  },
+  "f124": {
+    "status": "no_abstract_text",
+    "block_ids": [],
+    "note": "Title and key points only."
+  },
+  "f125": {
+    "status": "complete",
+    "block_ids": [
+      5
+    ],
+    "math_review_required": true
+  },
+  "f126": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f127": {
+    "status": "no_abstract_text",
+    "block_ids": [],
+    "note": "Starts directly with Introduction."
+  },
+  "f128": {
+    "status": "complete",
+    "block_ids": [
+      2
+    ],
+    "end_trim": "1",
+    "note": "Unlabelled ACM abstract; excludes footnote."
+  },
+  "f129": {
+    "status": "complete",
+    "block_ids": [
+      5
+    ]
+  },
+  "f130": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f131": {
+    "status": "complete",
+    "block_ids": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "math_review_required": true
+  },
+  "f132": {
+    "status": "complete",
+    "block_ids": [
+      5
+    ]
+  },
+  "f133": {
+    "status": "complete",
+    "block_ids": [
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "f134": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f135": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f136": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f137": {
+    "status": "complete",
+    "block_ids": [
+      4
+    ]
+  },
+  "f138": {
+    "status": "complete",
+    "block_ids": [
+      4
+    ]
+  },
+  "f139": {
+    "status": "complete",
+    "block_ids": [
+      3
+    ]
+  },
+  "f140": {
+    "status": "complete",
+    "block_ids": [
+      4,
+      5
+    ]
+  },
+  "f141": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f142": {
+    "status": "complete",
+    "block_ids": [
+      4,
+      3,
+      5
+    ],
+    "math_review_required": true,
+    "note": "Detached radical restored to native reading order, needs visual math review."
+  },
+  "f143": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f144": {
+    "status": "no_abstract_text",
+    "block_ids": [],
+    "note": "Starts directly with Introduction."
+  },
+  "f145": {
+    "status": "complete",
+    "block_ids": [
+      36
+    ]
+  },
+  "f146": {
+    "status": "complete",
+    "block_ids": [
+      6
+    ],
+    "math_review_required": true
+  },
+  "f147": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f148": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f149": {
+    "status": "complete",
+    "block_ids": [
+      6
+    ]
+  },
+  "f150": {
+    "status": "complete",
+    "block_ids": [
+      7
+    ],
+    "note": "Bold unlabelled abstract; excludes separate significance box."
+  },
+  "f151": {
+    "status": "no_abstract_text",
+    "block_ids": [],
+    "note": "Executive Summary section only; no abstract. Boundary-sensitive reference, report separately."
+  },
+  "f152": {
+    "status": "no_abstract_text",
+    "block_ids": [],
+    "note": "Highlights cover only."
+  },
+  "f153": {
+    "status": "complete",
+    "block_ids": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "math_review_required": true
+  },
+  "f154": {
+    "status": "complete",
+    "block_ids": [
+      3
+    ],
+    "math_review_required": true
+  },
+  "f155": {
+    "status": "complete",
+    "block_ids": [
+      3
+    ]
+  },
+  "f156": {
+    "status": "complete",
+    "block_ids": [
+      4
+    ]
+  },
+  "f157": {
+    "status": "complete",
+    "block_ids": [
+      2
+    ]
+  },
+  "f158": {
+    "status": "complete",
+    "block_ids": [
+      3
+    ],
+    "math_review_required": true
+  },
+  "f159": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f160": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f161": {
+    "status": "complete",
+    "block_ids": [
+      6
+    ]
+  },
+  "f162": {
+    "status": "partial_on_page_one",
+    "block_ids": [
+      12,
+      13
+    ],
+    "note": "Unlabelled abstract continues after a comma at the end of physical page one."
+  },
+  "f163": {
+    "status": "complete",
+    "block_ids": [
+      3
+    ]
+  },
+  "f164": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f165": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f166": {
+    "status": "complete",
+    "block_ids": [
+      4
+    ],
+    "math_review_required": true
+  },
+  "f167": {
+    "status": "complete",
+    "block_ids": [
+      5
+    ],
+    "start_at": "Anisotropic photonic time",
+    "end_before": "Introduction"
+  },
+  "f168": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f169": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f170": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f171": {
+    "status": "complete",
+    "block_ids": [
+      6
+    ]
+  },
+  "f172": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f173": {
+    "status": "complete",
+    "block_ids": [
+      3,
+      4
+    ]
+  },
+  "f174": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f175": {
+    "status": "no_abstract_text",
+    "block_ids": [],
+    "note": "Key points cover only."
+  },
+  "f177": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f178": {
+    "status": "complete",
+    "block_ids": [
+      5,
+      7
+    ]
+  },
+  "f179": {
+    "status": "complete",
+    "block_ids": [
+      3
+    ]
+  },
+  "f180": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f181": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f182": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f183": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f184": {
+    "status": "no_abstract_text",
+    "block_ids": [],
+    "note": "Expository article begins with Introduction."
+  },
+  "f185": {
+    "status": "no_abstract_text",
+    "block_ids": [],
+    "note": "Book jacket image."
+  },
+  "f187": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f176": {
+    "status": "complete",
+    "block_ids": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21
+    ]
+  },
+  "f186": {
+    "status": "complete",
+    "block_ids": [
+      5,
+      7,
+      8,
+      9
+    ]
+  },
+  "f188": {
+    "status": "complete",
+    "block_ids": [
+      8
+    ]
+  },
+  "f189": {
+    "status": "complete",
+    "block_ids": [
+      4
+    ],
+    "math_review_required": true
+  },
+  "f190": {
+    "status": "complete",
+    "block_ids": [
+      3
+    ]
+  },
+  "f191": {
+    "status": "complete",
+    "block_ids": [
+      6
+    ]
+  },
+  "f192": {
+    "status": "complete",
+    "block_ids": [
+      3
+    ]
+  },
+  "f193": {
+    "status": "complete",
+    "block_ids": [
+      4
+    ]
+  },
+  "f194": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f195": {
+    "status": "complete",
+    "block_ids": [
+      17
+    ],
+    "end_trim": "1"
+  },
+  "f196": {
+    "status": "no_abstract_text",
+    "block_ids": [],
+    "note": "Key points cover only."
+  },
+  "f197": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f198": {
+    "status": "partial_on_page_one",
+    "block_ids": [
+      3
+    ],
+    "note": "Unlabelled abstract ends mid-sentence before author contact information."
+  },
+  "f199": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  },
+  "f200": {
+    "status": "no_abstract_text",
+    "block_ids": []
+  }
+}

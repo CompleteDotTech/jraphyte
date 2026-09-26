@@ -12,6 +12,9 @@ RELEASE="0.4.0"
 
 def included(path: Path) -> bool:
     rel=path.relative_to(ROOT)
+    name=path.name.lower()
+    if name==".env" or (name.startswith(".env.") and name!=".env.example"):
+        return False
     return (path.is_file() and not any(part in {"__pycache__",".git",".venv","build"} or part.endswith(".egg-info") for part in rel.parts)
             and (rel.parts[0]!="dist" or path.name==f"trace_gc-{RELEASE}-py3-none-any.whl")
             and not path.name.endswith((".pyc",".pyo",".sqlite3",".sqlite3-wal",".sqlite3-shm")))

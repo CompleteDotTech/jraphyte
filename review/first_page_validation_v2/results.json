@@ -1,0 +1,1118 @@
+{
+  "created_at": "2026-09-25T23:56:59.785733+00:00",
+  "scope": {
+    "regression_pages": 200,
+    "fresh_pages": 100,
+    "fresh_strata": "50 prior ok and 50 prior no_abstract; diagnostic sample, not corpus prevalence",
+    "fallback_pages": 40,
+    "fallback_sampling": "20 selected old failures plus 20 seeded random fresh pages; 21 complete abstracts, 19 absent, zero partial abstracts",
+    "retrieval_documents": 10000,
+    "old_queries": 100,
+    "fresh_queries": 30
+  },
+  "review": {
+    "frozen_at": "2026-09-25T22:13:56.985620+00:00",
+    "reviewer": "assistant",
+    "independent_human_review": "outstanding",
+    "method": "Source images and native blocks reviewed before opening fresh predictions. Selector implementation draft preceded source review; regression tuning follows source review. This is not an independent blind evaluation.",
+    "math_note": "Native linear text is the scoring reference; character agreement does not certify mathematical notation fidelity.",
+    "counts": {
+      "no_abstract_text": 39,
+      "complete": 56,
+      "partial_on_page_one": 5
+    },
+    "files": {
+      "review/specs.json": "3a35c8385efe3460820d906cbce23406389c6093eb3c09faf078e6cc8ebb3371",
+      "labels.json": "cd7ee949157e1186469860fa5cfb3a663a7863bf6a75997088666e68b737a912",
+      "fresh_queries.json": "03036e6c91894d8cd46dd3806d2ecbb3670cad3bfd7843c6fd7436215d2b1c5d",
+      "holdout_manifest.json": "ba6ebc8dab877a5fe532342f64e646732b7c6c83b474d1a39fecbbb4369e1067"
+    }
+  },
+  "limitations": [
+    "Assistant-reviewed references; independent human validation outstanding.",
+    "Source pages reviewed before opening fresh predictions, but regression tuning followed source review; not independent blind evaluation.",
+    "Canonical character agreement ignores punctuation and is not mathematical fidelity validation.",
+    "Known-item retrieval has one labeled target; other relevant papers were not exhaustively judged.",
+    "Shared workstation timings are observations, not controlled throughput measurements.",
+    "Fallback pilot has only six fresh complete abstracts and no partial abstracts; cannot establish partial-page safety.",
+    "olmOCR NF4 with direct Transformers decoding differs from upstream BF16/FP8 pipeline and lacks retry/rotation stages.",
+    "Visual checks confirm formula errors can pass the character metric; known unsafe native transcriptions are held separately from frozen scores."
+  ],
+  "extraction": {
+    "regression": {
+      "current": {
+        "pages": 200,
+        "complete_available": 146,
+        "text_recovered_98": 98,
+        "proposed": 120,
+        "correct_proposals_98": 98,
+        "proposal_precision_98": 0.8166666666666667,
+        "correct_proposal_recall_98": 0.6712328767123288,
+        "wrong_proposals": [
+          "h003",
+          "h006",
+          "h008",
+          "h009",
+          "h011",
+          "h012",
+          "h014",
+          "h016",
+          "h018",
+          "h019",
+          "h021",
+          "h023",
+          "h024",
+          "h026",
+          "h030",
+          "h031",
+          "h032",
+          "h033",
+          "h062",
+          "h083",
+          "h086",
+          "h092"
+        ],
+        "absent_proposed": [
+          "h062",
+          "h083",
+          "h086",
+          "h092"
+        ],
+        "partial_proposed": [
+          "h006"
+        ],
+        "states": {
+          "complete": 120,
+          "absent": 80
+        }
+      },
+      "geometry_v1": {
+        "pages": 200,
+        "complete_available": 146,
+        "text_recovered_98": 124,
+        "proposed": 136,
+        "correct_proposals_98": 122,
+        "proposal_precision_98": 0.8970588235294118,
+        "correct_proposal_recall_98": 0.8356164383561644,
+        "wrong_proposals": [
+          "h003",
+          "h009",
+          "h012",
+          "h016",
+          "h030",
+          "h033",
+          "h083",
+          "h086",
+          "h126",
+          "h129",
+          "h139",
+          "h148",
+          "h171",
+          "h172"
+        ],
+        "absent_proposed": [
+          "h083",
+          "h086",
+          "h126",
+          "h139",
+          "h148"
+        ],
+        "partial_proposed": [],
+        "states": {
+          "complete": 136,
+          "partial": 8,
+          "uncertain": 14,
+          "error": 1,
+          "absent": 41
+        }
+      },
+      "grobid": {
+        "pages": 200,
+        "complete_available": 146,
+        "text_recovered_98": 109,
+        "proposed": 131,
+        "correct_proposals_98": 109,
+        "proposal_precision_98": 0.8320610687022901,
+        "correct_proposal_recall_98": 0.7465753424657534,
+        "wrong_proposals": [
+          "h002",
+          "h006",
+          "h007",
+          "h011",
+          "h024",
+          "h078",
+          "h086",
+          "h090",
+          "h092",
+          "h100",
+          "h134",
+          "h151",
+          "h168",
+          "h176",
+          "h181",
+          "h183",
+          "h185",
+          "h186",
+          "h188",
+          "h189",
+          "h191",
+          "h193"
+        ],
+        "absent_proposed": [
+          "h086",
+          "h092",
+          "h134",
+          "h151",
+          "h168",
+          "h193"
+        ],
+        "partial_proposed": [
+          "h006",
+          "h181",
+          "h183",
+          "h185",
+          "h188",
+          "h189",
+          "h191"
+        ],
+        "states": {
+          "complete": 131,
+          "absent": 69
+        }
+      },
+      "structure_v2": {
+        "pages": 200,
+        "complete_available": 146,
+        "text_recovered_98": 134,
+        "proposed": 127,
+        "correct_proposals_98": 127,
+        "proposal_precision_98": 1.0,
+        "correct_proposal_recall_98": 0.8698630136986302,
+        "wrong_proposals": [],
+        "absent_proposed": [],
+        "partial_proposed": [],
+        "states": {
+          "complete": 127,
+          "partial": 10,
+          "absent": 43,
+          "uncertain": 19,
+          "error": 1
+        }
+      }
+    },
+    "fresh": {
+      "current": {
+        "pages": 100,
+        "complete_available": 56,
+        "text_recovered_98": 40,
+        "proposed": 50,
+        "correct_proposals_98": 40,
+        "proposal_precision_98": 0.8,
+        "correct_proposal_recall_98": 0.7142857142857143,
+        "wrong_proposals": [
+          "f011",
+          "f012",
+          "f022",
+          "f030",
+          "f046",
+          "f050",
+          "f051",
+          "f066",
+          "f085",
+          "f092"
+        ],
+        "absent_proposed": [],
+        "partial_proposed": [
+          "f050",
+          "f051"
+        ],
+        "states": {
+          "absent": 50,
+          "complete": 50
+        },
+        "proposal_precision_wilson_95": [
+          0.6696289406777459,
+          0.887562499842239
+        ]
+      },
+      "geometry_v1": {
+        "pages": 100,
+        "complete_available": 56,
+        "text_recovered_98": 45,
+        "proposed": 47,
+        "correct_proposals_98": 41,
+        "proposal_precision_98": 0.8723404255319149,
+        "correct_proposal_recall_98": 0.7321428571428571,
+        "wrong_proposals": [
+          "f002",
+          "f026",
+          "f030",
+          "f034",
+          "f046",
+          "f068"
+        ],
+        "absent_proposed": [
+          "f002",
+          "f068"
+        ],
+        "partial_proposed": [],
+        "states": {
+          "absent": 37,
+          "complete": 47,
+          "uncertain": 9,
+          "partial": 7
+        },
+        "proposal_precision_wilson_95": [
+          0.748260592072075,
+          0.9401539580185662
+        ]
+      },
+      "grobid": {
+        "pages": 100,
+        "complete_available": 56,
+        "text_recovered_98": 45,
+        "proposed": 58,
+        "correct_proposals_98": 45,
+        "proposal_precision_98": 0.7758620689655172,
+        "correct_proposal_recall_98": 0.8035714285714286,
+        "wrong_proposals": [
+          "f006",
+          "f009",
+          "f012",
+          "f015",
+          "f023",
+          "f024",
+          "f043",
+          "f050",
+          "f051",
+          "f057",
+          "f067",
+          "f073",
+          "f082"
+        ],
+        "absent_proposed": [
+          "f009",
+          "f024",
+          "f067",
+          "f082"
+        ],
+        "partial_proposed": [
+          "f015",
+          "f043",
+          "f050",
+          "f051",
+          "f057"
+        ],
+        "states": {
+          "absent": 42,
+          "complete": 58
+        },
+        "proposal_precision_wilson_95": [
+          0.653388823610813,
+          0.8640633938859026
+        ]
+      },
+      "structure_v2": {
+        "pages": 100,
+        "complete_available": 56,
+        "text_recovered_98": 51,
+        "proposed": 46,
+        "correct_proposals_98": 45,
+        "proposal_precision_98": 0.9782608695652174,
+        "correct_proposal_recall_98": 0.8035714285714286,
+        "wrong_proposals": [
+          "f030"
+        ],
+        "absent_proposed": [],
+        "partial_proposed": [],
+        "states": {
+          "absent": 35,
+          "uncertain": 10,
+          "complete": 46,
+          "partial": 9
+        },
+        "proposal_precision_wilson_95": [
+          0.8866470547848865,
+          0.9961521457419497
+        ]
+      }
+    }
+  },
+  "paired": {
+    "regression": {
+      "current": {
+        "pages": 20,
+        "complete_available": 15,
+        "text_recovered_98": 4,
+        "proposed": 12,
+        "correct_proposals_98": 4,
+        "proposal_precision_98": 0.3333333333333333,
+        "correct_proposal_recall_98": 0.26666666666666666,
+        "wrong_proposals": [
+          "h003",
+          "h009",
+          "h012",
+          "h016",
+          "h030",
+          "h033",
+          "h083",
+          "h086"
+        ],
+        "absent_proposed": [
+          "h083",
+          "h086"
+        ],
+        "partial_proposed": [],
+        "states": {
+          "complete": 12,
+          "absent": 8
+        }
+      },
+      "geometry_v1": {
+        "pages": 20,
+        "complete_available": 15,
+        "text_recovered_98": 1,
+        "proposed": 14,
+        "correct_proposals_98": 0,
+        "proposal_precision_98": 0.0,
+        "correct_proposal_recall_98": 0.0,
+        "wrong_proposals": [
+          "h003",
+          "h009",
+          "h012",
+          "h016",
+          "h030",
+          "h033",
+          "h083",
+          "h086",
+          "h126",
+          "h129",
+          "h139",
+          "h148",
+          "h171",
+          "h172"
+        ],
+        "absent_proposed": [
+          "h083",
+          "h086",
+          "h126",
+          "h139",
+          "h148"
+        ],
+        "partial_proposed": [],
+        "states": {
+          "complete": 14,
+          "uncertain": 5,
+          "error": 1
+        }
+      },
+      "grobid": {
+        "pages": 20,
+        "complete_available": 15,
+        "text_recovered_98": 9,
+        "proposed": 10,
+        "correct_proposals_98": 9,
+        "proposal_precision_98": 0.9,
+        "correct_proposal_recall_98": 0.6,
+        "wrong_proposals": [
+          "h086"
+        ],
+        "absent_proposed": [
+          "h086"
+        ],
+        "partial_proposed": [],
+        "states": {
+          "complete": 10,
+          "absent": 10
+        }
+      },
+      "structure_v2": {
+        "pages": 20,
+        "complete_available": 15,
+        "text_recovered_98": 11,
+        "proposed": 11,
+        "correct_proposals_98": 11,
+        "proposal_precision_98": 1.0,
+        "correct_proposal_recall_98": 0.7333333333333333,
+        "wrong_proposals": [],
+        "absent_proposed": [],
+        "partial_proposed": [],
+        "states": {
+          "complete": 11,
+          "absent": 5,
+          "error": 1,
+          "uncertain": 2,
+          "partial": 1
+        }
+      },
+      "mineru": {
+        "pages": 20,
+        "complete_available": 15,
+        "text_recovered_98": 10,
+        "proposed": 11,
+        "correct_proposals_98": 10,
+        "proposal_precision_98": 0.9090909090909091,
+        "correct_proposal_recall_98": 0.6666666666666666,
+        "wrong_proposals": [
+          "h055"
+        ],
+        "absent_proposed": [],
+        "partial_proposed": [],
+        "states": {
+          "complete": 11,
+          "uncertain": 4,
+          "absent": 4,
+          "partial": 1
+        }
+      },
+      "olmocr": {
+        "pages": 20,
+        "complete_available": 15,
+        "text_recovered_98": 12,
+        "proposed": 8,
+        "correct_proposals_98": 8,
+        "proposal_precision_98": 1.0,
+        "correct_proposal_recall_98": 0.5333333333333333,
+        "wrong_proposals": [],
+        "absent_proposed": [],
+        "partial_proposed": [],
+        "states": {
+          "complete": 8,
+          "uncertain": 9,
+          "partial": 1,
+          "absent": 2
+        }
+      }
+    },
+    "fresh": {
+      "current": {
+        "pages": 20,
+        "complete_available": 6,
+        "text_recovered_98": 2,
+        "proposed": 5,
+        "correct_proposals_98": 2,
+        "proposal_precision_98": 0.4,
+        "correct_proposal_recall_98": 0.3333333333333333,
+        "wrong_proposals": [
+          "f011",
+          "f022",
+          "f066"
+        ],
+        "absent_proposed": [],
+        "partial_proposed": [],
+        "states": {
+          "absent": 15,
+          "complete": 5
+        }
+      },
+      "geometry_v1": {
+        "pages": 20,
+        "complete_available": 6,
+        "text_recovered_98": 4,
+        "proposed": 4,
+        "correct_proposals_98": 4,
+        "proposal_precision_98": 1.0,
+        "correct_proposal_recall_98": 0.6666666666666666,
+        "wrong_proposals": [],
+        "absent_proposed": [],
+        "partial_proposed": [],
+        "states": {
+          "absent": 13,
+          "uncertain": 2,
+          "complete": 4,
+          "partial": 1
+        }
+      },
+      "grobid": {
+        "pages": 20,
+        "complete_available": 6,
+        "text_recovered_98": 5,
+        "proposed": 7,
+        "correct_proposals_98": 5,
+        "proposal_precision_98": 0.7142857142857143,
+        "correct_proposal_recall_98": 0.8333333333333334,
+        "wrong_proposals": [
+          "f024",
+          "f067"
+        ],
+        "absent_proposed": [
+          "f024",
+          "f067"
+        ],
+        "partial_proposed": [],
+        "states": {
+          "absent": 13,
+          "complete": 7
+        }
+      },
+      "structure_v2": {
+        "pages": 20,
+        "complete_available": 6,
+        "text_recovered_98": 5,
+        "proposed": 4,
+        "correct_proposals_98": 4,
+        "proposal_precision_98": 1.0,
+        "correct_proposal_recall_98": 0.6666666666666666,
+        "wrong_proposals": [],
+        "absent_proposed": [],
+        "partial_proposed": [],
+        "states": {
+          "absent": 11,
+          "complete": 4,
+          "uncertain": 4,
+          "partial": 1
+        }
+      },
+      "mineru": {
+        "pages": 20,
+        "complete_available": 6,
+        "text_recovered_98": 5,
+        "proposed": 5,
+        "correct_proposals_98": 4,
+        "proposal_precision_98": 0.8,
+        "correct_proposal_recall_98": 0.6666666666666666,
+        "wrong_proposals": [
+          "f041"
+        ],
+        "absent_proposed": [
+          "f041"
+        ],
+        "partial_proposed": [],
+        "states": {
+          "absent": 10,
+          "complete": 5,
+          "uncertain": 4,
+          "partial": 1
+        }
+      },
+      "olmocr": {
+        "pages": 20,
+        "complete_available": 6,
+        "text_recovered_98": 5,
+        "proposed": 2,
+        "correct_proposals_98": 2,
+        "proposal_precision_98": 1.0,
+        "correct_proposal_recall_98": 0.3333333333333333,
+        "wrong_proposals": [],
+        "absent_proposed": [],
+        "partial_proposed": [],
+        "states": {
+          "absent": 10,
+          "complete": 2,
+          "uncertain": 5,
+          "partial": 2,
+          "error": 1
+        }
+      }
+    }
+  },
+  "fallback_increment": {
+    "regression": {
+      "mineru": {
+        "new_correct_proposals": [
+          "h079"
+        ],
+        "new_wrong_proposals": [
+          "h055"
+        ]
+      },
+      "olmocr": {
+        "new_correct_proposals": [],
+        "new_wrong_proposals": []
+      }
+    },
+    "fresh": {
+      "mineru": {
+        "new_correct_proposals": [],
+        "new_wrong_proposals": [
+          "f041"
+        ]
+      },
+      "olmocr": {
+        "new_correct_proposals": [],
+        "new_wrong_proposals": []
+      }
+    }
+  },
+  "retrieval": {
+    "regression100": {
+      "bm25_page": {
+        "queries": 100,
+        "documents": 10000,
+        "recall_at_1": 0.86,
+        "recall_at_3": 0.92,
+        "recall_at_10": 0.97,
+        "mrr": 0.8970519610324708,
+        "ndcg_at_10": 0.9138408587531093
+      },
+      "bm25f": {
+        "queries": 100,
+        "documents": 10000,
+        "recall_at_1": 0.85,
+        "recall_at_3": 0.93,
+        "recall_at_10": 0.95,
+        "mrr": 0.8928512872894895,
+        "ndcg_at_10": 0.9057246226661017
+      },
+      "specter2": {
+        "queries": 100,
+        "documents": 10000,
+        "recall_at_1": 0.76,
+        "recall_at_3": 0.86,
+        "recall_at_10": 0.93,
+        "mrr": 0.8189588143338143,
+        "ndcg_at_10": 0.8432846639709595
+      },
+      "gemini": {
+        "queries": 100,
+        "documents": 10000,
+        "recall_at_1": 0.9,
+        "recall_at_3": 0.97,
+        "recall_at_10": 1.0,
+        "mrr": 0.9380952380952381,
+        "ndcg_at_10": 0.953493352173374
+      },
+      "pooled_reranker": {
+        "queries": 100,
+        "documents": 10000,
+        "recall_at_1": 0.93,
+        "recall_at_3": 0.98,
+        "recall_at_10": 0.99,
+        "mrr": 0.9554,
+        "ndcg_at_10": 0.9637992620139385
+      }
+    },
+    "fresh30": {
+      "bm25_page": {
+        "queries": 30,
+        "documents": 10000,
+        "recall_at_1": 0.9,
+        "recall_at_3": 0.9,
+        "recall_at_10": 0.9666666666666667,
+        "mrr": 0.913892632524708,
+        "ndcg_at_10": 0.9262294581727138
+      },
+      "bm25f": {
+        "queries": 30,
+        "documents": 10000,
+        "recall_at_1": 0.8666666666666667,
+        "recall_at_3": 0.9333333333333333,
+        "recall_at_10": 0.9333333333333333,
+        "mrr": 0.8974784911105665,
+        "ndcg_at_10": 0.9043643251190486
+      },
+      "specter2": {
+        "queries": 30,
+        "documents": 10000,
+        "recall_at_1": 0.9,
+        "recall_at_3": 0.9666666666666667,
+        "recall_at_10": 0.9666666666666667,
+        "mrr": 0.9281144781144781,
+        "ndcg_at_10": 0.937697658452382
+      },
+      "gemini": {
+        "queries": 30,
+        "documents": 10000,
+        "recall_at_1": 0.9,
+        "recall_at_3": 1.0,
+        "recall_at_10": 1.0,
+        "mrr": 0.9444444444444444,
+        "ndcg_at_10": 0.9587286502380972
+      },
+      "pooled_reranker": {
+        "queries": 30,
+        "documents": 10000,
+        "recall_at_1": 0.9333333333333333,
+        "recall_at_3": 0.9666666666666667,
+        "recall_at_10": 0.9666666666666667,
+        "mrr": 0.950462962962963,
+        "ndcg_at_10": 0.9543643251190486
+      }
+    }
+  },
+  "runtime": {
+    "retrieval_fields": {
+      "papers": 10000,
+      "empty_title": 13,
+      "empty_abstract": 663,
+      "empty_native_page": 2,
+      "errors": 0
+    },
+    "cost": {
+      "additional_estimated_usd": 0.00013940000000012276,
+      "additional_reserved_usd": 0.0030000000000001137,
+      "additional_calls": 30
+    },
+    "grobid_regression": {
+      "pages": 200,
+      "total_seconds": 293.99894880026113,
+      "median_seconds": 1.3491732000256889
+    },
+    "grobid_fresh": {
+      "pages": 100,
+      "total_seconds": 142.12633279990405,
+      "median_seconds": 1.3048163499915972
+    },
+    "docling_fresh": {
+      "pages": 100,
+      "total_seconds": 199.0509728003526,
+      "median_seconds": 0.9472748000407591
+    },
+    "mineru": {
+      "pages": 40,
+      "success": 40,
+      "errors": 0,
+      "truncated": 0,
+      "total_seconds": 2127.469125700067,
+      "median_seconds": 44.31194825004786,
+      "configuration": {
+        "model": "opendatalab/MinerU2.5-2509-1.2B",
+        "revision": "1aa090b41282e64fadd79c10572221f91ec21924",
+        "dtype": "bf16",
+        "device": "RTX 3060 CUDA",
+        "max_new_tokens": "upstream defaults",
+        "setup_seconds": 5.550050299963914,
+        "implementation": "transformers direct; no upstream retry/rotation pipeline",
+        "image_longest_edge": "200 dpi native crops; 1036 layout thumbnail"
+      }
+    },
+    "olmocr": {
+      "pages": 40,
+      "success": 39,
+      "errors": 0,
+      "truncated": 1,
+      "total_seconds": 2389.8205088003306,
+      "median_seconds": 46.18583270005183,
+      "configuration": {
+        "model": "allenai/olmOCR-2-7B-1025",
+        "revision": "e52d6f090b7a9007afffbbd6ce510876222fea93",
+        "dtype": "NF4 double quantization / bf16 compute",
+        "device": "RTX 3060 CUDA",
+        "max_new_tokens": 4096,
+        "setup_seconds": 25.32313889998477,
+        "implementation": "transformers direct; no upstream retry/rotation pipeline",
+        "image_longest_edge": 1288
+      }
+    },
+    "retrieval": {
+      "lexical_seconds": {
+        "bm25_page": 7.534487699973397,
+        "bm25f": 9.9942850000225
+      },
+      "rerank_seconds": 323.81743839976843,
+      "mean_candidates": 122.85384615384615,
+      "target_coverage": 1.0,
+      "cpu_cached_queries": [
+        "q_n001",
+        "q_n002",
+        "q_n003",
+        "q_n004",
+        "q_n005",
+        "q_n006",
+        "q_n007",
+        "q_n008",
+        "q_n009",
+        "q_p01",
+        "q_p02",
+        "q_p03",
+        "q_p04",
+        "q_p05",
+        "q_p06",
+        "q_p07",
+        "q_p08",
+        "q_p09",
+        "q_p10",
+        "q_p11",
+        "q_p12",
+        "q_p13",
+        "q_p14",
+        "q_p15",
+        "q_p16",
+        "q_p17",
+        "q_p18",
+        "q_p19",
+        "q_p20"
+      ],
+      "remaining_queries_device": "CUDA"
+    }
+  },
+  "specter2": {
+    "papers": {
+      "count": 10000,
+      "truncated_at_512": 393,
+      "seconds": 312.818863200373
+    },
+    "queries": {
+      "count": 130,
+      "truncated_at_512": 0,
+      "seconds": 0.6970654999604449
+    }
+  },
+  "model_revisions": {
+    "opendatalab/MinerU2.5-2509-1.2B": "1aa090b41282e64fadd79c10572221f91ec21924",
+    "allenai/olmOCR-2-7B-1025": "e52d6f090b7a9007afffbbd6ce510876222fea93",
+    "allenai/specter2_base": "3447645e1def9117997203454fa4495937bfbd83",
+    "allenai/specter2": "2081559630a80fc5851d8f798a05ba81e9468089",
+    "allenai/specter2_adhoc_query": "3f4448817028388648a74349ece07af4518ec5bd",
+    "cross-encoder/ms-marco-MiniLM-L-6-v2": "233902d25c440f23af6f7d6e94d2946bac0bee0a"
+  },
+  "unit_tests": {
+    "run": 334,
+    "passed": 333,
+    "skipped": 1,
+    "log_sha256": "5554a953d02e81835665a41b4ccd3dfc255b242358e690c0e6c6d60645df11ab"
+  },
+  "production": {
+    "corpus_worker_changed": false,
+    "jev_calls": 0,
+    "graph_writes": 0,
+    "automatic_promotion": false
+  },
+  "verification": {
+    "verified_at": "2026-09-25T23:56:59.299261+00:00",
+    "status": "pass",
+    "fresh_source_pdfs_verified": 100,
+    "fresh_native_reference_blocks_reproduced": 100,
+    "fresh_source_overlap_with_previous_200": 0,
+    "frozen_protocols_verified": true,
+    "live_worker_source_unchanged": true,
+    "fallback_cache_inputs_verified": 80,
+    "parser_states": {
+      "mineru": {
+        "success": 40
+      },
+      "olmocr": {
+        "success": 39,
+        "truncated": 1
+      }
+    },
+    "visual_cases_bound_to_sources": 6,
+    "known_transcription_holds_enforced": [
+      "f026",
+      "f033"
+    ],
+    "retrieval_works": 10000,
+    "query_inputs_verified": 130,
+    "extraction_boundary_metrics": {
+      "regression": {
+        "current": {
+          "complete_references": 146,
+          "boundary_and_98_recovered": 98,
+          "boundary_and_98_correct_proposals": 98,
+          "boundary_definition": "First and last 48 canonical alphanumeric characters, plus >=98% ordered precision and recall; not exact typography or mathematical fidelity."
+        },
+        "geometry_v1": {
+          "complete_references": 146,
+          "boundary_and_98_recovered": 123,
+          "boundary_and_98_correct_proposals": 122,
+          "boundary_definition": "First and last 48 canonical alphanumeric characters, plus >=98% ordered precision and recall; not exact typography or mathematical fidelity."
+        },
+        "grobid": {
+          "complete_references": 146,
+          "boundary_and_98_recovered": 108,
+          "boundary_and_98_correct_proposals": 108,
+          "boundary_definition": "First and last 48 canonical alphanumeric characters, plus >=98% ordered precision and recall; not exact typography or mathematical fidelity."
+        },
+        "structure_v2": {
+          "complete_references": 146,
+          "boundary_and_98_recovered": 133,
+          "boundary_and_98_correct_proposals": 127,
+          "boundary_definition": "First and last 48 canonical alphanumeric characters, plus >=98% ordered precision and recall; not exact typography or mathematical fidelity."
+        },
+        "mineru": {
+          "complete_references": 15,
+          "boundary_and_98_recovered": 10,
+          "boundary_and_98_correct_proposals": 10,
+          "boundary_definition": "First and last 48 canonical alphanumeric characters, plus >=98% ordered precision and recall; not exact typography or mathematical fidelity."
+        },
+        "olmocr": {
+          "complete_references": 15,
+          "boundary_and_98_recovered": 10,
+          "boundary_and_98_correct_proposals": 6,
+          "boundary_definition": "First and last 48 canonical alphanumeric characters, plus >=98% ordered precision and recall; not exact typography or mathematical fidelity."
+        }
+      },
+      "fresh": {
+        "current": {
+          "complete_references": 56,
+          "boundary_and_98_recovered": 36,
+          "boundary_and_98_correct_proposals": 36,
+          "boundary_definition": "First and last 48 canonical alphanumeric characters, plus >=98% ordered precision and recall; not exact typography or mathematical fidelity."
+        },
+        "geometry_v1": {
+          "complete_references": 56,
+          "boundary_and_98_recovered": 43,
+          "boundary_and_98_correct_proposals": 41,
+          "boundary_definition": "First and last 48 canonical alphanumeric characters, plus >=98% ordered precision and recall; not exact typography or mathematical fidelity."
+        },
+        "grobid": {
+          "complete_references": 56,
+          "boundary_and_98_recovered": 43,
+          "boundary_and_98_correct_proposals": 43,
+          "boundary_definition": "First and last 48 canonical alphanumeric characters, plus >=98% ordered precision and recall; not exact typography or mathematical fidelity."
+        },
+        "structure_v2": {
+          "complete_references": 56,
+          "boundary_and_98_recovered": 49,
+          "boundary_and_98_correct_proposals": 45,
+          "boundary_definition": "First and last 48 canonical alphanumeric characters, plus >=98% ordered precision and recall; not exact typography or mathematical fidelity."
+        },
+        "mineru": {
+          "complete_references": 6,
+          "boundary_and_98_recovered": 5,
+          "boundary_and_98_correct_proposals": 4,
+          "boundary_definition": "First and last 48 canonical alphanumeric characters, plus >=98% ordered precision and recall; not exact typography or mathematical fidelity."
+        },
+        "olmocr": {
+          "complete_references": 6,
+          "boundary_and_98_recovered": 3,
+          "boundary_and_98_correct_proposals": 1,
+          "boundary_definition": "First and last 48 canonical alphanumeric characters, plus >=98% ordered precision and recall; not exact typography or mathematical fidelity."
+        }
+      }
+    },
+    "api_calls": 0,
+    "independent_human_review": "outstanding",
+    "verifier_sha256": "1159d8f28f1b922713d0e96c41a6a0dbe018b73fa5d0d301a37e59e28e5ff734"
+  },
+  "visual_audit": {
+    "reviewed_at": "2026-09-25T23:54:15.628781+00:00",
+    "reviewer": "assistant visual inspection of original first-page renders",
+    "selection": "Six deliberately selected diagnostic cases; not a random sample or a population accuracy estimate.",
+    "independent_human_review": "outstanding",
+    "scope": "These findings supplement the frozen character metric and do not alter its labels or scores.",
+    "cases": [
+      {
+        "id": "f030",
+        "kind": "boundary",
+        "hold_source_transcription": false,
+        "finding": "The structure-v2 proposal includes body text after the inline 1. Overview. heading. The frozen reference correctly ends before that heading.",
+        "source_sha256": "6520d713e64ac34997870f47b42fb287cb75b6cf449e85d039ceaf26daee6564",
+        "page_sha256": "386787ce750cf589ce70ee487f49a9d6f7eb229aa587a22f74751cc91ca370eb",
+        "image_sha256": "dcdbc55f5f26c49cf15a6630c4f85bad9e0b7d501d20ea42a0f653089d22b0d4",
+        "reference_text_sha256": "49631f206ce6e36099dc86ae1cbb3875c8685e42147c93cfaa7936a7eabaeecc",
+        "assessment_hashes": {
+          "structure_v2": "b7624fc93d9babb6431bbcd9f506d7d607887d8745eb907a0bc9f754d6741042"
+        }
+      },
+      {
+        "id": "f041",
+        "kind": "document_role",
+        "hold_source_transcription": false,
+        "finding": "Page one contains title, authors, affiliations and contact details only. MinerU plus the selector proposes affiliations 6 through 9 as an abstract. Native agreement verifies the words, not their role.",
+        "source_sha256": "564d4b790b1a017054146302363892fe885185023364b30e841ed24d48458b00",
+        "page_sha256": "40ae31884b6e8cd11bab6d9c6b6bb91f87787f3bc0e9e1f862251698a93ae40c",
+        "image_sha256": "d95150c16e690fd0475e8b20217bbe1e5aec8e92cd5a429187e4eab43d5a4f24",
+        "reference_text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "assessment_hashes": {
+          "structure_v2": "7ee12f7ad9a949eb177c06b8716559bea3eb2ac06446feec264d9e82f01396f0",
+          "mineru": "be395cc56766ba3f5e05db03b0bb29e33e8d3efb1a930b2c92ebb4412336c70d",
+          "olmocr": "57db600884f933f97125d0d6849e315ef0e687c35fc5b30449373bb8737b58f3"
+        }
+      },
+      {
+        "id": "f026",
+        "kind": "mathematics",
+        "hold_source_transcription": true,
+        "finding": "The source places 1/(2h) in the density exponent and sqrt(d) in the complexity bound. Native linear text loses fraction/exponent structure; the v2 proposal additionally moves the radical into the earlier density expression. Alphanumeric scoring misses this scientific change.",
+        "source_sha256": "1bf9d98726fddbc3392761f808f4d71231809172186fdc60e8c17453c81ba52c",
+        "page_sha256": "c026561627b09f0e2cc9b0c68759b97bc02cf56a735de5987914dba01acf6940",
+        "image_sha256": "6fdcbe61e895a9b1d61924d8fb158197d4cbd57639efccb12a9e58cd4abd241a",
+        "reference_text_sha256": "39d6947b97ef442920f0c7ebec5e20e45fd527cd8da51c771505a40ccb3f99ee",
+        "assessment_hashes": {
+          "structure_v2": "d4fa6ab3cd649f5c15ca16e37c962cd61c1370617a2527401a01f36c759861f7"
+        }
+      },
+      {
+        "id": "f033",
+        "kind": "mathematics",
+        "hold_source_transcription": true,
+        "finding": "The source has floor((delta-4k)/2) and floor(delta/4). The native reference uses control characters for floor brackets and loses fraction structure. The v2 output further scatters fragments and is held as partial.",
+        "source_sha256": "65973029301905612370255bf53fc2aee0f55b2f1fce103c4f68b13a2da9296b",
+        "page_sha256": "0d503a3f4c0a17694db56a76814846b757ea0847d98ef3daad9eccfbd6a2e2fb",
+        "image_sha256": "8a01e171eb6daf0d108caa8df2bc54baec96bc738996adfd2947453ac666a968",
+        "reference_text_sha256": "6b3fe54fd35c6477cd9560c72f31556508cf5fea540e80785009625cb5cbc205",
+        "assessment_hashes": {
+          "structure_v2": "f1ff490f14d6a8aa21d38534d3c713351ba42bba7263778a513392400a271a83"
+        }
+      },
+      {
+        "id": "h171",
+        "kind": "mathematics",
+        "hold_source_transcription": true,
+        "finding": "Native linearization interleaves form-factor fragments. In the checked CKM expression the page prints 0.009, while the olmOCR output gives 0.0009 and changes some form-factor subscripts. MinerU preserves the checked expressions but is held by native/LaTeX disagreement.",
+        "source_sha256": "f906b65b4f5c89f141610737a6f17888954f3f2851f16cd7e062ba481344d0ef",
+        "page_sha256": "4b3d58f8e7968e915607d3f525a5f928837996ebe8e1a467dce7659215338597",
+        "image_sha256": "953e8130d61189701fb919b07f1ad546974382f525d7dc3852029eb43005b96f",
+        "reference_text_sha256": "1860df21ccba41f47e30890a28769f335635821415e6201755ec1dbfa71571a8",
+        "assessment_hashes": {
+          "structure_v2": "19644814010d39a122f80076f48026158c8819dbd0dec54dbdcda29f6637d5af",
+          "mineru": "5892de2aedfeb24df0bb27af5ba063943a356f77581d95b7bd6b2bd4639ebf38",
+          "olmocr": "87e5073f57c07823bdad4baa006c1305e85fc6c2e596352f2950d27bd72f4ebd"
+        }
+      },
+      {
+        "id": "h172",
+        "kind": "mathematics",
+        "hold_source_transcription": true,
+        "finding": "The page gives R(r)=sqrt(r^2+A^2). Raw MinerU and olmOCR preserve that expression. Structure-v2 and the MinerU adapter substitute native text with a detached leading radical and flattened exponents, yet pass the alphanumeric metric.",
+        "source_sha256": "a8319802381b7df65eac0c30c7aeb85ba05746ff008ec98feb3e6d9cde7c21c3",
+        "page_sha256": "fab3aa33cccccd270d3b9b7ff30a2eb30db85b97bb395513fc5f471f87c68fd9",
+        "image_sha256": "7c6f6ea5e351d74d39d71db431cc4b522828a97e5d09892d37b86226035c04f1",
+        "reference_text_sha256": "d312fbd8d61c14fee02ea53e45eaa1bda68c329dff43816730389922648c4dd1",
+        "assessment_hashes": {
+          "structure_v2": "0348414da2eb5fb5ecbd34e75bede99aad3c83ae5109fcb1bfb613a8b9d05921",
+          "mineru": "243cfb4eff8d08cce96b75add13f284e82f54e450d77b94c89fd134e9e9c1de1",
+          "olmocr": "922e03d2d40dae2c9218077ec2bf660b660b0f710626c1d54b6bf486e3e785b5"
+        }
+      }
+    ],
+    "fresh_request_holds": [
+      "f026",
+      "f033"
+    ],
+    "prior_run_execution_holds": [
+      "h171",
+      "h172"
+    ]
+  },
+  "review_gate_audit": {
+    "pages": 100,
+    "candidate_only_admitted": 0,
+    "reviewed_requests_prepared": 54,
+    "holds": {
+      "review_absent": 39,
+      "review_partial": 5,
+      "visual_transcription_requires_review": 2
+    },
+    "visual_audit_sha256": "c9866589df68ac6f04ca93f3ee6291d19e269688d92add8e1f2812d0fac3cc55",
+    "fresh_transcription_holds": [
+      "f026",
+      "f033"
+    ],
+    "prior_run_execution_holds": [
+      "h171",
+      "h172"
+    ],
+    "jev_calls": 0,
+    "database_writes": 0,
+    "reviewer": "assistant; independent human review outstanding",
+    "execution_policy": "Prepared only, not scientifically certified. Execution must recheck current checkpoint, review, visual transcription holds and source hashes, reserve against the existing $50 corpus ledger, and preserve historical attempts."
+  },
+  "artifact_hashes": {
+    "reference_freeze.json": "68dac9fe258affde01a82d7437da6e7650b1f5c0fd5562f76dff86a9d0dbd795",
+    "extraction_protocol.json": "1d9070082460989f84a5057bda6594c37ea9090fe8d1c46ec30e55fd6e55b488",
+    "retrieval_protocol.json": "d877f56050aa579eee5bed1bc5e35d081287cf1ea823971dc927c3076fc31c0d",
+    "extraction_regression.json": "e0a07b548d4ed407aea863b4547b0784c83e1ca6c2b68c51ec3f3ab55a750bd4",
+    "extraction_fresh.json": "641f93bd6abe8b2fe7be1c40eed2d8018efd7bc7bc2389d49ac3ab4f3c08ef0a",
+    "retrieval_metrics.json": "9007a85b5abfe71e34fb3ecb37b82139cb8f632f3417f427608595681f387b2a",
+    "model_revisions.json": "477e9f6b4afd3a272488614e0095d4389998b41294ca049df4d06391bbf56b29",
+    "fallback_manifest.json": "3da106e0d3019732803d47129bb35b5ef01a18b0bece628133a54345e76266c5",
+    "gemini_before.json": "a2f43797d04e4d79890be4b4d044202b41f748417d039e0024b9cbcce496a10e",
+    "gemini_after.json": "4cd3115924179e392a42ab0fae18cd1006831172b26685ba96cfcbbf2af16771",
+    "review_gate_audit.json": "cff14b4b06a82a73eeb82a24723d20465afe9da45bd183f89f49e6b74c7149db",
+    "regression_tuning_history.json": "c30eb0a335c9cb22d72500819cc2add9a10146a5b3d2c6e42640ac0b3efc81c9",
+    "verification.json": "8d4d88a178e963c5c886bdc949ca5c34c8531673eb9753c58930148cc0b98468",
+    "visual_audit.json": "c9866589df68ac6f04ca93f3ee6291d19e269688d92add8e1f2812d0fac3cc55"
+  }
+}

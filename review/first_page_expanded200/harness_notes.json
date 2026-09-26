@@ -1,0 +1,5 @@
+{
+  "grobid_empty_state_label": "Successful conversions with empty abstract text are labeled absent in the assessment, matching the prior evaluator. Conversion receipts retain success.",
+  "unchanged_text_and_eligibility_verified": 200,
+  "selector_tuning": false
+}

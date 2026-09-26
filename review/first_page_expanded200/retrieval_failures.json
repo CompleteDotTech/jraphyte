@@ -1,0 +1,18 @@
+{
+  "reviewer": "assistant",
+  "cases": [
+    {
+      "id": "f076",
+      "cause": "Image-only book cover; automatic title, abstract and body empty.",
+      "candidate_pool_contains_target": false
+    },
+    {
+      "id": "f115",
+      "cause": "Graphical Abstract is mistaken for the title; real title only in body, abstract empty. SPECTER2 receives an uninformative input; BM25F target rank 226, full-page BM25 rank 44.",
+      "candidate_pool_contains_target": false
+    }
+  ],
+  "diagnostic_only": true,
+  "fields_changed": false,
+  "new_paid_calls": 0
+}

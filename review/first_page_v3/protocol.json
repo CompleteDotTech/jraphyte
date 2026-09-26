@@ -1,0 +1,26 @@
+{
+  "schema_version": 3,
+  "selector": "page-one-source-v3",
+  "base_main": "02e9c1fc530bec1b9a766caa4282ada2e5b957bf",
+  "code_hashes": {
+    "src/abstract_validation_v3/__init__.py": "47bfcaca14ddd02c6e61dd76f277e7131f34d71cbc8fe631e82c2fcf199087fc",
+    "src/abstract_validation_v3/adapters.py": "16a0418b3b9972daff7a10218b11f7233f6a2a33161971693f56840a48374249",
+    "src/abstract_validation_v3/common.py": "2da9ee74a12530f623b783a31a2b50153b99cb23b4a674064a345b2336dace17",
+    "src/abstract_validation_v3/evaluate.py": "fa40cfa6455aedb4209b4e9c53f10a285831bb5cd4188f6d3a30814342c0e013",
+    "src/abstract_validation_v3/freeze.py": "5e80970b6f99699d9ef6f791ca6fcd0064bcfb68225ab37945eaced518f3101e",
+    "src/abstract_validation_v3/local_reranker.py": "57b8337f3c65bdbfea0cd65a9710fd90b51ea88b3c5cdc68b959c90f479a465f",
+    "src/abstract_validation_v3/prepare.py": "64baa6a85dcfb72f54832efafbf7836ea0367115ed3f04c34de8822c1fff31a6",
+    "src/abstract_validation_v3/retrieval.py": "f2817276fbf2578555d14ffa4740362081876db2590096701c32ccc0508c1af8",
+    "src/abstract_validation_v3/retrieval_experiment.py": "f665aa1f7c2b55cc00bbd5930d1c0847767ff696bc8aff59f4c4832ef8e45978",
+    "trace_gc/pdf_source_v3.py": "1552ef1f3486d1cdaa3eee606d91b6297607280cf0ba5bf8784735092ef02e9a"
+  },
+  "cohort_status": "regression unavailable; no real unseen cohort frozen",
+  "scoring": "same ordered NFKD alphanumeric precision/recall >= .98; boundary first/last 48 canonical characters; gold complete",
+  "proposed_definition": "selector status complete AND <=4000 characters, comparable to historical eligibility scoring; NOT publication authority",
+  "selector_proposal_definition": "bounded complete source candidate before request character budget",
+  "publication": "source review mandatory; eligible_for_jev and verified_admission remain false",
+  "fallback": "automatic use disabled",
+  "local_olmocr_coordinates": "not predicted by model; only exact native line/character intervals when located",
+  "first_physical_page": 1,
+  "independent_human_validation": "outstanding"
+}

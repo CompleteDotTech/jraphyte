@@ -1,0 +1,77 @@
+{
+  "base_public_main": "02e9c1fc530bec1b9a766caa4282ada2e5b957bf",
+  "full_current_main_checkout_available": false,
+  "new_focused_tests": {
+    "command": "python -m unittest discover -s tests -p '*v3*.py' -v",
+    "run": 80,
+    "passed": 80,
+    "skipped": 0,
+    "runtime_seconds": 0.247,
+    "runtime_note": "Unittest elapsed time in focused_tests.txt; not paper/model throughput."
+  },
+  "frozen_v2_tests": {
+    "command": "python -m unittest discover -s tests -p 'test_pdf_structure.py' -v",
+    "run": 6,
+    "passed": 6,
+    "main_test_blob": "09cb930fea2a32e8a1b549cdccdf463d421d43a2",
+    "runtime_seconds": 0.003
+  },
+  "broader_runtime": {
+    "command": "python tools/run_validation.py",
+    "exit_code": 0,
+    "status": "PASS_WITH_EXTERNAL_GATES",
+    "run": 391,
+    "passed": 390,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0,
+    "scope": "Public historical TRACE-GC v0.4 byte-cache plus Git-blob-verified current core/PDF files and this patch. NOT the complete current-main test/documentation snapshot.",
+    "missing_current_main_tests": [
+      "test_abstract_validation.py",
+      "test_expanded_retrieval.py",
+      "test_pdf_admission.py",
+      "test_pdf_evidence.py"
+    ],
+    "older_test_revisions": [
+      "test_runtime_contracts.py",
+      "test_runtime_transactions.py"
+    ],
+    "skip": "External pinned core.py not supplied; not a passed integration gate",
+    "unittest_runtime_seconds": 16.949
+  },
+  "package_fixture_validation": {
+    "command": "python tools/validate_package.py",
+    "exit_code": 0,
+    "status": "PASS",
+    "schema_count": 12,
+    "record_count": 17,
+    "model_calls": 0,
+    "graph_commits": 0
+  },
+  "compileall": {
+    "command": "python -m compileall -q trace_gc/pdf_source_v3.py src/abstract_validation_v3 tests tools/package_project.py",
+    "exit_code": 0
+  },
+  "full_current_main_validation": "OUTSTANDING; cannot substitute reconstructed runtime test counts",
+  "external_gates": {
+    "pinned_legacy": {
+      "status": "SKIPPED",
+      "expected_git_blob": "68217feec539d37e4a524432c93df035f9a0fe39",
+      "source_supplied": false,
+      "command": "python tools/check_legacy.py --core /path/to/core.py --output legacy-conformance.json"
+    },
+    "live_provider": "NOT_RUN; mock transport only",
+    "production_calibration": "NOT_QUALIFIED; independent deployment labels absent",
+    "controlled_pilot": "NOT_RUN",
+    "deployed_backend": "NOT_RUN",
+    "trained_embedding_provider": "NOT_RUN; pinned offline hashing and supplied-vector adapters tested",
+    "remote_graph_database_adapters": "NOT_RUN; SQLite and in-memory reference adapters tested",
+    "real_graph_rag_accuracy": "NOT_ESTABLISHED; synthetic retrieval and controlled-oracle pipeline experiments only"
+  },
+  "paid_model_provider_calls": 0,
+  "paid_model_spend_usd": 0,
+  "production_graph_writes": 0,
+  "isolated_reference_database_transactions": "executed by existing synthetic validation suite in temporary databases",
+  "active_external_corpus_worker": "not accessed or modified",
+  "independent_human_validation": "outstanding"
+}

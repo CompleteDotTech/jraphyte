@@ -1,0 +1,43 @@
+{
+  "repository": "CompleteDotTech/jraphyte",
+  "base_main": "02e9c1fc530bec1b9a766caa4282ada2e5b957bf",
+  "last_observed_remote_main": "02e9c1fc530bec1b9a766caa4282ada2e5b957bf",
+  "remote_main_verification": {
+    "verified": true,
+    "reason": "valid",
+    "signature_type": "GitHub web-flow PGP",
+    "is_this_work": false
+  },
+  "github_connection_permissions": {
+    "pull": true,
+    "push": false,
+    "admin": false,
+    "maintain": false
+  },
+  "attempted_branch": "fix/first-page-source-bound-v3",
+  "branch_creation": {
+    "http_status": 403,
+    "error": "Resource not accessible by integration",
+    "created": false
+  },
+  "clone_attempt": "failed DNS resolution of github.com in container",
+  "configured_ssh_signing_identity": false,
+  "ssh_agent_available": false,
+  "commit": null,
+  "push": false,
+  "pr_url": null,
+  "merge_commit": null,
+  "patch_hosted_checks": null,
+  "existing_main_ci": {
+    "run_id": 36223478580,
+    "conclusion": "success",
+    "is_patch_validation": false
+  },
+  "local_git_checkout": false,
+  "local_main": null,
+  "ahead": null,
+  "behind": null,
+  "clean_merged_worktree": null,
+  "private_mirror": "none accessed; no authorization or shared-history verification available; no push attempted",
+  "next_gate": "Use a write-enabled authorized checkout with the existing configured SSH signing identity; no unsigned replacement commit created."
+}

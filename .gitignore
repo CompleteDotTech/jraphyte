@@ -12,3 +12,27 @@ build/
 dist/
 *.egg-info/
 trace-gc-demo/
+
+# Authorized source papers, conversions and model snapshots stay external.
+*.pdf
+*.pt
+*.pth
+*.safetensors
+*.ckpt
+*.gguf
+*.onnx
+*.npy
+*.npz
+*.pkl
+*.pickle
+.cache/
+.pytest_cache/
+TRACE-GC_RealPaper_Test/
+validation_v3_private/
+model_weights/
+weights/
+models/
+outputs/
+*.bin
+*.h5
+*.hdf5

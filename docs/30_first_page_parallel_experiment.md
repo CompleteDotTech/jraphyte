@@ -4,9 +4,9 @@ This integration reconciles `jraphyte-parallel-source-experiment.zip` (SHA-256 `
 
 ## Previously examined 200-paper regression
 
-The run checked 200 original source PDFs, first-page PDFs and images, cached conversions, and frozen assistant-reviewed references: 111 complete abstracts, 7 partial, 82 without a first-page abstract. Correctness requires at least 98% ordered source-text agreement and a valid boundary. This is a development regression set, not an independent held-out estimate. The previous v2 assessments replayed identically.
+The run checked 200 original source PDFs, first-page PDFs and images, cached conversions, and frozen assistant-reviewed references: 111 complete abstracts, 7 partial, 82 without a first-page abstract. The table's historical text98 measure requires at least 98% ordered alphanumeric agreement; it does not establish source boundaries or scientific notation fidelity. This is a development regression set, not an independent held-out estimate. The previous v2 assessments replayed identically.
 
-| Method | Proposed | Correct | False | Complete withheld |
+| Method | Proposed | Historical text98 correct | Historical text98 false | Complete withheld |
 |---|---:|---:|---:|---:|
 | Frozen structure v2 | 96 | 91 | 5 | 16 |
 | Merged source v3 | 28 | 26 | 2 | 83 |
@@ -14,6 +14,8 @@ The run checked 200 original source PDFs, first-page PDFs and images, cached con
 | Parallel GROBID v4 | 33 | 33 | 0 | 78 |
 | Parallel MinerU v4 | 39 | 38 | 1 | 72 |
 | Parallel olmOCR v4 | 40 | 40 | 0 | 71 |
+
+The frozen v2 baseline has **91 historical text98 successes and 90 historical boundary-plus-text98 successes**. Case f195 adds a final footnote marker: it passes text98 but fails the historical boundary check. The table retains the original historical values; the 2026-09-27 rerun's olmOCR count is 39, which is a distinct environment/run result. Even the historical boundary check strips operators and punctuation, so neither historical measure certifies scientific transcription. [Versioned fidelity metrics](32_first_page_fidelity_metrics.md) add attributed source-span/image-region boundaries and notation diagnostics without rewriting these definitions or receipts.
 
 The parallel primary recovers 19 complete abstracts that merged v3 lost relative to the 91 correct v2 cases. The **preserve-91 gate still fails**: it loses 55 of those 91 cases. Its 38/38 precision and 38/111 complete-abstract recall apply only to this known set. MinerU's false proposal is f039, so automatic MinerU fallback would add an error. No fallback is enabled.
 

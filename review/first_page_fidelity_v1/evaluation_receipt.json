@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "issue": "https://github.com/CompleteDotTech/jraphyte/issues/14",
+  "kind": "saved_assessment_rescore_not_selector_or_quality_qualification",
+  "source_base": "d5ca636a48e963619f4c89e2958d0bb1a3e72f80",
+  "legacy_metric_version": "ordered-alphanumeric-text98-boundary48-v1",
+  "fidelity_metric_version": "notation-reviewed-source-boundary-v1",
+  "rescore_relative": "validation_v3_private/issue14-fidelity-rescore-20260928-03/results.json",
+  "rescore_sha256": "d5dfc6472d6ef3e40623249da52251c676330c8f81e7de381dc96344f1878bb8",
+  "input_artifact_count": 1002,
+  "original_results_sha256": "661964b8db10bf2bd806a95a0119f4492dcabf72e759fff521993f702f016b0d",
+  "method_hashes": {
+    "src/parallel_source_v4/__init__.py": "7c433293ab7d45eba066ccf6a6351239b985a89621471403c4dabdbff0d48ae4",
+    "src/parallel_source_v4/adapters.py": "6279ace17b17372a784318741e03e977b7d9a1ace6c0562b0c44d6b454a8b7d9",
+    "src/parallel_source_v4/common.py": "d1ba0d0baa081ef1bd3280cc009b03121701b3b49184d6ee6ed98600af7c8f1f",
+    "src/parallel_source_v4/extraction.py": "bda230bece7a4b3cda308f9bebed3991e421d074b82d1770e21f748a4e17415b",
+    "src/parallel_source_v4/fidelity.py": "076fb4d0f3efbc3dc229c9d8d9df4d4333c44ed05fb6438daffe1ee4065c2d45",
+    "src/parallel_source_v4/fidelity_report.py": "b149688d9c7c28fe198bac60d79a8c5f112106d60e1b1ced0b53e35284e0e2d4",
+    "src/parallel_source_v4/fields.py": "ee50cf230f4b7cba92a20b42a93fd66154a93439ec7ef2fb3b49854b5bab562a",
+    "src/parallel_source_v4/freeze.py": "2d84e014233b6c1e4cb4720a3344e26d3d86f002f73d558a61c6b2b2b19f18b6",
+    "src/parallel_source_v4/metrics.py": "d31dadb0c98cb891a1fc8d186a4d7179111a1f4a6acb1ec7615c83b4b7fe7f89",
+    "src/parallel_source_v4/prepare.py": "6197dadc16509d6cff7088dd79970126f4e18c75623da10f9668b33fc526bd98",
+    "src/parallel_source_v4/retrieval.py": "cbf0e2087b4fe0f728b98ef5ea08dea74d6426c462f07fc34a26c617e1ef1c9f",
+    "trace_gc/pdf_source_parallel_v4.py": "df31e8d09cfe1502153ded6e87ca8ac9aad6d1b46012a6e7bf10b099a840f7e5",
+    "trace_gc/pdf_structure_parallel_v4.py": "9818f1ff0afda2350dc1a7e39fbe503c4ff8d9d23f7a2dcaea54b374f42258e7"
+  },
+  "legacy_metrics_replayed": true,
+  "v2_baseline": {
+    "f195": {
+      "text_match_98": true,
+      "boundary_and_98_match": false
+    },
+    "correct_proposals_98": 91,
+    "boundary_and_98_correct_proposals": 90,
+    "verified_fidelity_proposals": 0,
+    "unresolved_fidelity_cases": 200,
+    "pages": 200
+  },
+  "metrics": {
+    "parallel_grobid_v4": {
+      "pages": 200,
+      "complete_available": 111,
+      "correct_proposals_98": 33,
+      "boundary_and_98_correct_proposals": 33,
+      "false_proposals": 0,
+      "complete_abstracts_withheld": 78,
+      "verified_fidelity_proposals": 0,
+      "unresolved_fidelity_cases": 200
+    },
+    "parallel_mineru_v4": {
+      "pages": 200,
+      "complete_available": 111,
+      "correct_proposals_98": 38,
+      "boundary_and_98_correct_proposals": 38,
+      "false_proposals": 1,
+      "complete_abstracts_withheld": 72,
+      "verified_fidelity_proposals": 0,
+      "unresolved_fidelity_cases": 200
+    },
+    "parallel_olmocr_v4": {
+      "pages": 200,
+      "complete_available": 111,
+      "correct_proposals_98": 39,
+      "boundary_and_98_correct_proposals": 39,
+      "false_proposals": 0,
+      "complete_abstracts_withheld": 72,
+      "verified_fidelity_proposals": 0,
+      "unresolved_fidelity_cases": 200
+    },
+    "parallel_structure_v4": {
+      "pages": 200,
+      "complete_available": 111,
+      "correct_proposals_98": 38,
+      "boundary_and_98_correct_proposals": 38,
+      "false_proposals": 0,
+      "complete_abstracts_withheld": 73,
+      "verified_fidelity_proposals": 0,
+      "unresolved_fidelity_cases": 200
+    }
+  },
+  "validation": {
+    "command": "python tools/run_validation.py",
+    "report_relative": "validation_v3_private/issue14-validation-20260928-02/VALIDATION_REPORT.json",
+    "report_sha256": "4c96f802432427d497bf8589d017c5525da4e526bdda6a1b565a9d43e0c247f3",
+    "status": "PASS_WITH_EXTERNAL_GATES",
+    "tests_run": 557,
+    "tests_passed": 553,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 4
+  },
+  "new_paid_api_calls": 0,
+  "production_graph_writes": 0,
+  "open_gates": [
+    "selector_preservation",
+    "integrated_200_paper_quality_gate",
+    "independent_notation_and_boundary_review",
+    "unseen_cohort_qualification"
+  ],
+  "interpretation": "All legacy scores replay unchanged. Missing typed review evidence remains unresolved. No source labels or historical receipts were modified.",
+  "evaluated_at": "2026-09-28T14:30:42.886589+00:00",
+  "v4_assessment_seals_verified": true,
+  "review_followup": {
+    "focused_fidelity_tests": 30,
+    "reviewer_counterexamples": "reproduced_then_repaired_and_independently_rechecked",
+    "checks": [
+      "compound_operator_boundaries",
+      "unbraced_exponent_backtracking",
+      "inconsistent_proposal_state",
+      "contradictory_source_ownership",
+      "partial_and_absent_false_proposals",
+      "evaluation_time_binding",
+      "same_buffer_parse_and_hash",
+      "assessment_seals",
+      "input_change_recheck"
+    ]
+  }
+}

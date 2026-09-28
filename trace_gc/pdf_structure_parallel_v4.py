@@ -13,7 +13,7 @@ from .pdf_source_parallel_v4 import (canonical, compare, digest_value, locate, n
 
 VERSION = "page-one-parallel-structure-v4"
 SECTION_OWNERSHIP_VERSION = "source-section-ownership-v1"
-ABSTRACT_STRUCTURE_VERSION = "source-abstract-sections-v1"
+ABSTRACT_STRUCTURE_VERSION = "source-abstract-sections-v2"
 ABSTRACT = re.compile(r"^\s*a\s*b\s*s\s*t\s*r\s*a\s*c\s*t\b\s*[.:—–-]?\s*", re.I)
 EXCLUDED = {"page_header", "page_footer", "footnote", "caption", "picture", "table", "document_index"}
 BODY_WORDS = r"(?:overview|introduction|background|preliminaries|related\s+work|methods?|materials\s+and\s+methods|results|discussion|conclusions?|references|contents|table\s+of\s+contents)"
@@ -275,7 +275,7 @@ def _boundary_evidence(region: dict, native: list[dict], kind: str) -> dict:
             "region_boxes": region["boxes"], "tree_order": region["tree_order"]}
 
 
-def _section_regions(start: dict, ordered: list[dict], explicit: bool) -> tuple[list[dict], list[dict]]:
+def _section_regions(start: dict, ordered: list[dict], explicit: bool, native: list[dict]) -> tuple[list[dict], list[dict]]:
     """Derive a content lane before considering closing headings.
 
     Heading width does not describe section width. Geometry orders regions only
@@ -283,7 +283,10 @@ def _section_regions(start: dict, ordered: list[dict], explicit: bool) -> tuple[
     Tree order is retained as evidence, not silently treated as ground truth.
     """
     anchor = start
-    if explicit and not ABSTRACT.sub("", start["text"]).strip():
+    separate_heading = explicit and not ABSTRACT.sub("", start["text"]).strip()
+    heading = _abstract_heading(start, native) if separate_heading else {}
+    heading_bottom = max((s["bbox"][3] for s in heading.get("spans", [])), default=start["bbox"][3])
+    if separate_heading:
         following = [x for x in ordered if x["bbox"] and x["ref"] != start["ref"]
                      and x["bbox"][1] >= start["bbox"][3]-2
                      and overlap(start["bbox"], x["bbox"]) >= .5
@@ -291,7 +294,7 @@ def _section_regions(start: dict, ordered: list[dict], explicit: bool) -> tuple[
         if following:
             anchor = min(following, key=lambda x: (x["bbox"][1], x["tree_order"]))
     lane = anchor["bbox"]
-    local, decisions = [], []
+    local, decisions, inline_followers = [], [], {}
     for x in ordered:
         if x["ref"] == start["ref"]:
             local.append(x)
@@ -299,13 +302,47 @@ def _section_regions(start: dict, ordered: list[dict], explicit: bool) -> tuple[
             decisions.append({"ref": x["ref"], "decision": "excluded", "reason": "unlocated_region"})
         elif x["bbox"][1] < start["bbox"][1]-1:
             decisions.append({"ref": x["ref"], "decision": "excluded", "reason": "before_abstract_start"})
+        elif separate_heading and x["bbox"][1] < heading_bottom-2:
+            # A model union box may begin beside the heading while its text
+            # combines unrelated body columns. It cannot preempt a native
+            # paragraph below that heading. Recover oversized model boxes only
+            # when their native extents follow the heading, including exact
+            # later offsets when a converter splits one native line.
+            located = locate(x["text"], native, region_boxes=x["boxes"])
+            spans = located.get("spans", [])
+            heading_ends = {str(s["line_id"]): s["end"] for s in heading.get("spans", [])}
+            follows = all(s["bbox"][1] >= heading_bottom-2 or
+                          (str(s["line_id"]) in heading_ends and s["start"] >= heading_ends[str(s["line_id"])])
+                          for s in spans)
+            if (located["status"] == "located" and not located.get("column_change") and spans
+                    and follows):
+                boxes = [s["bbox"] for s in spans]
+                box = [min(b[0] for b in boxes), min(b[1] for b in boxes),
+                       max(b[2] for b in boxes), max(b[3] for b in boxes)]
+                if overlap(lane, box) >= .5:
+                    local.append({**x, "bbox": box, "boxes": boxes})
+                    if str(spans[0]["line_id"]) in heading_ends:
+                        inline_followers[x["ref"]] = spans[0]["start"]
+                    decisions.append({"ref": x["ref"], "decision": "geometry", "reason": "native_extent_after_abstract_heading",
+                                      "source_spans": spans, "heading_source_spans": heading.get("spans", [])})
+                else:
+                    decisions.append({"ref": x["ref"], "decision": "excluded", "reason": "outside_content_lane",
+                                      "source_spans": spans})
+            else:
+                decisions.append({"ref": x["ref"], "decision": "excluded", "reason": "overlaps_abstract_heading_without_following_source_extent",
+                                  "source_location": located["status"]})
         elif overlap(lane, x["bbox"]) < .5:
             decisions.append({"ref": x["ref"], "decision": "excluded", "reason": "outside_content_lane"})
         else:
             local.append(x)
     local.sort(key=lambda x: (round(x["bbox"][1], 1), x["bbox"][0], x["tree_order"]))
+    # Converter tree order cannot put source-located later offsets before the
+    # heading within one native line. Keep those paragraphs in offset order.
+    followers = sorted((x for x in local if x["ref"] in inline_followers),
+                       key=lambda x: (inline_followers[x["ref"]], x["tree_order"]))
+    local = [x for x in local if x["ref"] not in inline_followers]
     index = next(i for i, x in enumerate(local) if x["ref"] == start["ref"])
-    return local[index:], decisions
+    return [local[index], *followers, *local[index+1:]], decisions
 
 
 def _terminal_footnote(alignment: dict, native: list[dict], ordered: list[dict]) -> tuple[str, dict | None]:
@@ -462,7 +499,7 @@ def _publication_footer(region: dict, ordered: list[dict], native: list[dict]) -
 def _collect(start: dict, ordered: list[dict], native: list[dict], explicit: bool) -> dict:
     if start["unlocated"]:
         return {"text": ABSTRACT.sub("", start["text"]), "boundary": None, "refs": [start["ref"]], "alignment_failure": "unlocated_ocr_paragraph"}
-    local, ownership = _section_regions(start, ordered, explicit)
+    local, ownership = _section_regions(start, ordered, explicit, native)
     initial_text=ABSTRACT.sub("",start["text"]).strip() if explicit else start["text"]
     if explicit and not initial_text:
         initial_text=next((x["text"] for x in local[1:] if x["text"].strip()),"")
@@ -571,23 +608,38 @@ def _collect(start: dict, ordered: list[dict], native: list[dict], explicit: boo
         first_style = style(by_id[str(selected_lines[0])]) if selected_lines else {}
         if pieces and previous_region and previous_style and first_style:
             before_size, after_size = previous_style.get("size"), first_style.get("size")
-            if (structured and before_size and after_size and after_size > before_size*1.15
-                    and subsection_scope["last_label_ref"] in refs):
+            if (explicit and before_size and after_size and after_size > before_size*1.15
+                    and (not structured or subsection_scope["last_label_ref"] in refs)):
                 # A narrow abstract can end above a wider two-column body.
                 # A different lane's numbered heading is evidence only after
-                # the witnessed subsection sequence and a source size change.
+                # native-owned abstract content and a source size change.
+                # Structured scope additionally needs its subsection sequence.
                 outer = [h for h in ordered if h["bbox"] and h["ref"] not in refs
                          and previous_region["bbox"][3]-2 <= h["bbox"][1] <= x["bbox"][1]+3
                          and re.fullmatch(r"\s*(?:\d+(?:\.\d+)*|[IVX]+)[.)]?\s+"+BODY_WORDS+r"\s*", h["text"], re.I)]
                 proof = [_boundary_evidence(h, native, "body_section") for h in outer]
                 verified = [p for p in proof if p["source_location"] == "located"]
                 if len(verified) == 1:
-                    boundary = {**verified[0], "scope_evidence": "numbered_outer_heading_after_subsections_and_native_size_change",
-                                "before_style": previous_style, "after_style": first_style}
-                else:
+                    if structured:
+                        boundary = {**verified[0], "scope_evidence": "numbered_outer_heading_after_subsections_and_native_size_change",
+                                    "before_style": previous_style, "after_style": first_style}
+                    else:
+                        # A neighboring column may already contain body text
+                        # while this abstract continues. Preserve the bounded
+                        # prefix for review, never certify this transition from
+                        # font size and a foreign-lane heading alone.
+                        boundary = {"kind": "unresolved_section_ownership", "ref": x["ref"],
+                                    "reason": "cross_lane_heading_after_native_size_change_requires_review",
+                                    "candidate_boundary": verified[0], "source_spans": alignment["spans"],
+                                    "before_style": previous_style, "after_style": first_style}
+                    break
+                elif structured:
                     boundary = {"kind": "unresolved_section_ownership", "ref": x["ref"],
                                 "reason": "larger_source_region_after_subsections", "source_spans": alignment["spans"]}
-                break
+                    break
+                # Ordinary abstracts can change math/text font size without
+                # ending. With no located outer heading, retain that content
+                # and leave closure and geometry to their existing checks.
             if (not explicit and previous_style.get("bold") and not first_style.get("bold")
                     and previous_style.get("fraction", 0) >= .8 and first_style.get("fraction", 0) >= .8
                     and SENTENCE_END.search("\n".join(pieces))):
@@ -632,6 +684,21 @@ def _collect(start: dict, ordered: list[dict], native: list[dict], explicit: boo
         previous_region = x
         if selected_lines:
             previous_style = style(by_id[str(selected_lines[-1])])
+    if not pieces:
+        # Excluding an unverified union box must not turn an observed model
+        # candidate into a claim that no prose exists. Retain one such candidate
+        # for inspection, with no located spans or complete proposal.
+        held_refs = {o.get("ref") for o in ownership if o.get("reason") ==
+                     "overlaps_abstract_heading_without_following_source_extent"}
+        attempted = [x for x in ordered if x["ref"] in held_refs and x["label"] not in EXCLUDED
+                     and not _role_rejected(x["text"]) and not _header(x["text"])
+                     and len(canonical(x["text"])) >= 100]
+        if len(attempted) == 1:
+            pieces.append(attempted[0]["text"])
+            refs.append(attempted[0]["ref"])
+            failure = failure or "unverified_region_overlaps_abstract_heading"
+            ownership.append({"ref": attempted[0]["ref"], "decision": "held",
+                              "reason": "unlocated_candidate_retained_for_review"})
     recorded = {entry.get("ref") for entry in ownership}
     for region in local:
         if region["ref"] not in recorded:
@@ -711,6 +778,67 @@ def _title_context(region: dict, ordered: list[dict], native: list[dict]) -> dic
         return {"kind": "larger_native_title_typography_requires_review", "ref": region["ref"],
                 "source_spans": alignment["spans"], "following_native_line_ids": [n["id"] for n in neighbors]}
     return None
+
+
+def _frontmatter_candidate(region: dict, ordered: list[dict], native: list[dict]) -> dict | None:
+    """Retain an unlabelled source paragraph for attributed ownership review.
+
+    A scholarly field can be empty even when the source has an inset abstract.
+    Title, author and affiliation evidence identifies a candidate; it does not
+    make typography or page position an automatic section-ownership proof.
+    """
+    if not region["bbox"] or not NARRATIVE.search(region["text"]):
+        return None
+    located = locate(region["text"], native, region_boxes=region["boxes"])
+    if located["status"] != "located" or located.get("column_change") or not located["spans"]:
+        return None
+    by_id = {str(n["id"]): n for n in native}
+    first = located["spans"][0]
+    first_line = by_id[str(first["line_id"])]
+    content_size = style(first_line).get("size")
+    if not content_size or first_line["text"][:first["start"]].strip():
+        return None
+    box = [min(s["bbox"][0] for s in located["spans"]), min(s["bbox"][1] for s in located["spans"]),
+           max(s["bbox"][2] for s in located["spans"]), max(s["bbox"][3] for s in located["spans"])]
+    affiliation_pattern = re.compile(r"\b(?:universit\w*|institut\w*|department|departamento|dipartimento|faculty|school|laborator\w*)\b", re.I)
+    affiliations = []
+    for prior in ordered:
+        if (not prior["bbox"] or prior["bbox"][3] > box[1]+2 or box[1]-prior["bbox"][3] > 48
+                or overlap(box, prior["bbox"]) < .5 or len(prior["text"]) > 600
+                or not affiliation_pattern.search(prior["text"]) or NARRATIVE.search(prior["text"])):
+            continue
+        proof = locate(prior["text"], native, region_boxes=prior["boxes"])
+        if proof["status"] == "located" and proof["spans"]:
+            affiliations.append((prior, proof))
+    if not affiliations:
+        return None
+    affiliation, affiliation_proof = max(affiliations, key=lambda pair: pair[0]["bbox"][3])
+    authors, titles = [], []
+    for prior in ordered:
+        if (not prior["bbox"] or prior["bbox"][3] > affiliation["bbox"][1]+2
+                or overlap(box, prior["bbox"]) < .5 or NON_ABSTRACT.match(prior["text"])
+                or METADATA_START.match(prior["text"]) or COPYRIGHT_FOOTER.match(prior["text"])):
+            continue
+        tokens = re.findall(r"[^\W\d_]+", prior["text"], re.UNICODE)
+        if not 2 <= len(tokens) <= 60 or NARRATIVE.search(prior["text"]):
+            continue
+        proof = locate(prior["text"], native, region_boxes=prior["boxes"])
+        if proof["status"] != "located" or not proof["spans"]:
+            continue
+        size = style(by_id[str(proof["spans"][0]["line_id"])]).get("size")
+        if size and size > content_size*1.25:
+            titles.append((prior, proof))
+        elif sum(word[0].isupper() for word in tokens)/len(tokens) >= .65:
+            authors.append((prior, proof))
+    pairs = [(title, author) for title in titles for author in authors if title[0]["bbox"][3] <= author[0]["bbox"][1]+2]
+    if len(pairs) != 1:
+        return None
+    title, author = pairs[0]
+    return {"kind": "unlabelled_frontmatter_candidate_requires_source_review",
+            "candidate_ref": region["ref"], "source_spans": located["spans"],
+            "title_ref": title[0]["ref"], "title_source_spans": title[1]["spans"],
+            "author_ref": author[0]["ref"], "author_source_spans": author[1]["spans"],
+            "affiliation_ref": affiliation["ref"], "affiliation_source_spans": affiliation_proof["spans"]}
 
 
 def _compose_section_spans(selected: dict, native: list[dict]) -> dict | None:
@@ -793,7 +921,7 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
         native = validate_lines(native_lines or [], page_size)
         result["native_sha256"] = digest_value(native)
         ordered = regions(document, list(page_size))
-        candidates, collected = [], {}
+        candidates, collected, frontmatter = [], {}, {}
         for x in ordered:
             if x["label"] in EXCLUDED:
                 continue
@@ -807,6 +935,11 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                 field = compare(x["text"], scholarly_abstract) if scholarly_abstract else {}
                 bold = _source_bold(x, native) and NARRATIVE.search(x["text"])
                 if not bold and field.get("precision", 0) < .98:
+                    proof = _frontmatter_candidate(x, ordered, native)
+                    if proof:
+                        candidates.append((0, x, False, "source_frontmatter_paragraph_requires_review"))
+                        frontmatter[x["ref"]] = proof
+                        collected[x["ref"]] = _collect(x, ordered, native, False)
                     continue
                 selected = _collect(x, ordered, native, False)
                 collected[x["ref"]] = selected
@@ -839,6 +972,8 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
             return seal(result)
         _, start, explicit, basis = candidates[0]
         selected = collected.get(start["ref"]) or _collect(start, ordered, native, explicit)
+        if start["ref"] in frontmatter:
+            result["candidate_scope"] = frontmatter[start["ref"]]
         text = selected["text"]
         result.update(text=text, closing_boundary=selected["boundary"], region_refs=selected["refs"],
                       explicit_heading=explicit, proposal_basis=basis, structured=selected.get("structured", False),
@@ -850,6 +985,21 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
         alignment = locate(text, native)
         if alignment["status"] == "unlocated":
             alignment = _compose_section_spans(selected, native) or alignment
+        elif alignment["status"] == "located" and not selected["alignment_failure"]:
+            # A 98% global match can omit an entire short native wrap line.
+            # Every non-whitespace position selected by the located paragraphs
+            # must survive in order, including scientific punctuation. A set
+            # comparison alone would accept a permutation of the same glyphs.
+            positions = lambda spans: [(str(s["line_id"]), s["start"]+i)
+                for s in spans for i, ch in enumerate(s["text"]) if not ch.isspace()]
+            expected = positions([s for entry in selected["ownership"]
+                if entry.get("decision") == "included" for s in entry.get("source_spans", [])])
+            if expected and positions(alignment["spans"]) != expected:
+                composed = _compose_section_spans(selected, native)
+                if composed:
+                    alignment = composed
+                else:
+                    selected["alignment_failure"] = "global_alignment_changes_owned_source_extent"
         result["source_alignment"] = {k: v for k, v in alignment.items() if k not in {"text", "spans"}}
         if selected["alignment_failure"] or alignment["status"] != "located":
             result.update(status="uncertain", reasons=[selected["alignment_failure"] or alignment.get("reason", "source_alignment_failure")])
@@ -881,6 +1031,9 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                 result.update(status="uncertain", reasons=["closing_boundary_with_unresolved_terminal_notation"])
             else:
                 result.update(status="complete", complete_candidate=True, reasons=["bounded_source_located_proposal"])
+        if basis == "source_frontmatter_paragraph_requires_review" and result["status"] == "complete":
+            result.update(status="uncertain", complete_candidate=False,
+                          reasons=["unlabelled_frontmatter_ownership_requires_source_review"])
         text = result["text"]
         within_budget = len(text) <= max_input_chars
         result["request_budget"] = {"limit_characters": max_input_chars, "characters": len(text),

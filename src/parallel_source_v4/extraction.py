@@ -320,7 +320,7 @@ def predict(method: str, paths: dict, kwargs: dict, *, expected_input_hashes=Non
 def run_cases(cases: list[dict], labels: dict, output: Path, cohort: str, methods=METHODS,
               *, input_receipt=None, root=None) -> dict:
     import fitz
-    started=time.perf_counter(); by_method={m:[] for m in methods}; native_records=[]
+    started=time.perf_counter(); by_method={m:[] for m in methods}; native_records=[]; assessment_files={}
     for case in cases:
         sid=case['id']; page=case['page_path']
         if not re.fullmatch(r'[A-Za-z0-9_-]+',sid):raise ValueError('unsafe_sample_id')
@@ -337,13 +337,15 @@ def run_cases(cases: list[dict], labels: dict, output: Path, cohort: str, method
                                    'native_relative':native_path.relative_to(root).as_posix()})
         for method in methods:
             pred=predict(method,case['paths'],kwargs,expected_input_hashes=case.get('input_hashes'))
-            write_once(output/'assessments'/method/f'{sid}.json',pred)
+            relative=f'assessments/{method}/{sid}.json'
+            assessment_files[relative]=write_once(output/relative,pred)
             reference={**labels[sid], 'math_review_required':labels[sid].get('math_review_required',False) or (cohort=='regression200' and sid in MATH_HOLDS)}
             by_method[method].append(score_case(sid,pred,reference))
     result={'schema_version':3,'status':'COMPLETE_OFFLINE_ASSESSMENT_NOT_QUALIFICATION','cohort':cohort,
             'metrics':{m:summary(rows) for m,rows in by_method.items()},'details':by_method,
             'runtime_seconds':time.perf_counter()-started,'environment':{'python':sys.version.split()[0],'pymupdf':fitz.VersionBind},'new_paid_api_calls':0,'measured_api_spend_usd':0,
-            'production_graph_writes':0,'independent_human_validation':'outstanding','automatic_fallback_enabled':False}
+            'production_graph_writes':0,'independent_human_validation':'outstanding','automatic_fallback_enabled':False,
+            'assessment_files_sha256':assessment_files}
     if 'parallel_structure_v4' in by_method:
         result['fallback_increment']={m:fallback_increment(by_method['parallel_structure_v4'],by_method[m]) for m in ('parallel_mineru_v4','parallel_olmocr_v4') if m in by_method}
     if input_receipt is not None:

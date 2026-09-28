@@ -126,6 +126,8 @@ from retrieval_schemas import extend
 extend(SCHEMAS)
 from image_evidence_schemas import extend as extend_image_evidence
 extend_image_evidence(SCHEMAS)
+from paper_ingestion_schemas import extend as extend_paper_ingestion
+extend_paper_ingestion(SCHEMAS)
 
 EVENT=obj({"id":S,"run_id":S,"execution_mode":MODE,"sequence":{"type":"integer","minimum":1},
            "stage":{"enum":["SOURCE","CLAIM","EVIDENCE","CANDIDATE","PACK","OBSERVATION","RESOLUTION","EVALUATION","QUALIFICATION","PLAN","RECEIPT","TRANSACTION","SCHEMA","SNAPSHOT","POLICY","RETRIEVAL"]},

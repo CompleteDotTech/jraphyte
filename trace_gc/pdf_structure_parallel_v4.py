@@ -12,11 +12,13 @@ from .pdf_source_parallel_v4 import (canonical, compare, digest_value, locate, n
                             style, validate_box, validate_lines, validate_source_spans)
 
 VERSION = "page-one-parallel-structure-v4"
+SECTION_OWNERSHIP_VERSION = "source-section-ownership-v1"
 ABSTRACT = re.compile(r"^\s*a\s*b\s*s\s*t\s*r\s*a\s*c\s*t\b\s*[.:—–-]?\s*", re.I)
 EXCLUDED = {"page_header", "page_footer", "footnote", "caption", "picture", "table", "document_index"}
 BODY_WORDS = r"(?:overview|introduction|background|preliminaries|related\s+work|methods?|materials\s+and\s+methods|results|discussion|conclusions?|references|contents|table\s+of\s+contents)"
 METADATA_WORDS = r"(?:key\s*words?|index\s+terms|PACS(?:\s+(?:numbers|codes))?|CCS\s+concepts|funding|acknowledg\w*|correspondence|author\s+(?:contributions?|notes?|information|details)|data\s+availability|dedicat(?:ion|ed\s+to)|in\s+memory\s+of|to\s+the\s+memory\s+of|synopsis)"
 METADATA_START = re.compile(r"^\s*(?:"+METADATA_WORDS+r"|(?:[\d,a-z*†‡]+\s+)?(?:department|university|institute|school|faculty|laboratory|college|cent(?:re|er))\b|©|copyright\b|all\s+rights\s+reserved|e-?mail\b|https?://|we\s+(?:thank|congratulate)\b|this\s+(?:work|paper|research)\s+(?:was|is)\s+(?:funded|supported)\b)", re.I)
+COPYRIGHT_FOOTER = re.compile(r"^\s*(?:\\\([^)]*\\\)\s*)?(?:[©ⓒ]\s*)?(?:copyright\s*)?\d{4}\b.{0,120}\ball\s+rights\s+reserved[.\s]*$", re.I)
 NON_ABSTRACT = re.compile(r"^\s*(?:graphical\s+abstract|highlights?|key\s+points|executive\s+summary|(?:Fig(?:ure)?\.?|Table)\s*\d+|author\s+(?:list|notes?|details)|dedication|contents|table\s+of\s+contents)\b", re.I)
 NARRATIVE = re.compile(r"\b(?:we|this\s+(?:paper|study|work|article)|propos\w+|investigat\w+|demonstrat\w+|establish\w+|present\w+|introduc\w+|obtain\w+|develop\w+|show\w+|prove\w+)\b", re.I)
 SENTENCE_END = re.compile(r"[.!?][\s\"'’”\])}†‡*\d]*$")
@@ -93,7 +95,7 @@ def _author_like(text: str) -> bool:
 
 
 def _role_rejected(text: str) -> bool:
-    return bool(NON_ABSTRACT.match(text) or METADATA_START.match(text) or _author_like(text))
+    return bool(NON_ABSTRACT.match(text) or METADATA_START.match(text) or COPYRIGHT_FOOTER.match(text) or _author_like(text))
 
 
 def _header(text: str) -> bool:
@@ -194,15 +196,158 @@ def _field_context(region: dict, ordered: list[dict], native: list[dict]) -> dic
             "source_location":alignment["status"],"source_spans":alignment["spans"]}
 
 
+def _heading_context(alignment: dict, native: list[dict], *, abstract=False) -> bool:
+    """A word match inside running prose does not establish a source heading."""
+    if alignment["status"] != "located" or not alignment["spans"]:
+        return False
+    by_id = {str(x["id"]): x for x in native}
+    first, last = alignment["spans"][0], alignment["spans"][-1]
+    first_line, last_line = by_id[str(first["line_id"])], by_id[str(last["line_id"])]
+    prefix = first_line["text"][:first["start"]].strip()
+    suffix = last_line["text"][last["end"]:].strip()
+    # Abstract starts must lead their source line. In particular, a converter
+    # must not erase 'Graphical' from 'Graphical Abstract'. Outer inline sections
+    # may follow a completed sentence or a separately emitted section number.
+    if prefix and (abstract or not (SENTENCE_END.search(prefix) or re.fullmatch(r"(?:\d+(?:\.\d+)*|[IVX]+)[.)]?", prefix))):
+        return False
+    if not suffix:
+        return True
+    if abstract:
+        # Native PDFs commonly use 'Abstract prose' without punctuation. The
+        # source-leading position, including any excluded prefix, is decisive.
+        return True
+    if alignment["text"].rstrip().endswith(tuple(":.—–-")) or suffix[0] in ":.—–-":
+        return True
+    runs = last_line.get("spans", [])
+    def bold(run):
+        return bool(run.get("flags", 0) & 16 or "bold" in str(run.get("font", "")).lower())
+    heading_runs = [r for r in runs if r["end"] > last["start"] and r["start"] < last["end"]]
+    suffix_runs = [r for r in runs if r["end"] > last["end"]]
+    return bool(heading_runs and suffix_runs and all(bold(r) for r in heading_runs)
+                and all(not bold(r) for r in suffix_runs))
+
+
+def _boundary_evidence(region: dict, native: list[dict], kind: str) -> dict:
+    located = locate(region["text"], native, region_boxes=region["boxes"])
+    scope = "whole_region"
+    if kind in {"body_section", "embedded_body_section", "ambiguous_structured_or_body_section", "metadata_or_nonabstract_region"} and not _heading_context(located, native):
+        located = {"status": "unverified_heading_context", "spans": []}
+    if (located["status"] == "located" and kind in {"body_section", "ambiguous_structured_or_body_section"}
+            and not _header(region["text"])):
+        # A complete source paragraph can still have an incorrect model label.
+        # Unknown section titles need corroborating native heading typography.
+        ids = {str(s["line_id"]) for s in located["spans"]}
+        selected = [n for n in native if str(n["id"]) in ids]
+        box = region["bbox"]
+        neighbors = [n for n in native if str(n["id"]) not in ids and overlap(box, n["bbox"]) >= .5
+                     and (0 <= box[1]-n["bbox"][3] <= 72 or 0 <= n["bbox"][1]-box[3] <= 72)]
+        heading_styles = [style(n) for n in selected]
+        neighbor_styles = [style(n) for n in neighbors]
+        corroborated = (len(ids) <= 2 and len(canonical(region["text"])) <= 120
+                        and len(region["text"].split()) <= 16 and heading_styles and neighbor_styles
+                        and all(s.get("fraction", 0) >= .8 for s in heading_styles)
+                        and (all(s.get("bold") for s in heading_styles) and any(not s.get("bold") for s in neighbor_styles)
+                             or min(s.get("size", 0) for s in heading_styles) > 1.15*max(s.get("size", 0) for s in neighbor_styles)))
+        if not corroborated:
+            located = {"status": "unverified_heading_role", "spans": []}
+    if located["status"] != "located" and kind == "metadata_or_nonabstract_region":
+        # A converter's math transcription may corrupt the values following a
+        # correctly located metadata label. Verify the label's source context;
+        # an interior word or 'Keywords describe ...' is not a heading.
+        match = re.match(r"\s*("+METADATA_WORDS+r")\b\s*[:.—–-]", region["text"], re.I)
+        label = match.group(1) if match else "All rights reserved" if COPYRIGHT_FOOTER.match(region["text"]) else None
+        if label:
+            candidate = locate(label, native, region_boxes=region["boxes"])
+            if candidate["status"] == "located":
+                by_id = {str(x["id"]): x for x in native}
+                first, last = candidate["spans"][0], candidate["spans"][-1]
+                prefix = by_id[str(first["line_id"])]["text"][:first["start"]].strip()
+                suffix = by_id[str(last["line_id"])]["text"][last["end"]:].strip()
+                separator = candidate["text"].rstrip().endswith(tuple(":.—–-")) or not suffix or suffix[0] in ":.—–-"
+                if match and (not prefix or SENTENCE_END.search(prefix)) and separator:
+                    located, scope = candidate, "metadata_label"
+                elif not match and COPYRIGHT_FOOTER.fullmatch(by_id[str(first["line_id"])]["text"]):
+                    located, scope = candidate, "legal_footer_statement"
+    return {"kind": kind, "ref": region["ref"], "label": region["text"][:120],
+            "source_location": located["status"], "source_spans": located["spans"],
+            "source_text_scope": scope,
+            "region_boxes": region["boxes"], "tree_order": region["tree_order"]}
+
+
+def _section_regions(start: dict, ordered: list[dict], explicit: bool) -> tuple[list[dict], list[dict]]:
+    """Derive a content lane before considering closing headings.
+
+    Heading width does not describe section width. Geometry orders regions only
+    inside this lane; transitions into multiple lanes are held by the collector.
+    Tree order is retained as evidence, not silently treated as ground truth.
+    """
+    anchor = start
+    if explicit and not ABSTRACT.sub("", start["text"]).strip():
+        following = [x for x in ordered if x["bbox"] and x["ref"] != start["ref"]
+                     and x["bbox"][1] >= start["bbox"][3]-2
+                     and overlap(start["bbox"], x["bbox"]) >= .5
+                     and x["label"] not in EXCLUDED and not _role_rejected(x["text"])]
+        if following:
+            anchor = min(following, key=lambda x: (x["bbox"][1], x["tree_order"]))
+    lane = anchor["bbox"]
+    local, decisions = [], []
+    for x in ordered:
+        if x["ref"] == start["ref"]:
+            local.append(x)
+        elif not x["bbox"]:
+            decisions.append({"ref": x["ref"], "decision": "excluded", "reason": "unlocated_region"})
+        elif x["bbox"][1] < start["bbox"][1]-1:
+            decisions.append({"ref": x["ref"], "decision": "excluded", "reason": "before_abstract_start"})
+        elif overlap(lane, x["bbox"]) < .5:
+            decisions.append({"ref": x["ref"], "decision": "excluded", "reason": "outside_content_lane"})
+        else:
+            local.append(x)
+    local.sort(key=lambda x: (round(x["bbox"][1], 1), x["bbox"][0], x["tree_order"]))
+    index = next(i for i, x in enumerate(local) if x["ref"] == start["ref"])
+    return local[index:], decisions
+
+
+def _terminal_footnote(alignment: dict, native: list[dict], ordered: list[dict]) -> tuple[str, dict | None]:
+    """Remove only a source-styled terminal marker linked to a footnote region."""
+    text = alignment["text"]
+    if not alignment.get("spans"):
+        return text, None
+    last = alignment["spans"][-1]
+    line = next(x for x in native if str(x["id"]) == str(last["line_id"]))
+    for run in reversed(line.get("spans", [])):
+        token = line["text"][run["start"]:run["end"]]
+        if (run["end"] != last["end"] or run["start"] < last["start"]
+                or not run.get("flags", 0) & 1 or not re.fullmatch(r"[0-9*†‡]{1,3}", token)):
+            continue
+        prefix = text[:-len(token)].rstrip()
+        if not SENTENCE_END.search(prefix):
+            continue
+        notes = [x for x in ordered if x["label"] == "footnote" and x["bbox"]
+                 and x["bbox"][1] > line["bbox"][3]
+                 and re.match(re.escape(token)+r"(?:\s|\D)", x["text"].lstrip())]
+        if len(notes) != 1:
+            return text, {"kind": "unresolved_terminal_marker", "marker_span": {**last, "start": run["start"], "text": token},
+                          "decision": "held", "reason": "terminal_footnote_marker_requires_source_review"}
+        note = _boundary_evidence(notes[0], native, "linked_terminal_footnote")
+        native_marker_matches = False
+        if note["source_location"] == "located" and note["source_spans"]:
+            first = note["source_spans"][0]
+            note_line = next(x for x in native if str(x["id"]) == str(first["line_id"]))
+            note_prefix = note_line["text"][:first["start"]].strip()
+            marker = re.match(r"\s*([0-9*†‡]+)", note_line["text"])
+            native_marker_matches = not note_prefix and marker is not None and marker.group(1) == token
+        if not native_marker_matches:
+            return text, {"kind": "unresolved_terminal_marker", "marker_span": {**last, "start": run["start"], "text": token},
+                          "decision": "held", "reason": "terminal_footnote_marker_requires_source_review"}
+        return prefix, {**note, "marker_span": {**last, "start": run["start"], "text": token},
+                        "decision": "excluded", "reason": "source_superscript_linked_to_footnote"}
+    return text, None
+
+
 def _collect(start: dict, ordered: list[dict], native: list[dict], explicit: bool) -> dict:
     if start["unlocated"]:
         return {"text": ABSTRACT.sub("", start["text"]), "boundary": None, "refs": [start["ref"]], "alignment_failure": "unlocated_ocr_paragraph"}
-    column = start["bbox"]
-    local = [x for x in ordered if x["bbox"] and x["bbox"][1] >= column[1]-1 and overlap(column, x["bbox"]) >= .5]
-    local.sort(key=lambda x: (round(x["bbox"][1], 1), x["bbox"][0], x["tree_order"]))
-    # Do not include earlier siblings sharing the same y position.
-    index = next(i for i, x in enumerate(local) if x["ref"] == start["ref"])
-    local = local[index:]
+    local, ownership = _section_regions(start, ordered, explicit)
     initial_text=ABSTRACT.sub("",start["text"]).strip() if explicit else start["text"]
     if explicit and not initial_text:
         initial_text=next((x["text"] for x in local[1:] if x["text"].strip()),"")
@@ -210,6 +355,12 @@ def _collect(start: dict, ordered: list[dict], native: list[dict], explicit: boo
     # opening abstract into a structured abstract.
     structured = _structured(initial_text) if explicit else False
     pieces, refs, boundary, failure = [], [], None, None
+    if explicit:
+        heading = locate(ABSTRACT.match(start["text"]).group(), native, region_boxes=start["boxes"])
+        ownership.append({"ref": start["ref"], "decision": "heading", "reason": "explicit_abstract_start",
+                          "source_location": heading["status"], "source_spans": heading["spans"]})
+        if not _heading_context(heading, native, abstract=True):
+            failure = "unverified_abstract_start_heading"
     previous_style, previous_region = {}, None
     for x in local:
         text = x["text"]
@@ -217,10 +368,33 @@ def _collect(start: dict, ordered: list[dict], native: list[dict], explicit: boo
             text = ABSTRACT.sub("", text)
         if not text.strip():
             continue
+        if pieces and previous_region:
+            # A staggered right-column paragraph may begin slightly above its
+            # left-column section heading. Inspect all plausible headings first.
+            headings = [h for h in local if h["ref"] not in refs and h["ref"] != start["ref"]
+                        and h["bbox"][1] >= previous_region["bbox"][3]-2
+                        and (h["bbox"][1] <= x["bbox"][1]+3 or
+                             (x["bbox"][1] < previous_region["bbox"][3]-2
+                              and h["tree_order"] < x["tree_order"]
+                              and h["bbox"][1] <= previous_region["bbox"][3]+48))
+                        and h["label"] not in EXCLUDED
+                        and (h["label"] == "section_header" or _header(h["text"]) or _role_rejected(h["text"]))
+                        and not (structured and normalize(h["text"]).lower().rstrip(": .") in INTERNAL)]
+            if headings:
+                h = min(headings, key=lambda h: (h["bbox"][1], h["tree_order"]))
+                ambiguous = explicit and normalize(h["text"]).lower().rstrip(": .") in INTERNAL
+                kind = "metadata_or_nonabstract_region" if _role_rejected(h["text"]) else "body_section"
+                boundary = _boundary_evidence(h, native, "ambiguous_structured_or_body_section" if ambiguous else kind)
+                if boundary["source_location"] != "located":
+                    failure = "unverified_section_boundary"
+                ownership.append({"ref": h["ref"], "decision": "excluded", "reason": "closing_section"})
+                break
         internal = normalize(text).lower().rstrip(": .") in INTERNAL and structured
         if pieces and not internal and (x["label"] == "section_header" or _header(text)):
             ambiguous = explicit and normalize(text).lower().rstrip(": .") in INTERNAL
-            boundary = {"kind": "ambiguous_structured_or_body_section" if ambiguous else "body_section", "ref": x["ref"], "label": text[:120]}
+            boundary = _boundary_evidence(x, native, "ambiguous_structured_or_body_section" if ambiguous else "body_section")
+            if boundary["source_location"] != "located":
+                failure = "unverified_section_boundary"
             break
         if x["label"] in {"page_header", "page_footer", "footnote"}:
             continue
@@ -228,11 +402,38 @@ def _collect(start: dict, ordered: list[dict], native: list[dict], explicit: boo
             boundary = {"kind": "nontext_region_requires_source_review", "ref": x["ref"], "label": x["label"]}
             break
         if pieces and _role_rejected(text):
-            boundary = {"kind": "metadata_or_nonabstract_region", "ref": x["ref"], "label": text[:120]}
+            boundary = _boundary_evidence(x, native, "metadata_or_nonabstract_region")
+            if boundary["source_location"] != "located":
+                failure = "unverified_section_boundary"
             break
         if x["label"] in EXCLUDED or _role_rejected(text):
             failure = "nonabstract_start_region"
             break
+        if pieces:
+            prefix, embedded = _cut(text, structured)
+            if embedded and not prefix.strip():
+                # The beginning of a model paragraph may already be an outer
+                # heading. Resolve it before a width/gap transition can hold it.
+                header_region = {**x, "text": embedded["label"]}
+                boundary = _boundary_evidence(header_region, native, embedded["kind"])
+                if boundary["source_location"] != "located":
+                    failure = "unverified_section_boundary"
+                break
+        if pieces and previous_region:
+            prior_box, box = previous_region["bbox"], x["bbox"]
+            width = prior_box[2]-prior_box[0]
+            narrowed = box[2]-box[0] < width*.75
+            peers = [p for p in local if p["bbox"][1] >= prior_box[3]-2
+                     and p["bbox"][1] < box[3] and p["label"] not in EXCLUDED
+                     and len(canonical(p["text"])) >= 50 and overlap(box, p["bbox"]) < .1]
+            gap = box[1]-prior_box[3]
+            overlapping = box[1] < prior_box[3]-2 and x["coordinate_source"] != "native_alignment_estimate"
+            if (narrowed and peers) or overlapping or gap > max(48, (prior_box[3]-prior_box[1])*.7):
+                boundary = {"kind": "unresolved_section_ownership", "ref": x["ref"],
+                            "reason": "multiple_body_lanes" if narrowed and peers else "overlapping_source_regions" if overlapping else "large_source_gap",
+                            "region_boxes": x["boxes"], "peer_refs": [p["ref"] for p in peers]}
+                ownership.append({"ref": x["ref"], "decision": "held", "reason": boundary["reason"]})
+                break
         boxes = None if x["coordinate_source"] == "native_alignment_estimate" else x["boxes"]
         alignment = locate(text, native, region_boxes=boxes)
         if alignment["status"] != "located":
@@ -248,11 +449,25 @@ def _collect(start: dict, ordered: list[dict], native: list[dict], explicit: boo
         by_id = {str(n["id"]): n for n in native}
         first_style = style(by_id[str(selected_lines[0])]) if selected_lines else {}
         if pieces and previous_region and previous_style and first_style:
+            before_size, after_size = previous_style.get("size"), first_style.get("size")
+            if (before_size and after_size and (after_size < before_size*.85 or
+                    (previous_style.get("bold") and not first_style.get("bold") and after_size < before_size))
+                    and SENTENCE_END.search("\n".join(pieces))):
+                boundary = {"kind": "unresolved_section_ownership", "ref": x["ref"],
+                            "reason": "smaller_separate_source_region", "source_spans": alignment["spans"],
+                            "before_style": previous_style, "after_style": first_style}
+                break
             color_change = first_style["color"] != previous_style["color"]
             if color_change and first_style.get("fraction", 0) >= .8 and SENTENCE_END.search("\n".join(pieces)):
                 boundary = {"kind": "separate_source_style_region", "ref": x["ref"],
                             "before_style": previous_style, "after_style": first_style}
                 break
+        trimmed_text, note = _terminal_footnote(alignment, native, ordered)
+        if note:
+            source_text = trimmed_text
+            ownership.append(note)
+            if note["kind"] == "unresolved_terminal_marker":
+                failure = note["reason"]
         source_text, semantic = _cut(source_text, structured)
         styled_text, styled = _style_cut(alignment, native) if not structured else (alignment["text"], None)
         if styled and (not semantic or len(styled_text) < len(source_text)):
@@ -260,14 +475,24 @@ def _collect(start: dict, ordered: list[dict], native: list[dict], explicit: boo
         if source_text.strip():
             pieces.append(source_text)
             refs.append(x["ref"])
+            ownership.append({"ref": x["ref"], "decision": "included", "reason": "source_located_section_content",
+                              "source_spans": locate(source_text, native)["spans"] if note or semantic else alignment["spans"],
+                              "tree_order": x["tree_order"]})
+        if note and note["kind"] == "unresolved_terminal_marker":
+            break
         if semantic:
             boundary = {**semantic, "ref": x["ref"]}
             break
         previous_region = x
         if selected_lines:
             previous_style = style(by_id[str(selected_lines[-1])])
+    recorded = {entry.get("ref") for entry in ownership}
+    for region in local:
+        if region["ref"] not in recorded:
+            ownership.append({"ref": region["ref"], "decision": "deferred",
+                              "reason": "outside_verified_abstract_content"})
     return {"text": "\n".join(pieces), "boundary": boundary, "refs": refs,
-            "alignment_failure": failure, "structured": structured}
+            "alignment_failure": failure, "structured": structured, "ownership": ownership}
 
 
 def seal(result: dict) -> dict:
@@ -356,7 +581,8 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
         selected = _collect(start, ordered, native, explicit)
         text = selected["text"]
         result.update(text=text, closing_boundary=selected["boundary"], region_refs=selected["refs"],
-                      explicit_heading=explicit, proposal_basis=basis, structured=selected.get("structured", False))
+                      explicit_heading=explicit, proposal_basis=basis, structured=selected.get("structured", False),
+                      section_ownership_version=SECTION_OWNERSHIP_VERSION, region_ownership=selected.get("ownership", []))
         if not text:
             result.update(status="absent", reasons=["heading_without_abstract_prose"])
             return seal(result)
@@ -375,6 +601,8 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                 result.update(status="partial" if partial else "uncertain", reasons=["page_one_continues_without_closure" if partial else "no_explainable_closing_boundary"])
             elif selected["boundary"]["kind"] == "ambiguous_structured_or_body_section":
                 result.update(status="uncertain", reasons=["structured_abstract_boundary_requires_review"])
+            elif selected["boundary"]["kind"] == "unresolved_section_ownership":
+                result.update(status="uncertain", reasons=["section_ownership_requires_source_review"])
             elif (selected["boundary"]["kind"] == "embedded_body_section" and explicit and
                   not selected["structured"] and
                   normalize(selected["boundary"].get("label", "")).lower().rstrip(": .") in INTERNAL):

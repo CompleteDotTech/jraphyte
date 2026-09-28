@@ -161,8 +161,8 @@ review attestations test enforcement; they do not measure OCR accuracy.
 ## Recorded local experiment
 
 The [sanitized experiment receipt](../examples/image_evidence/experiment_20260928.json)
-binds 94 implementation/schema files and hashes of the tested artifacts. Its
-SHA-256 is `9050dc450a00e4ca78b1d094aebab0287929a6af569e2b45b199255a81d0a1be`.
+binds 95 implementation/schema files and hashes of the tested artifacts. Its
+SHA-256 is `03abc4b5249b43a0403a216e95d289114a9f56df01602bbc15502d451700f5cb`.
 This is a diagnostic subset of four already exposed frozen200 pages, selected
 for absent/suspect native encoding. It is not an unseen cohort or a population
 accuracy estimate. The implementation agent performed the source review and the
@@ -185,11 +185,11 @@ new unseen papers. Review workload was four real pages, five candidate reviews
 and one correction. Wall-clock review duration was not instrumented.
 
 The private audit receipt SHA-256 is
-`fee9ab93af265d659d710442178becec6a399244bd845311bebe7968b59cf674`.
+`0d194c973d57285ac767935fb37dea5c21b791078f26927ea44faa697567d790`.
 It enumerates 98 exact input/artifact hashes. Reproduction requires authorized
 access to the frozen200 source map, original PDF bytes, page/crop images, raw OCR,
 review/correction specifications and handoff catalog files under
-`<AUTHORIZED_DATA_ROOT>/validation_v3_private/issue18-integrated-20260928-01/`.
+`<AUTHORIZED_DATA_ROOT>/validation_v3_private/issue18-integrated-20260928-02/`.
 Final real artifacts are `real/<case-id>/`; authored artifacts are
 `synthetic/<case-id>/`. The two integrated-tree experiment JSON files bind the
 private and sanitized views. Earlier pilot/intermediate folders are preserved

@@ -331,6 +331,7 @@ class ReceiptTests(unittest.TestCase):
             with self.assertRaises(ValueError): promotion_io.publish(root, "receipt", result)
             with self.assertRaises(ValueError): promotion_io.publish(root, "run/child", result)
 
+    @unittest.skipUnless(PDF_STACK_AVAILABLE, "optional PyMuPDF/Pillow PDF stack unavailable")
     def test_run_output_manifest_pins_exact_assessment_bytes(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

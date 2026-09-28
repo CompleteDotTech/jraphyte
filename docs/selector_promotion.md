@@ -88,6 +88,41 @@ Omitting both review arguments is supported and reports missing fidelity
 evidence as `BLOCKED`. Exit codes are 0 for `PASS`, 1 for `FAIL`, 2 for `BLOCKED`.
 Existing outputs and historical cache directories cannot be overwritten.
 
+### Fresh extraction with an optional native reference
+
+If extraction used `--native-mode fresh` together with a historical
+`--native-manifest` and its externally recorded SHA-256, pass that same pair to
+`promotion_io assess`. The fresh run records the comparison as part of its
+preflight identity, even when every fresh native payload equals its reference.
+
+```powershell
+python -m src.parallel_source_v4.extraction regression --data-root $DataRoot --source-map source-map.json --native-mode fresh --native-manifest archive/native-reference.json --native-manifest-sha256 $NativeReferenceSha256 --output runs/compared-candidate-200
+python -m src.parallel_source_v4.promotion_io assess --data-root $DataRoot --configuration candidate-configuration.json --source-map source-map.json --run runs/compared-candidate-200 --run-sha256 $ResultsSha256 --native-manifest archive/native-reference.json --native-manifest-sha256 $NativeReferenceSha256 --review reviews/fidelity.json --review-sha256 $ReviewSha256 --output acceptance/compared-candidate-200
+```
+
+The adapter recreates fresh extraction with the pinned reference and still
+requires exact `public_preflight` equality. It verifies the reference manifest,
+all archived native payloads, current source/native inputs, runtime and code;
+archived payload byte hashes are also retained in the final acceptance input
+recheck. Missing, stale, altered or unrecorded references block acceptance.
+The adapter never selects saved native as a replacement for fresh extraction.
+
+`verify` replays this reference pair from the externally pinned acceptance
+receipt; it does not take a replacement reference from command-line arguments.
+A run without a comparison continues to use the commands above. Historical
+saved-native replays remain diagnostic and cannot qualify through this adapter.
+
+This repairs an identity-replay defect: previously the adapter omitted an
+extraction run's optional reference and rejected the resulting preflight
+mismatch. Authored fixture tests cover valid comparison replay, publication
+readback, absent/stale pins, mutated reference/payload bytes, final-readback
+mutation, altered comparison/runtime/code identities and saved-replay rejection.
+These tests do not establish corpus quality. The change alters the method
+closure, so a qualifying corpus receipt must be produced on the integrated tree;
+prior full-200 outputs remain immutable and cannot be rebound to this code.
+The [bounded diagnostic receipt](../review/native_reference_promotion_v1/diagnostic_receipt.json)
+records the authored checks, local validation and remaining integration gate.
+
 The regression results now contain `assessment_files_sha256` for the exact
 bytes of all 800 assessment files. Older runs without this measured output
 manifest cannot qualify. Creating a manifest afterward would not bind what

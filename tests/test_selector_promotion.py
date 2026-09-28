@@ -344,7 +344,7 @@ class ReceiptTests(unittest.TestCase):
             self.assertEqual(result["assessment_files_sha256"], {relative: digest(root/"run"/relative)})
 
 
-def authored_run(root):
+def authored_run(root, *, native_reference=False):
     """Only preflight is replaced; all 1,000+ artifact reads/hashes are real."""
     native = [{"id": 0, "text": TEXT, "bbox": [40, 40, 400, 60], "page_no": 1, "spans": []}]
     native_hash = digest_value(native)
@@ -385,6 +385,19 @@ def authored_run(root):
     gate = {"status": "PASS", "method_hashes": code, "runtime": {"fixture": True},
         "cases": cases, "labels": labels, "baseline_predictions": baseline, "input_file_hashes": input_hashes,
         "native_mode": "fresh", "native_manifest_sha256": None, "extractor_identity": {"fixture": True}, "native_comparison": {}}
+    if native_reference:
+        records = []
+        for record in native_records:
+            relative = "archive/" + record["id"] + ".json"
+            sha = write_once(root/relative, native)
+            records.append({**record, "native_relative": relative, "file_sha256": sha,
+                "page_size": [500, 500], "source_sha256": "a"*64, "page_sha256": "b"*64,
+                "image_sha256": "c"*64})
+        sha = write_once(root/"reference.json", {"schema_version": 1, "cases": records,
+            "extractor_identity": {"fixture": True}})
+        gate["input_file_hashes"]["reference.json"] = sha
+        gate["native_manifest_sha256"] = sha
+        gate["native_comparison"] = {"status": "COMPARED", "changed_ids": []}
     saved = extraction.public_preflight(gate)
     write_once(root/"run/preflight.json", saved)
     write_once(root/"run/protocol.json", {"cohort": "regression200_already_examined", "method_hashes": code, "frozen_at": REVIEWED})

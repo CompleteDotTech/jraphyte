@@ -9,6 +9,10 @@ fields, and full rankings in the authorized external data root.
 1. Generate the immutable 10,000-document fields manifest from the pinned
    original PDFs and the final native extractor. Check the field receipt and
    count all documents, including pages with no usable native text.
+   Field verification hashes each source PDF, cached page PDF, review image,
+   and native JSON buffer before decoding those same buffers. A path that
+   presents different content to the decoder cannot pass on the recorded hash.
+   The builder rereads input hashes before publishing its immutable receipt.
 2. Freeze the query IDs and text before evaluating any target labels. The
    `ranking_inputs_sha256` binds only ID and text; `evaluation_labels_sha256`
    binds ID and target separately. A target-only edit must leave candidate

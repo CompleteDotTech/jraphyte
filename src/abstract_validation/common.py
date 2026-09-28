@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-DATA = REPO.parent / 'TRACE-GC_RealPaper_Test'
+DATA = Path(os.environ.get('TRACE_GC_TEST_DATA_ROOT') or REPO.parent / 'TRACE-GC_RealPaper_Test').resolve()
 OLD = DATA / 'sample_comparison_100'
 OUT = DATA / 'validation_200_10k'
 

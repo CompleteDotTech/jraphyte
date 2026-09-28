@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "profile": "cached-replay-windows-py312-20260928",
+  "scope": "new validated replay environment; not historical Python 3.12.10 / PyMuPDF 1.28.2 reproduction",
+  "environment": {
+    "python": "3.12.10",
+    "implementation": "CPython",
+    "python_build": [
+      "tags/v3.12.10:0cc8128",
+      "Apr  8 2025 12:21:36"
+    ],
+    "unicode": "15.0.0",
+    "system": "Windows",
+    "machine": "AMD64",
+    "pointer_bits": 64,
+    "platform": "Windows-11-10.0.26200-SP0",
+    "mupdf": "1.29.0",
+    "packages": {
+      "attrs": "26.1.0",
+      "cffi": "2.1.1",
+      "cryptography": "46.0.4",
+      "jsonschema": "4.26.0",
+      "jsonschema-specifications": "2025.9.1",
+      "Pillow": "12.2.0",
+      "pycparser": "3.0",
+      "PyMuPDF": "1.28.0",
+      "referencing": "0.37.0",
+      "rpds-py": "2026.6.3",
+      "typing-extensions": "4.16.0"
+    }
+  }
+}
+

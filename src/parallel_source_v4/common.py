@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import hashlib
+import ast
+import importlib.util
 import json
 import os
 import tempfile
@@ -18,6 +20,12 @@ def digest(path: Path) -> str:
 
 def read(path: Path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def read_hashed_json(path: Path):
+    """Parse and identify the same byte buffer, never two separate file reads."""
+    payload = Path(path).read_bytes()
+    return json.loads(payload), hashlib.sha256(payload).hexdigest()
 
 
 def within(root: Path, path: Path) -> Path:
@@ -62,9 +70,52 @@ def write_once(path: Path, value: object) -> str:
 
 
 def method_hashes(repo: Path = REPO) -> dict:
-    paths = [repo/"trace_gc/pdf_source_parallel_v4.py", repo/"trace_gc/pdf_structure_parallel_v4.py"]
-    paths += sorted((repo/"src/parallel_source_v4").glob("*.py"))
-    return {p.relative_to(repo).as_posix(): digest(p) for p in paths}
+    """Hash local import closure, including the dynamically loaded frozen replay.
+
+    Resolve imports statically so recording code never imports a worker/model or
+    adopts its import-time data root. All v4 modules are seeds, including newly
+    added metric modules. Function-local local imports are included as well.
+    """
+    seeds = ["trace_gc.pdf_source_parallel_v4", "trace_gc.pdf_structure_parallel_v4",
+             "src.abstract_validation_expanded.extraction"]
+    seeds += ["src.parallel_source_v4."+p.stem for p in (repo/"src/parallel_source_v4").glob("*.py")]
+    pending, visited, snapshots = list(seeds), set(), {}
+    while pending:
+        module = pending.pop()
+        if module in visited:
+            continue
+        visited.add(module)
+        target = repo.joinpath(*module.split("."))
+        path = target.with_suffix(".py")
+        if not path.is_file():
+            path = target/"__init__.py"
+        if not path.is_file():
+            continue  # standard library, external dependency, or namespace
+        payload = path.read_bytes()
+        snapshots[path.relative_to(repo).as_posix()] = hashlib.sha256(payload).hexdigest()
+        parts = module.split(".")
+        for i in range(1, len(parts)):
+            package = repo.joinpath(*parts[:i])/"__init__.py"
+            if package.is_file():
+                pending.append(".".join(parts[:i])+".__init__")
+        package_name = module if path.name == "__init__.py" else module.rpartition(".")[0]
+        if package_name.endswith(".__init__"):
+            package_name = package_name.rpartition(".")[0]
+        for node in ast.walk(ast.parse(payload.decode("utf-8"))):
+            if isinstance(node, ast.Import):
+                pending.extend(alias.name for alias in node.names)
+            elif isinstance(node, ast.ImportFrom):
+                name = node.module or ""
+                if node.level:
+                    name = importlib.util.resolve_name("."*node.level+name, package_name)
+                if name:
+                    pending.append(name)
+                    pending.extend(name+"."+alias.name for alias in node.names if alias.name != "*")
+    for pattern in ("*.lock.json", "requirements*.txt"):
+        for path in (repo/"src/parallel_source_v4").glob(pattern):
+            snapshots[path.relative_to(repo).as_posix()] = digest(path)
+    verify_files(repo, snapshots)
+    return dict(sorted(snapshots.items()))
 
 
 def verify_files(root: Path, hashes: dict) -> None:

@@ -11,6 +11,7 @@ from unittest.mock import patch
 from src.parallel_source_v4 import retrieval_trial as trial
 from src.parallel_source_v4.common import digest, method_hashes, write_once
 from trace_gc.pdf_source_parallel_v4 import digest_value
+from src.parallel_source_v4.retrieval_policy import coverage, VERSION as POLICY_VERSION
 
 
 class EmpiricalTrialTests(unittest.TestCase):
@@ -33,6 +34,11 @@ class EmpiricalTrialTests(unittest.TestCase):
         self.stack.enter_context(patch.object(trial, "configure_cpu", return_value={"device": "cpu", "torch_threads": 4}))
         self.stack.enter_context(patch.object(trial, "produce", side_effect=self.producer))
         self.stack.enter_context(patch.object(trial, "local_cross_encoder", side_effect=self.loader))
+        # These ranking/receipt fixtures use authored byte files, not PDFs. The
+        # real source reconstruction and false-READY attacks have separate PDF tests.
+        self.field_runtime = {"fixture": "authored-pdf-runtime-port"}
+        self.stack.enter_context(patch.object(trial, "field_runtime", side_effect=lambda _: copy.deepcopy(self.field_runtime)))
+        self.stack.enter_context(patch.object(trial, "rebuild_fields", side_effect=self.field_replay))
         rows, fields = [], []
         for sid, title in (("a", "Transport networks"), ("b", "Algebraic transport")):
             row = {"sample_id": sid, "work_id": sid, "physical_page": 1, "source_root_id": "external"}
@@ -43,14 +49,17 @@ class EmpiricalTrialTests(unittest.TestCase):
                 row[kind + "_sha256"] = digest(path)
             rows.append(row)
             fields.append({"id": sid, "title": title, "abstract": "", "body": "Transport observations",
+                           "corpus_policy": {"abstract": "disabled", "ocr": "disabled"},
                            "physical_page": 1, "retrieval_only": True, "eligible_for_jev": False,
                            **{k + "_sha256": row[k + "_sha256"] for k in ("source", "page", "image", "native")}})
         prep = {"pdfs": rows}
+        self.policy = {"schema_version": POLICY_VERSION, "abstract_mode": "disabled", "assessment_method": None,
+                       "ocr_mode": "disabled", "ocr_identity": None}
         write_once(self.root / "preparation.json", prep)
         write_once(self.root / "fields.json", {"fields": fields, "fields_sha256": digest_value(fields),
                    "field_builder_code_sha256": method_hashes(), "manifest_sha256": digest_value(prep),
                    "final_input_readback_count": 2, "final_input_readback": "all_source_page_image_native_hashes_match",
-                   "query_independent": True})
+                   "query_independent": True, "corpus_policy_receipt": coverage(fields, self.policy)})
         write_once(self.root / "queries.json", {"queries": [
             {"query_id": "q1", "text": "transport", "target_id": "a"},
             {"query_id": "q2", "text": "algebraic", "target_id": "b"}]})
@@ -92,6 +101,14 @@ class EmpiricalTrialTests(unittest.TestCase):
         write_once(output / "protocol.json", {"fixture": "no-real-model"})
         write_once(output / "dense_cache.json", result)
         return result
+
+    def field_replay(self, root, config):
+        preparation, sha = trial.bound_json(root / config["preparation_manifest"])
+        fields, fields_sha = trial.bound_json(root / config["fields"])
+        return {"status": "VERIFIED", "runtime": copy.deepcopy(self.field_runtime),
+                "code_sha256": method_hashes(), "document_count": len(preparation["pdfs"]),
+                "manifest_rows_sha256": digest_value(preparation["pdfs"]), "artifact_count": 4 * len(preparation["pdfs"]),
+                "fields_file_sha256": fields_sha, "manifest_file_sha256": sha}
 
     def loader(self, folder, hashes):
         if self.on_load:
@@ -170,6 +187,11 @@ class EmpiricalTrialTests(unittest.TestCase):
 
     def test_runtime_change_inside_model_load_is_blocked(self):
         self.on_load = lambda: self.runtime.update(changed=True)
+        result = self.run_trial()
+        self.assertEqual(result["failure_code"], "frozen_input_code_or_runtime_changed")
+
+    def test_field_runtime_distribution_drift_is_blocked(self):
+        self.on_load = lambda: self.field_runtime.update(changed_distribution="Pillow")
         result = self.run_trial()
         self.assertEqual(result["failure_code"], "frozen_input_code_or_runtime_changed")
 
@@ -264,6 +286,65 @@ class EmpiricalTrialTests(unittest.TestCase):
             failure = self.run_trial(digest(self.protocol))
             self.assertEqual(failure["status"], "BLOCKED")
             self.assertIn("reranker_load", failure["phase_timings"])
+
+    def historical(self):
+        rows = [{"id": "a", "title": "Old title", "abstract": "Archived transport", "body": "body\u2028text"},
+                {"id": "b", "title": "", "abstract": "", "body": ""}]
+        path = self.root / "historical.jsonl"
+        path.write_text("\n".join(json.dumps(row, ensure_ascii=False) for row in rows), encoding="utf-8")
+        self.config.update(historical_fields=path.name, historical_fields_sha256=digest(path))
+        return path
+
+    def test_factorial_ablations_use_own_fresh_dense_cache_and_all_label_checks(self):
+        self.historical()
+        self.config["without_page_ablation"] = True
+        result = self.run_trial()
+        self.assertEqual(result["status"], "COMPLETE")
+        self.assertEqual(self.producer_calls, 2)
+        self.assertEqual(set(result["all_arm_target_permutations"]),
+                         {"primary", "without_page", "historical_fields", "historical_fields_without_page"})
+        self.assertTrue(all(x["status"] == "PASS" for x in result["all_arm_target_permutations"].values()))
+        arms = {key: trial.bound_json(self.output / (key + ".json"))[0]["result"]
+                for key in result["all_arm_target_permutations"]}
+        self.assertNotEqual(arms["primary"]["fields_sha256"], arms["historical_fields"]["fields_sha256"])
+        self.assertNotEqual(arms["primary"]["dense_cache_sha256"], arms["historical_fields"]["dense_cache_sha256"])
+        self.assertEqual(arms["primary"]["fields_sha256"], arms["without_page"]["fields_sha256"])
+        self.assertEqual(arms["primary"]["dense_cache_sha256"], arms["without_page"]["dense_cache_sha256"])
+        self.assertEqual(arms["without_page"]["candidate_stage_metrics"]["bm25_page"]["status"], "NOT_RUN")
+        self.assertTrue(all(not c["bm25_page_topk"] for c in arms["without_page"]["candidates"].values()))
+        self.assertTrue(all(arm["fields_count"] == 2 for arm in arms.values()))
+        self.assertFalse(result["historical_source_certification"])
+
+    def test_historical_inputs_require_exact_external_hash_and_full_order(self):
+        path = self.historical()
+        self.config["historical_fields_sha256"] = "0" * 64
+        with self.assertRaisesRegex(trial.Blocked, "historical_fields_external_hash_mismatch"):
+            self.freeze()
+        path.write_text('{"id":"b","title":"x","abstract":"","body":""}\n')
+        self.config["historical_fields_sha256"] = digest(path)
+        with self.assertRaisesRegex(trial.Blocked, "historical_corpus_identity_or_order_mismatch"):
+            self.freeze()
+        self.assertEqual(self.producer_calls, 0)
+
+    def test_missing_corpus_assessment_blocks_before_models(self):
+        path = self.root / "fields.json"
+        value = trial.bound_json(path)[0]
+        policy = {**self.policy, "abstract_mode": "native_assessments", "assessment_method": "parallel_structure_v4"}
+        for field in value["fields"]:
+            field["corpus_policy"]["abstract"] = "missing"
+        value["fields_sha256"] = digest_value(value["fields"])
+        value["corpus_policy_receipt"] = coverage(value["fields"], policy)
+        path.write_text(json.dumps(value))
+        with self.assertRaisesRegex(trial.Blocked, "corpus_field_policy_missing_genuine_inputs"):
+            self.freeze()
+        self.assertEqual(self.producer_calls, 0)
+
+    def test_archived_field_change_during_scoring_blocks_completion(self):
+        path = self.historical()
+        self.on_score = lambda pairs: path.write_bytes(b"{}") and None
+        result = self.run_trial()
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertFalse(result["issue_acceptance_complete"])
 
 
 class RuntimeReceiptTests(unittest.TestCase):

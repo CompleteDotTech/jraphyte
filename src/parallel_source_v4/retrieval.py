@@ -257,7 +257,9 @@ def normalize_queries(value) -> list[dict]:
 
 
 def evaluate(fields: list[dict], queries: list[dict], *, dense_cache: dict | None = None,
-             scorer: Callable | None = None, k=50) -> dict:
+             scorer: Callable | None = None, k=50, page_channel: bool = True) -> dict:
+    if type(page_channel) is not bool:
+        raise ValueError('page_channel_requires_boolean')
     if (dense_cache is not None and dense_cache.get('binding_version')=='ranking-inputs-v2' and
             isinstance(queries,dict) and 'queries' not in queries):
         raise ValueError('v2_dense_cache_requires_explicit_query_identifiers')
@@ -294,7 +296,7 @@ def evaluate(fields: list[dict], queries: list[dict], *, dense_cache: dict | Non
                 set(dense_cache.get("rankings", {})) != {str(q["id"]) for q in queries}):
             raise ValueError("dense_cache_query_or_model_binding_invalid")
     indexes = {field: BM25({k: x.get(field, "") for k, x in by_id.items()}) for field in ("title", "abstract", "body")}
-    whole = BM25({k: "\n".join(x.get(f, "") for f in ("title", "abstract", "body")) for k, x in by_id.items()})
+    whole = BM25({k: "\n".join(x.get(f, "") for f in ("title", "abstract", "body")) for k, x in by_id.items()}) if page_channel else None
     pools, rankings, candidate_receipts = {}, {}, {}
     stage_hits={'field_weighted_bm25_parallel_v4':0,'specter2':0,'bm25_page':0,'union':0}
     before = time.perf_counter()
@@ -306,7 +308,7 @@ def evaluate(fields: list[dict], queries: list[dict], *, dense_cache: dict | Non
         qid, text = str(q["id"]), q["query"]
         components = {field: index.scores(text) for field, index in indexes.items()}
         field_scores = {key: 3*components["title"][key]+2*components["abstract"][key]+.25*components["body"][key] for key in by_id}
-        lexical, page = ordered_scores(field_scores), whole.rank(text)
+        lexical, page = ordered_scores(field_scores), whole.rank(text) if whole is not None else []
         dense = dense_cache.get("rankings", {}).get(qid, []) if dense_cache else []
         if len(dense)!=len(set(dense)) or any(key not in by_id for key in dense):
             raise ValueError("dense_cache_contains_unknown_document")
@@ -324,7 +326,7 @@ def evaluate(fields: list[dict], queries: list[dict], *, dense_cache: dict | Non
         candidate_receipts[qid] = {"field_weighted_bm25_parallel_v4_topk": lexical[:k], "specter2_topk": dense[:k], "bm25_page_topk": page[:k],
                                    "pool": pool, "pool_sha256": digest_value(pool)}
     result = ranking_metrics(rankings, pools, queries)
-    stage_metrics={name:({'status':'NOT_RUN'} if name=='specter2' and dense_cache is None else
+    stage_metrics={name:({'status':'NOT_RUN'} if (name=='specter2' and dense_cache is None or name=='bm25_page' and not page_channel) else
                          {'status':'MEASURED','hits':hits,'queries':len(queries),
                           'recall':hits/len(queries) if queries else None})
                    for name,hits in stage_hits.items()}
@@ -332,7 +334,7 @@ def evaluate(fields: list[dict], queries: list[dict], *, dense_cache: dict | Non
                   ranking_inputs_sha256=ranking_inputs_sha256,evaluation_labels_sha256=evaluation_labels_sha256,
                   dense_cache_binding=dense_binding,ranking_outputs_sha256=digest_value(rankings),
                   dense_cache_sha256=digest_value(dense_cache) if dense_cache is not None else None,
-                  candidate_depth=k,candidate_stage_metrics=stage_metrics,
+                  candidate_depth=k,candidate_stage_metrics=stage_metrics,page_channel_enabled=page_channel,
                   stage="supplied_scorer" if scorer else "candidate_order_only_not_reranked",
                   dense_stage="supplied_bound_cache" if dense_cache else "not_run",
                   runtime_seconds=time.perf_counter()-total_start, index_seconds=index_seconds, candidate_seconds=candidate_seconds, rerank_seconds=rerank_seconds,

@@ -6,7 +6,7 @@ import unittest
 
 from src.parallel_source_v4 import promotion, promotion_image
 from src.parallel_source_v4.image_ocr import code_identity
-from tests.test_selector_promotion import closure_fixture, failure_observation, TEXT, NOW, REVIEWED
+from tests.test_selector_promotion import closure_fixture, failure_observation, TEXT, NOW, REVIEWED, PDF_STACK_AVAILABLE
 from trace_gc.canonical import digest as canonical_digest
 from trace_gc.catalog import Catalog
 from trace_gc.pdf_image_evidence import (CHECKS, candidate_hash, correct_transcription, handoff,
@@ -67,6 +67,7 @@ def fixture(*, correction=False, disposition="complete"):
     return original, entry, kwargs, blobs
 
 
+@unittest.skipUnless(PDF_STACK_AVAILABLE, "optional PyMuPDF/Pillow PDF stack unavailable")
 class ImagePromotionTests(unittest.TestCase):
     def test_supported_image_policy_has_distinct_exact_identity(self):
         self.assertEqual(promotion.configuration(promotion.IMAGE_CONFIGURATION), promotion.IMAGE_CONFIGURATION)

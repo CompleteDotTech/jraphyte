@@ -4,6 +4,7 @@ from __future__ import annotations
 from contextlib import ExitStack
 from copy import deepcopy
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import tempfile
@@ -19,6 +20,7 @@ from trace_gc.pdf_structure_parallel_v4 import seal, verify_assessment
 
 NOW = "2026-09-28T12:00:00+00:00"
 REVIEWED = "2026-09-28T10:00:00+00:00"
+PDF_STACK_AVAILABLE = bool(importlib.util.find_spec("fitz") and importlib.util.find_spec("PIL"))
 TEXT = "We establish an exact scientific statement."
 COMPLETE = {f"f{i:03}" for i in range(1, 108)} | {"f119", "f150", "f192", "f195"}
 OLD = {f"f{i:03}" for i in range(1, 88)} | {"f119", "f150", "f192", "f195"}
@@ -152,6 +154,7 @@ def closure_fixture(pages=1):
     return pred, review, arguments, assets
 
 
+@unittest.skipUnless(PDF_STACK_AVAILABLE, "optional PyMuPDF/Pillow PDF stack unavailable")
 class ClosureTests(unittest.TestCase):
     def test_exact_review_derives_separate_sealed_review_only_assessment(self):
         pred, review, args, assets = closure_fixture()
@@ -527,6 +530,7 @@ def failure_observation(prediction, identity):
         "note": "Private authored observation, never a real paper review."}
 
 
+@unittest.skipUnless(PDF_STACK_AVAILABLE, "optional PyMuPDF/Pillow PDF stack unavailable")
 class CandidateFailureTests(unittest.TestCase):
     def test_negative_observation_cannot_clear_review_or_follow_a_changed_candidate(self):
         prediction, closure_review, args, _ = closure_fixture()

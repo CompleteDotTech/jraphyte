@@ -24,6 +24,9 @@ not resolve radical scope, scripts, fractions, or full-text transcription.
 The authored counterexamples cover a source-leading inline heading obscured by
 a figure label, converter-stripped preceding source prose, a real sentence in
 the other lane, and a narrow off-lane sentence excluded by layout. Exact cached
-f142 replay changes its closing-boundary witness to native line 18, offsets
-0:12, while preserving its geometry hold. Full 200-paper quality, notation,
-and promotion gates must be rerun on the integrated source tree.
+f142 replay on the structure-only branch changes its closing-boundary witness
+to native line 18, offsets 0:12, while preserving its geometry hold. On the
+combined structure and geometry branch, a cached-native diagnostic emits a
+raw proposal for f142 with `math_review_required=true`; this is not a notation
+fidelity pass. Full 200-paper quality, notation, and promotion gates must be
+rerun on the integrated source tree.

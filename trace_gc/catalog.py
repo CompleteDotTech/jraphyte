@@ -76,6 +76,9 @@ class Catalog:
         s = self.get(e["source_snapshot_id"], "source")
         from .pdf_image_evidence import verify_image_source
         verify_image_source(self, s)
+        if s["representation"] == "reviewed-native-pdf-page-v1":
+            from .paper_ingestion import verify_page_source
+            verify_page_source(s)
         require(s["text"] is not None, "REPLAY_CONTENT_UNAVAILABLE", "source has been erased")
         require(self.hash(e["source_snapshot_id"]) == e["source_hash"] and
                 text_digest(s["text"]) == s["text_hash"] and

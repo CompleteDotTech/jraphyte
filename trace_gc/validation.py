@@ -39,6 +39,9 @@ def validate_bundle(bundle: dict[str,Any], *, trust: TrustStore | None=None,at: 
             require(text_digest(b["text"])==b["text_hash"],"PROVENANCE_MISMATCH","source text hash changed")
             from .pdf_image_evidence import verify_image_source
             verify_image_source(catalog, b)
+            if b["representation"] == "reviewed-native-pdf-page-v1":
+                from .paper_ingestion import verify_page_source
+                verify_page_source(b)
         elif kind=="image-evidence-v1":
             from .pdf_image_evidence import validate_image_record
             validate_image_record(b)

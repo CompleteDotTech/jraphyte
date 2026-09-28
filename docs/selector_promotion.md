@@ -62,9 +62,14 @@ or identity binding is blocked evidence, never a passing substitute.
    counts and review workload. Recheck every input and code hash before writing
    a completion receipt.
 
-The integrated #17 selector still has unresolved preservation losses. An earlier
-paired diagnostic or an unsigned `PASS` field cannot stand in for the integrated
-measurement. No current quality pass is asserted by this document.
+The [2026-09-28 reviewed development result](selector_promotion_200_result.md)
+records a full acceptance and verifier pass for the exact image-enabled,
+attributed-review configuration: 97 verified proposals and all 91 historical
+successes retained. The automatic primary still has 17 proposed notation
+failures and 16 historical preservation losses; 14 complete first-page abstracts
+remain withheld after the reviewed routes. Consult the report and pinned
+receipt for the scope, manual workload and evidence identities. An earlier
+paired diagnostic or an unsigned `PASS` field cannot replace that measurement.
 
 ## Commands and immutable outputs
 

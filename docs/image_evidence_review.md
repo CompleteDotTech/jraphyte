@@ -161,8 +161,8 @@ review attestations test enforcement; they do not measure OCR accuracy.
 ## Recorded local experiment
 
 The [sanitized experiment receipt](../examples/image_evidence/experiment_20260928.json)
-binds 88 implementation/schema files and hashes of the tested artifacts. Its
-SHA-256 is `7ac10816e849361210a0420d65dd2c383145877b386a2248ea4ec8c2c736146c`.
+binds 94 implementation/schema files and hashes of the tested artifacts. Its
+SHA-256 is `9050dc450a00e4ca78b1d094aebab0287929a6af569e2b45b199255a81d0a1be`.
 This is a diagnostic subset of four already exposed frozen200 pages, selected
 for absent/suspect native encoding. It is not an unseen cohort or a population
 accuracy estimate. The implementation agent performed the source review and the
@@ -185,13 +185,13 @@ new unseen papers. Review workload was four real pages, five candidate reviews
 and one correction. Wall-clock review duration was not instrumented.
 
 The private audit receipt SHA-256 is
-`61affbab198db98446775c66fb6f442b086e9ec00440f69e645aaccb43d3af5f`.
-It enumerates 75 exact input/artifact hashes. Reproduction requires authorized
+`fee9ab93af265d659d710442178becec6a399244bd845311bebe7968b59cf674`.
+It enumerates 98 exact input/artifact hashes. Reproduction requires authorized
 access to the frozen200 source map, original PDF bytes, page/crop images, raw OCR,
 review/correction specifications and handoff catalog files under
-`<AUTHORIZED_DATA_ROOT>/validation_v3_private/issue18-image-20260928/`.
-Final real artifacts are `real03/<case-id>/`; authored artifacts are
-`synthetic-final02/<case-id>/`. The two final-tree experiment JSON files bind the
+`<AUTHORIZED_DATA_ROOT>/validation_v3_private/issue18-integrated-20260928-01/`.
+Final real artifacts are `real/<case-id>/`; authored artifacts are
+`synthetic/<case-id>/`. The two integrated-tree experiment JSON files bind the
 private and sanitized views. Earlier pilot/intermediate folders are preserved
 and are not substituted for the final experiment. The public repository contains
 hashes and authored fixture code, not private paper text or images.

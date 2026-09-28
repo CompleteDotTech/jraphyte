@@ -53,3 +53,14 @@ The original first-page image must match the original PDF rendering byte for byt
 If a PDF renders but its native text has a bounding box outside the physical page, preparation retains that document with `native_extraction_state=error`, the exact diagnostic and empty native evidence. The field manifest reports native extraction counts and unsearchable IDs; such a document remains in the 10,000-paper denominator. It needs a separate source-bound OCR or reviewed-image route to become searchable. No native span is clipped or invented by this fallback.
 
 Source PDFs, preparation manifests, assessments, reviewed titles and OCR outputs remain outside the public repository. For a full-corpus run, every original document and its bound first-page source/page/image/native representation must be available; missing or invalid files are errors, not silently skipped rows. Retrieval quality is measured separately by the 10,000-paper trial.
+
+The [sanitized original-corpus receipt](../review/retrieval_fields_v1/full10000_receipt.json)
+records a completed 10,000-document source-bound build on the #21 producer tree.
+Final original source/page/image/native readback passed for all 10,000 rows;
+9,988 native extractions completed and 12 retained errors. Fourteen rows were
+unsearchable. All 10,000 abstract assessment mappings were missing, so no
+selector abstract was added to these fields. The receipt reports f115/f076
+field lengths without source text and preserves 11 page-copy render mismatches
+as review holds. This is a field-generation result, not a retrieval-quality
+result; a final retrieval trial must regenerate fields after later V4 module
+changes and measure the 60 frozen queries separately.

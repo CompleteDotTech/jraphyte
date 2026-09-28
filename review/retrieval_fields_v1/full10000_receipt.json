@@ -1,0 +1,52 @@
+{
+  "schema_version": "retrieval-fields-real-corpus-receipt-v1",
+  "scope": "original-10000-source-bound-first-physical-page-discovery-fields",
+  "implementation_pr": "https://github.com/Jev-Engineering/jraphyte/pull/29",
+  "producer_commit": "44f11e7",
+  "producer_tree": "7e61cbf8d7fcc2807a894bbd5c901bc97f440ebe",
+  "source_preparation_manifest_file_sha256": "bdbd0c8df83d798b80fb7d31d6e4b56160d6064db95d2fade7d001be71dc6a1b",
+  "field_result_file_sha256": "8ca8a07ae48d0a657ee0577c381319559d435cb65918abb96d547d7f1fefaa15",
+  "manifest_semantic_sha256": "c87eb0ae9bcb4c058e28651652574419d1c720f2cc65f233339bf1232fe5094f",
+  "fields_semantic_sha256": "454ecbe24e18ccb7b3524d2a5a7a520df670eb2da34430624b3574559ed5db63",
+  "field_builder_module_map_sha256": "910903db1b9fe87bb9a45ccaaf34054e05abcc5c9d754f8b4cfb117aab816d10",
+  "field_count": 10000,
+  "final_input_readback_count": 10000,
+  "final_input_readback": "all_source_page_image_native_hashes_match",
+  "native_extraction_counts": {
+    "complete": 9988,
+    "error": 12
+  },
+  "abstract_assessment_counts": {
+    "missing": 10000
+  },
+  "cached_page_render_state_counts": {
+    "matched_under_2_channel_tolerance": 9989,
+    "render_mismatch_review_required": 11
+  },
+  "unsearchable_count": 14,
+  "f115_target_readback": {
+    "id": "d04143",
+    "title_characters": 125,
+    "abstract_characters": 0,
+    "body_characters": 209,
+    "searchable": true
+  },
+  "f076_target_readback": {
+    "id": "d19419",
+    "title_characters": 0,
+    "abstract_characters": 0,
+    "body_characters": 0,
+    "searchable": false
+  },
+  "query_independent": true,
+  "retrieval_only": true,
+  "new_paid_api_calls": 0,
+  "production_graph_writes": 0,
+  "retrieval_quality_measured": false,
+  "limitations": [
+    "All 10000 abstract assessment mappings were absent; no abstract selector proposal entered these fields.",
+    "11 saved one-page PDF renders differ from original first-page render; those rows remain review-held for optional evidence.",
+    "12 native extraction errors remain explicit in the denominator.",
+    "Any later V4 module change requires new preparation and fields before a final retrieval trial."
+  ]
+}

@@ -215,23 +215,45 @@ def normalize_queries(value) -> list[dict]:
 
 def evaluate(fields: list[dict], queries: list[dict], *, dense_cache: dict | None = None,
              scorer: Callable | None = None, k=50) -> dict:
+    if (dense_cache is not None and dense_cache.get('binding_version')=='ranking-inputs-v2' and
+            isinstance(queries,dict) and 'queries' not in queries):
+        raise ValueError('v2_dense_cache_requires_explicit_query_identifiers')
     queries=normalize_queries(queries)
+    ranking_inputs=[{'id':q['id'],'query':q['query']} for q in queries]
+    ranking_inputs_sha256=digest_value(ranking_inputs)
+    evaluation_labels_sha256=digest_value([{'id':q['id'],'target_id':q['target_id']} for q in queries])
     total_start=time.perf_counter()
     ids = [x["id"] for x in fields]
     if len(ids) != len(set(ids)) or len(queries) != len({str(q["id"]) for q in queries}):
         raise ValueError("duplicate_document_or_query_id")
     by_id = {x["id"]: x for x in fields}
     fingerprint = digest_value(fields)
+    dense_binding='not_run'
     if dense_cache is not None:
         if dense_cache.get("fields_sha256") != fingerprint:
             raise ValueError("dense_embeddings_stale_after_field_changes")
-        if (dense_cache.get("queries_sha256") != digest_value(queries) or dense_cache.get("channel") != "specter2" or
+        if dense_cache.get('binding_version') not in (None,'ranking-inputs-v2'):
+            raise ValueError('unsupported_dense_cache_binding_version')
+        if dense_cache.get('binding_version')=='ranking-inputs-v2':
+            query_bound=dense_cache.get('ranking_inputs_sha256')==ranking_inputs_sha256
+            dense_binding='ranking_inputs_only_v2'
+            if (dense_cache.get('ranking_sha256')!=digest_value(dense_cache.get('rankings')) or
+                    dense_cache.get('document_ids_sha256')!=digest_value(ids) or
+                    dense_cache.get('query_ids_sha256')!=digest_value([q['id'] for q in queries]) or
+                    dense_cache.get('target_ids_used_for_ranking') is not False or
+                    not isinstance(dense_cache.get('top_k'),int) or dense_cache['top_k']<k):
+                raise ValueError('dense_cache_ranking_provenance_invalid')
+        else:
+            query_bound=dense_cache.get('queries_sha256')==digest_value(queries)
+            dense_binding='legacy_target_bound_v1'
+        if (not query_bound or dense_cache.get("channel") != "specter2" or
                 not re.fullmatch(r"[a-f0-9]{40}", dense_cache.get("model_revision", "")) or
                 set(dense_cache.get("rankings", {})) != {str(q["id"]) for q in queries}):
             raise ValueError("dense_cache_query_or_model_binding_invalid")
     indexes = {field: BM25({k: x.get(field, "") for k, x in by_id.items()}) for field in ("title", "abstract", "body")}
     whole = BM25({k: "\n".join(x.get(f, "") for f in ("title", "abstract", "body")) for k, x in by_id.items()})
     pools, rankings, candidate_receipts = {}, {}, {}
+    stage_hits={'field_weighted_bm25_parallel_v4':0,'specter2':0,'bm25_page':0,'union':0}
     before = time.perf_counter()
     index_seconds=before-total_start
     candidate_seconds=rerank_seconds=0.0
@@ -243,9 +265,14 @@ def evaluate(fields: list[dict], queries: list[dict], *, dense_cache: dict | Non
         field_scores = {key: 3*components["title"][key]+2*components["abstract"][key]+.25*components["body"][key] for key in by_id}
         lexical, page = ordered_scores(field_scores), whole.rank(text)
         dense = dense_cache.get("rankings", {}).get(qid, []) if dense_cache else []
-        if any(key not in by_id for key in dense):
+        if len(dense)!=len(set(dense)) or any(key not in by_id for key in dense):
             raise ValueError("dense_cache_contains_unknown_document")
         pool = candidate_pool(lexical, dense, page, k=k)
+        target=q['target_id']
+        stage_hits['field_weighted_bm25_parallel_v4']+=target in lexical[:k]
+        if dense_cache is not None:stage_hits['specter2']+=target in dense[:k]
+        stage_hits['bm25_page']+=target in page[:k]
+        stage_hits['union']+=target in pool
         pools[qid] = pool
         candidate_seconds+=time.perf_counter()-candidate_start
         rerank_start=time.perf_counter()
@@ -254,7 +281,15 @@ def evaluate(fields: list[dict], queries: list[dict], *, dense_cache: dict | Non
         candidate_receipts[qid] = {"field_weighted_bm25_parallel_v4_topk": lexical[:k], "specter2_topk": dense[:k], "bm25_page_topk": page[:k],
                                    "pool": pool, "pool_sha256": digest_value(pool)}
     result = ranking_metrics(rankings, pools, queries)
+    stage_metrics={name:({'status':'NOT_RUN'} if name=='specter2' and dense_cache is None else
+                         {'status':'MEASURED','hits':hits,'queries':len(queries),
+                          'recall':hits/len(queries) if queries else None})
+                   for name,hits in stage_hits.items()}
     result.update(fields_sha256=fingerprint, fields_count=len(fields), searchable_fields=sum(bool(x.get("searchable", True)) for x in fields),
+                  ranking_inputs_sha256=ranking_inputs_sha256,evaluation_labels_sha256=evaluation_labels_sha256,
+                  dense_cache_binding=dense_binding,ranking_outputs_sha256=digest_value(rankings),
+                  dense_cache_sha256=digest_value(dense_cache) if dense_cache is not None else None,
+                  candidate_depth=k,candidate_stage_metrics=stage_metrics,
                   stage="supplied_scorer" if scorer else "candidate_order_only_not_reranked",
                   dense_stage="supplied_bound_cache" if dense_cache else "not_run",
                   runtime_seconds=time.perf_counter()-total_start, index_seconds=index_seconds, candidate_seconds=candidate_seconds, rerank_seconds=rerank_seconds,

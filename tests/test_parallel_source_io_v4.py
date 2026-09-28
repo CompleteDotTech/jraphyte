@@ -2,6 +2,7 @@
 import copy
 import datetime as dt
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -14,7 +15,7 @@ from src.parallel_source_v4.common import child, data_root, digest, write_once, 
 from src.parallel_source_v4.freeze import freeze_cohort, verify_freeze
 from src.parallel_source_v4.extraction import preflight, predict, native_document, regression
 from src.parallel_source_v4.prepare import prepare
-from src.parallel_source_v4.fields import build_fields
+from src.parallel_source_v4.fields import build_fields, verify_pinned_source
 from src.parallel_source_v4.retrieval_prepare import prepare_retrieval
 from src.parallel_source_v4.extraction import native_document
 from trace_gc.pdf_structure_parallel_v4 import assess_document, seal
@@ -287,6 +288,35 @@ class PreparationTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError,'field_input_changed_before_publication:new:source'):
                     build_fields(root,manifest,root/'fields.json')
             self.assertFalse((root/'fields.json').exists())
+
+    def test_field_verification_uses_the_hash_bound_image_bytes(self):
+        import fitz
+        from PIL import Image
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)
+            with fitz.open() as pdf:
+                pdf.new_page(width=600,height=800).insert_text((40,70),'Original paper title')
+                pdf.save(root/'source.pdf')
+            row=prepare(root,[{'sample_id':'new','work_id':'new:fixture',
+                               'source_relative':'source.pdf'}],root/'prepared')['pdfs'][0]
+            image_path=child(root,row['image_relative'])
+            correct_image=image_path.read_bytes()
+            with Image.open(io.BytesIO(correct_image)) as original:
+                blank=Image.new('RGB',original.size,'white')
+                output=io.BytesIO()
+                blank.save(output,format='PNG')
+            image_path.write_bytes(output.getvalue())
+            row['image_sha256']=digest(image_path)
+            open_image=Image.open
+            def path_swap(fp,*args,**kwargs):
+                # A path reopen could see a valid image while the recorded hash
+                # belongs to the blank image. Byte-buffer decoding cannot.
+                if isinstance(fp,(str,Path)):
+                    return open_image(io.BytesIO(correct_image),*args,**kwargs)
+                return open_image(fp,*args,**kwargs)
+            with patch('PIL.Image.open',side_effect=path_swap):
+                with self.assertRaisesRegex(ValueError,'review_image_does_not_match_original_first_page'):
+                    verify_pinned_source(root,row,None)
 
     def test_field_builder_cli_uses_pinned_sealed_abstract_and_rejects_stale_evidence(self):
         import fitz

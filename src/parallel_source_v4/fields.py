@@ -2,6 +2,7 @@
 from __future__ import annotations
 import argparse
 import hashlib
+import io
 import json
 import re
 import sys
@@ -62,12 +63,13 @@ def verify_pinned_source(root: Path, row: dict, source_root: Path | None) -> tup
         raise ValueError('invalid_native_extraction_state_or_error')
     source=source_path(root,row,source_root)
     paths={'source':source, **{k:child(root,row[k+'_relative']) for k in ('page','image','native')}}
-    for key,path in paths.items():
-        if key=='native':continue
-        if digest(path)!=row[key+'_sha256']:
+    raw={key:path.read_bytes() for key,path in paths.items()}
+    for key,payload in raw.items():
+        if hashlib.sha256(payload).hexdigest()!=row[key+'_sha256']:
             raise ValueError('field_source_hash_mismatch:'+key)
-    native=verified_json(paths['native'],row['native_sha256'],'field_source_hash_mismatch:native')
-    with fitz.open(source) as original,fitz.open(paths['page']) as extracted:
+    native=parse_bound_json(raw['native'])
+    with (fitz.open(stream=raw['source'],filetype='pdf') as original,
+          fitz.open(stream=raw['page'],filetype='pdf') as extracted):
         if not len(original) or len(extracted)!=1:
             raise ValueError('retrieval_fields_require_first_physical_page')
         left=original[0].get_pixmap(dpi=120,alpha=False)
@@ -88,7 +90,7 @@ def verify_pinned_source(root: Path, row: dict, source_root: Path | None) -> tup
                 page_cache.update(max_channel_delta=maximum,changed_channels=changed)
                 if maximum>2:
                     page_cache['state']='render_mismatch_review_required'
-        with Image.open(paths['image']) as image:
+        with Image.open(io.BytesIO(raw['image'])) as image:
             image=image.convert('RGB')
             if image.size!=(left.width,left.height) or image.tobytes()!=left.samples:
                 raise ValueError('review_image_does_not_match_original_first_page')

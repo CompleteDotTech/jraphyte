@@ -64,6 +64,7 @@ def _analyze(root: Path, *, run_relative: str, run_sha256: str, configuration_re
              source_map_relative: str, review_relative: str | None = None,
              review_sha256: str | None = None, evaluated_at: str | None = None,
              image_relative: str | None = None, image_sha256: str | None = None,
+             native_manifest_relative: str | None = None, native_manifest_sha256: str | None = None,
              runtime_lock: Path = DEFAULT_RUNTIME_LOCK) -> dict:
     """Rebuild acceptance from source-bound artifacts, never reported PASS fields."""
     evaluated_at = _evaluation_time(evaluated_at)
@@ -118,12 +119,39 @@ def _analyze(root: Path, *, run_relative: str, run_sha256: str, configuration_re
                 or not isinstance(supplement["cases"], dict) or set(supplement["cases"])-CASE_IDS):
             raise ValueError("invalid_fidelity_review_supplement")
         reviews = supplement["cases"]
+    # Fresh extraction may compare against a separately pinned historical
+    # native representation. Reproduce that exact comparison, never relabel a
+    # saved-native replay as fresh or silently drop its reference identity.
+    if saved_gate.get("native_mode") != "fresh":
+        raise ValueError("promotion_requires_fresh_native_experiment")
+    if bool(native_manifest_relative) != bool(native_manifest_sha256):
+        raise ValueError("native_reference_path_and_expected_hash_required_together")
+    reference = None
+    recorded_reference = saved_gate.get("native_manifest_sha256")
+    if recorded_reference is not None:
+        if (not isinstance(native_manifest_sha256, str) or not _HASH.fullmatch(native_manifest_sha256)
+                or native_manifest_sha256 != recorded_reference or not native_manifest_relative):
+            raise ValueError("compared_native_reference_requires_matching_external_pin")
+        reference = load(native_manifest_relative)
+        if inputs[native_manifest_relative] != native_manifest_sha256:
+            raise ValueError("native_reference_manifest_hash_mismatch")
+    elif native_manifest_relative is not None or native_manifest_sha256 is not None:
+        raise ValueError("native_reference_not_recorded_in_experiment")
     current = extraction.preflight(root, mapping, methods=METHODS, replay_saved=True,
-                                   native_mode="fresh", runtime_lock=runtime_lock)
+                                   native_mode="fresh", runtime_lock=runtime_lock,
+                                   native_manifest=child(root, native_manifest_relative) if reference is not None else None,
+                                   native_manifest_sha256=native_manifest_sha256)
     if current["status"] != "PASS":
         raise InputGateError(current.get("reason", "acceptance_preflight_blocked"))
     if current["method_hashes"] != code or saved_gate != extraction.public_preflight(current):
         raise ValueError("experiment_preflight_identity_is_stale_or_altered")
+    if reference is not None:
+        # preflight's existing manifest verifier checks schema, original source
+        # identities, every archived native payload and its semantic digest.
+        # Keep those exact payload byte hashes in the acceptance's final recheck
+        # too, including fresh-mode comparisons that do not select the archive.
+        for item in reference["cases"]:
+            remember(item["native_relative"], item["file_sha256"])
     for relative, sha in current["input_file_hashes"].items():
         remember(relative, sha)
     identities = ("runtime", "method_hashes", "native_mode", "native_manifest_sha256",
@@ -317,7 +345,8 @@ def _analyze(root: Path, *, run_relative: str, run_sha256: str, configuration_re
         image_manifest_sha256=image_sha256, image_code_sha256=image_code,
         invocation={"run_relative": run_relative, "run_sha256": run_sha256, "configuration_relative": configuration_relative,
                     "source_map_relative": source_map_relative, "review_relative": review_relative,
-                    "review_sha256": review_sha256, "image_relative": image_relative, "image_sha256": image_sha256},
+                    "review_sha256": review_sha256, "image_relative": image_relative, "image_sha256": image_sha256,
+                    "native_manifest_relative": native_manifest_relative, "native_manifest_sha256": native_manifest_sha256},
         postrun_source_code_runtime_recheck="PASS", independent_qualification=False)
     return result
 
@@ -410,12 +439,15 @@ def main() -> int:
     parser.add_argument("--run"); parser.add_argument("--run-sha256"); parser.add_argument("--output")
     parser.add_argument("--review"); parser.add_argument("--review-sha256")
     parser.add_argument("--image-manifest"); parser.add_argument("--image-manifest-sha256")
+    parser.add_argument("--native-manifest"); parser.add_argument("--native-manifest-sha256")
     parser.add_argument("--receipt"); parser.add_argument("--receipt-sha256")
     args = parser.parse_args()
     if args.stage == "assess" and (not args.run or not args.run_sha256 or not args.output):
         parser.error("assess requires --run, --run-sha256 and --output")
     if args.stage != "assess" and (not args.receipt or not args.receipt_sha256):
         parser.error("verification requires --receipt and --receipt-sha256")
+    if args.stage != "assess" and (args.native_manifest is not None or args.native_manifest_sha256 is not None):
+        parser.error("verification replays the native reference from the externally pinned acceptance receipt")
     try:
         root = data_root(args.data_root)
         common = dict(configuration_relative=args.configuration, source_map_relative=args.source_map,
@@ -424,6 +456,7 @@ def main() -> int:
             result = publish(root, args.output, analyze(root, run_relative=args.run, run_sha256=args.run_sha256,
                 review_relative=args.review, review_sha256=args.review_sha256,
                 image_relative=args.image_manifest, image_sha256=args.image_manifest_sha256,
+                native_manifest_relative=args.native_manifest, native_manifest_sha256=args.native_manifest_sha256,
                 **common), runtime_lock=args.runtime_lock)
         else:
             result = verify(root, args.receipt, args.receipt_sha256, **common)

@@ -13,6 +13,7 @@ import re
 import unicodedata
 from collections import defaultdict
 from typing import Iterable, Mapping, Sequence
+from .pdf_geometry_parallel_v4 import logical_rows, transition_evidence
 
 VERSION = "page-one-parallel-source-v4"
 
@@ -125,19 +126,20 @@ def style(line: Mapping) -> dict:
     return {"color": color, "bold": bold, "size": size, "fraction": weight/sum(weights.values())}
 
 
-def _chains(lines: list[dict]) -> list[list[dict]]:
+def _chains(lines: list[dict], rows: list[dict] | None = None) -> list[list[dict]]:
     """Column-local order plus original order; never a global y-sort only.
 
     Requiring high horizontal overlap prevents the wrong-column projection.
     Full-width lines are not used to connect two narrow columns transitively.
     """
+    rows = logical_rows(lines) if rows is None else rows
     result = []
-    for anchor in lines:
+    for anchor in rows:
         a = anchor["bbox"]
-        local = [x for x in lines if overlap(a, x["bbox"]) >= .8 and
+        local = [x for x in rows if overlap(a, x["bbox"]) >= .8 and
                  max(a[2]-a[0], x["bbox"][2]-x["bbox"][0]) <= 1.65*max(1, min(a[2]-a[0], x["bbox"][2]-x["bbox"][0]))]
         local.sort(key=lambda x: (round(x["bbox"][1], 1), x["bbox"][0], str(x["id"])))
-        result.append(local)
+        result.append([line for row in local for line in row["lines"]])
     # Native original order can encode legitimate multi-column continuation.
     # Such a match is returned but held by the caller unless layout corroborates it.
     result.append(lines)
@@ -197,8 +199,14 @@ def locate(text: str, native_lines: list[dict], *, region_boxes: list[list[float
         eligible = [line for line in native_lines if any(
             box[1]-2 <= (line["bbox"][1]+line["bbox"][3])/2 <= box[3]+2 and
             overlap(box, line["bbox"]) >= .8 for box in region_boxes)]
+    # Derive against the full native page: restricting to a model region first
+    # would remove neighboring-row evidence and make geometry model-dependent.
+    rows = logical_rows(native_lines)
+    eligible_ids = {str(line["id"]) for line in eligible}
+    eligible_rows = [{**row, "lines": [line for line in row["lines"] if str(line["id"]) in eligible_ids]}
+                     for row in rows if any(str(line["id"]) in eligible_ids for line in row["lines"])]
     matches = {}
-    for chain in _chains(eligible):
+    for chain in _chains(eligible, eligible_rows):
         haystack, mapping = _mapped(chain)
         if not haystack:
             continue
@@ -244,11 +252,12 @@ def locate(text: str, native_lines: list[dict], *, region_boxes: list[list[float
             spans = _slices(chain, mapping, a, b)
             key = tuple((str(s["line_id"]), s["start"], s["end"]) for s in spans)
             source_text = "\n".join(s["text"] for s in spans)
-            boxes = [s["bbox"] for s in spans]
-            column_change = any(overlap(x, y) < .5 for x, y in zip(boxes, boxes[1:]))
+            geometry = transition_evidence(spans, rows)
+            column_change = bool(geometry["unsupported_transitions"])
             matches[key] = {"status": "located", "spans": spans, "text": source_text,
                             "precision": score["precision"], "recall": score["recall"],
-                            "column_change": column_change, "coordinate_source": "native_pdf_lines"}
+                            "column_change": column_change, "coordinate_source": "native_pdf_lines",
+                            "logical_geometry": geometry}
     if not matches:
         return {"status": "unlocated", "reason": "no_98_percent_source_alignment", "spans": []}
     occurrences = []

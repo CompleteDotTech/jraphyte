@@ -1,0 +1,1416 @@
+{
+  "schema_version": 1,
+  "status": "CACHED_NATIVE_GEOMETRY_DIAGNOSTIC_NOT_VALIDATION",
+  "issue": "https://github.com/CompleteDotTech/jraphyte/issues/15",
+  "base_commit": "d5ca636a48e963619f4c89e2958d0bb1a3e72f80",
+  "implementation_binding": "working-tree bytes below; integrated native replay required after merge",
+  "geometry_version": "native-logical-rows-v1",
+  "cases": 200,
+  "assessments": 800,
+  "input_artifact_count": 1402,
+  "elapsed_seconds": 689.1856969000073,
+  "new_paid_api_calls": 0,
+  "production_graph_writes": 0,
+  "native_reextraction_performed": false,
+  "method_hashes": {
+    "src/parallel_source_v4/__init__.py": "7c433293ab7d45eba066ccf6a6351239b985a89621471403c4dabdbff0d48ae4",
+    "src/parallel_source_v4/adapters.py": "6279ace17b17372a784318741e03e977b7d9a1ace6c0562b0c44d6b454a8b7d9",
+    "src/parallel_source_v4/common.py": "d1ba0d0baa081ef1bd3280cc009b03121701b3b49184d6ee6ed98600af7c8f1f",
+    "src/parallel_source_v4/extraction.py": "bda230bece7a4b3cda308f9bebed3991e421d074b82d1770e21f748a4e17415b",
+    "src/parallel_source_v4/fields.py": "ee50cf230f4b7cba92a20b42a93fd66154a93439ec7ef2fb3b49854b5bab562a",
+    "src/parallel_source_v4/freeze.py": "2d84e014233b6c1e4cb4720a3344e26d3d86f002f73d558a61c6b2b2b19f18b6",
+    "src/parallel_source_v4/geometry_probe.py": "067dc6f65014f1ccbba9ef4f5055cb7bafd32d9d3bb05af155d1a9b9c4ea5e13",
+    "src/parallel_source_v4/metrics.py": "da671b664c34598022c5fc1d20ab0ba77d004551909e49c3d0eaaf61285a8751",
+    "src/parallel_source_v4/prepare.py": "6197dadc16509d6cff7088dd79970126f4e18c75623da10f9668b33fc526bd98",
+    "src/parallel_source_v4/retrieval.py": "cbf0e2087b4fe0f728b98ef5ea08dea74d6426c462f07fc34a26c617e1ef1c9f",
+    "trace_gc/pdf_geometry_parallel_v4.py": "e72e785c31f1b71039e0c27207c867a923232b749044f9a381fac7203cfa55b1",
+    "trace_gc/pdf_source_parallel_v4.py": "064704b8e860e5dfc79687f6e2279292eb64f6c5e74d5bee4fa17d0e66128165",
+    "trace_gc/pdf_structure_parallel_v4.py": "9818f1ff0afda2350dc1a7e39fbe503c4ff8d9d23f7a2dcaea54b374f42258e7"
+  },
+  "fixture_sha256": {
+    "tests/test_parallel_source_geometry_v4.py": "57d3ec8a57d4a958e06cb4166e4e5aefe32557aff01ea03abe2c7c0d15f6c6e9"
+  },
+  "environment": {
+    "python": "3.14.3",
+    "PyMuPDF": "1.27.2.2",
+    "Pillow": "12.2.0"
+  },
+  "artifacts": {
+    "baseline": {
+      "relative_to_TRACE_GC_TEST_DATA_ROOT": "validation_v3_private/parallel-v4-regression-rerun-20260927-220439/results.json",
+      "sha256": "661964b8db10bf2bd806a95a0119f4492dcabf72e759fff521993f702f016b0d"
+    },
+    "final_diagnostic": {
+      "relative_to_TRACE_GC_TEST_DATA_ROOT": "validation_v3_private/issue15-geometry-probe-20260928-06/results.json",
+      "sha256": "0bdf3ec91738be69d0fb271f5d4b6e0772ff29ff6fe6df93bd990148605f5ea6"
+    },
+    "targeted_diagnostic": {
+      "relative_to_TRACE_GC_TEST_DATA_ROOT": "validation_v3_private/issue15-geometry-targeted-20260928-01/results.json",
+      "sha256": "c12ce6343b9c6c23bddda3e44685142ae82bf707c74e43cedf1ceb20411f03e6"
+    },
+    "validation": {
+      "relative_to_TRACE_GC_TEST_DATA_ROOT": "validation_v3_private/issue15-validation-20260928-05/VALIDATION_REPORT.json",
+      "sha256": "8fb549fb02b89bbef45049a67de62bbc4502e23d5eda62432cb683e74bc7e6a6"
+    },
+    "package": {
+      "relative_to_TRACE_GC_TEST_DATA_ROOT": "validation_v3_private/issue15-validation-20260928-05/PACKAGE_REPORT.json",
+      "sha256": "28b6e5720479157674498fd89144e0057a81decc0fa8267326330aa575ea8fde"
+    },
+    "superseded_intermediate": {
+      "relative_to_TRACE_GC_TEST_DATA_ROOT": "validation_v3_private/issue15-geometry-probe-20260928-05/results.json",
+      "sha256": "515848af8d10aeaa98312b2500d17c34e34edc32109159477a27f5984c1099e8"
+    }
+  },
+  "before_after": {
+    "parallel_grobid_v4": {
+      "before": {
+        "pages": 200,
+        "complete_available": 111,
+        "proposed": 33,
+        "correct_proposals_98": 33,
+        "boundary_and_98_correct_proposals": 33,
+        "false_proposals": 0,
+        "complete_abstracts_withheld": 78,
+        "proposal_precision_98": 1.0,
+        "correct_proposal_recall_98": 0.2972972972972973,
+        "partial_false_proposals": 0,
+        "absent_false_proposals": 0,
+        "wrong_proposal_ids": [],
+        "verified_admissions": 0
+      },
+      "after": {
+        "pages": 200,
+        "complete_available": 111,
+        "proposed": 46,
+        "correct_proposals_98": 46,
+        "boundary_and_98_correct_proposals": 46,
+        "false_proposals": 0,
+        "complete_abstracts_withheld": 65,
+        "proposal_precision_98": 1.0,
+        "correct_proposal_recall_98": 0.4144144144144144,
+        "partial_false_proposals": 0,
+        "absent_false_proposals": 0,
+        "wrong_proposal_ids": [],
+        "verified_admissions": 0
+      }
+    },
+    "parallel_mineru_v4": {
+      "before": {
+        "pages": 200,
+        "complete_available": 111,
+        "proposed": 39,
+        "correct_proposals_98": 38,
+        "boundary_and_98_correct_proposals": 38,
+        "false_proposals": 1,
+        "complete_abstracts_withheld": 72,
+        "proposal_precision_98": 0.9743589743589743,
+        "correct_proposal_recall_98": 0.34234234234234234,
+        "partial_false_proposals": 0,
+        "absent_false_proposals": 0,
+        "wrong_proposal_ids": [
+          "f039"
+        ],
+        "verified_admissions": 0
+      },
+      "after": {
+        "pages": 200,
+        "complete_available": 111,
+        "proposed": 50,
+        "correct_proposals_98": 49,
+        "boundary_and_98_correct_proposals": 49,
+        "false_proposals": 1,
+        "complete_abstracts_withheld": 61,
+        "proposal_precision_98": 0.98,
+        "correct_proposal_recall_98": 0.44144144144144143,
+        "partial_false_proposals": 0,
+        "absent_false_proposals": 0,
+        "wrong_proposal_ids": [
+          "f039"
+        ],
+        "verified_admissions": 0
+      }
+    },
+    "parallel_olmocr_v4": {
+      "before": {
+        "pages": 200,
+        "complete_available": 111,
+        "proposed": 39,
+        "correct_proposals_98": 39,
+        "boundary_and_98_correct_proposals": 39,
+        "false_proposals": 0,
+        "complete_abstracts_withheld": 72,
+        "proposal_precision_98": 1.0,
+        "correct_proposal_recall_98": 0.35135135135135137,
+        "partial_false_proposals": 0,
+        "absent_false_proposals": 0,
+        "wrong_proposal_ids": [],
+        "verified_admissions": 0
+      },
+      "after": {
+        "pages": 200,
+        "complete_available": 111,
+        "proposed": 50,
+        "correct_proposals_98": 50,
+        "boundary_and_98_correct_proposals": 50,
+        "false_proposals": 0,
+        "complete_abstracts_withheld": 61,
+        "proposal_precision_98": 1.0,
+        "correct_proposal_recall_98": 0.45045045045045046,
+        "partial_false_proposals": 0,
+        "absent_false_proposals": 0,
+        "wrong_proposal_ids": [],
+        "verified_admissions": 0
+      }
+    },
+    "parallel_structure_v4": {
+      "before": {
+        "pages": 200,
+        "complete_available": 111,
+        "proposed": 38,
+        "correct_proposals_98": 38,
+        "boundary_and_98_correct_proposals": 38,
+        "false_proposals": 0,
+        "complete_abstracts_withheld": 73,
+        "proposal_precision_98": 1.0,
+        "correct_proposal_recall_98": 0.34234234234234234,
+        "partial_false_proposals": 0,
+        "absent_false_proposals": 0,
+        "wrong_proposal_ids": [],
+        "verified_admissions": 0
+      },
+      "after": {
+        "pages": 200,
+        "complete_available": 111,
+        "proposed": 51,
+        "correct_proposals_98": 51,
+        "boundary_and_98_correct_proposals": 51,
+        "false_proposals": 0,
+        "complete_abstracts_withheld": 60,
+        "proposal_precision_98": 1.0,
+        "correct_proposal_recall_98": 0.4594594594594595,
+        "partial_false_proposals": 0,
+        "absent_false_proposals": 0,
+        "wrong_proposal_ids": [],
+        "verified_admissions": 0
+      }
+    }
+  },
+  "changed_cases": {
+    "parallel_grobid_v4": [
+      {
+        "id": "f011",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f026",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "no_explainable_closing_boundary",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f037",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f058",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f073",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "no_explainable_closing_boundary",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": false,
+        "after_boundary_and_98_match": false
+      },
+      {
+        "id": "f087",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f089",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f092",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f103",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f111",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f129",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f138",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "no_explainable_closing_boundary",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f139",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f155",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "no_98_percent_source_alignment",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f157",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f166",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f173",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "scholarly_field_not_verified_as_complete_page_one_abstract"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      }
+    ],
+    "parallel_mineru_v4": [
+      {
+        "id": "f011",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f023",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "no_explainable_closing_boundary"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": false,
+        "after_boundary_and_98_match": false
+      },
+      {
+        "id": "f037",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f058",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f073",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "no_explainable_closing_boundary"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": false,
+        "after_boundary_and_98_match": false
+      },
+      {
+        "id": "f087",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f089",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f092",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f129",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f139",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f155",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f157",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f173",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      }
+    ],
+    "parallel_olmocr_v4": [
+      {
+        "id": "f011",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f037",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f058",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f073",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "unlocated_ocr_paragraph_inside_candidate_boundary"
+        ],
+        "after_reasons": [
+          "no_explainable_closing_boundary",
+          "unlocated_ocr_paragraph_inside_candidate_boundary"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f087",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f089",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f092",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f103",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f129",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f138",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "unlocated_ocr_paragraph_inside_candidate_boundary"
+        ],
+        "after_reasons": [
+          "no_explainable_closing_boundary",
+          "unlocated_ocr_paragraph_inside_candidate_boundary"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f139",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f142",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "unlocated_ocr_paragraph_inside_candidate_boundary"
+        ],
+        "after_reasons": [
+          "no_explainable_closing_boundary",
+          "unlocated_ocr_paragraph_inside_candidate_boundary"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f155",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "no_98_percent_source_alignment"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": false,
+        "after_boundary_and_98_match": false
+      },
+      {
+        "id": "f157",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f173",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f179",
+        "before_reasons": [
+          "unverified_multi_column_continuation",
+          "unlocated_ocr_paragraph_inside_candidate_boundary"
+        ],
+        "after_reasons": [
+          "no_explainable_closing_boundary",
+          "unlocated_ocr_paragraph_inside_candidate_boundary"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": false,
+        "after_boundary_and_98_match": false
+      }
+    ],
+    "parallel_structure_v4": [
+      {
+        "id": "f011",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f026",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "no_explainable_closing_boundary"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f037",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f058",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f073",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "no_explainable_closing_boundary"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": false,
+        "after_boundary_and_98_match": false
+      },
+      {
+        "id": "f087",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f089",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f092",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f101",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": false,
+        "after_boundary_and_98_match": false
+      },
+      {
+        "id": "f103",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f111",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f129",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f138",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "no_explainable_closing_boundary"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": false,
+        "after_boundary_and_98_match": false
+      },
+      {
+        "id": "f139",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f155",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "no_98_percent_source_alignment"
+        ],
+        "before_proposed": false,
+        "after_proposed": false,
+        "before_boundary_and_98_match": false,
+        "after_boundary_and_98_match": false
+      },
+      {
+        "id": "f157",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f166",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      },
+      {
+        "id": "f173",
+        "before_reasons": [
+          "unverified_multi_column_continuation"
+        ],
+        "after_reasons": [
+          "bounded_source_located_proposal"
+        ],
+        "before_proposed": false,
+        "after_proposed": true,
+        "before_boundary_and_98_match": true,
+        "after_boundary_and_98_match": true
+      }
+    ]
+  },
+  "primary_column_hold_cases": [
+    {
+      "id": "f011",
+      "proposed": true,
+      "reasons": [
+        "bounded_source_located_proposal"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f026",
+      "proposed": false,
+      "reasons": [
+        "no_explainable_closing_boundary"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f028",
+      "proposed": false,
+      "reasons": [
+        "unverified_multi_column_continuation"
+      ],
+      "boundary_and_98_match": false
+    },
+    {
+      "id": "f037",
+      "proposed": true,
+      "reasons": [
+        "bounded_source_located_proposal"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f058",
+      "proposed": true,
+      "reasons": [
+        "bounded_source_located_proposal"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f070",
+      "proposed": false,
+      "reasons": [
+        "unverified_multi_column_continuation"
+      ],
+      "boundary_and_98_match": false
+    },
+    {
+      "id": "f079",
+      "proposed": false,
+      "reasons": [
+        "unverified_multi_column_continuation"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f081",
+      "proposed": false,
+      "reasons": [
+        "unverified_multi_column_continuation"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f087",
+      "proposed": true,
+      "reasons": [
+        "bounded_source_located_proposal"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f089",
+      "proposed": true,
+      "reasons": [
+        "bounded_source_located_proposal"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f092",
+      "proposed": true,
+      "reasons": [
+        "bounded_source_located_proposal"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f094",
+      "proposed": false,
+      "reasons": [
+        "unverified_multi_column_continuation"
+      ],
+      "boundary_and_98_match": false
+    },
+    {
+      "id": "f097",
+      "proposed": false,
+      "reasons": [
+        "unverified_multi_column_continuation"
+      ],
+      "boundary_and_98_match": false
+    },
+    {
+      "id": "f101",
+      "proposed": false,
+      "reasons": [
+        "unverified_multi_column_continuation"
+      ],
+      "boundary_and_98_match": false
+    },
+    {
+      "id": "f103",
+      "proposed": true,
+      "reasons": [
+        "bounded_source_located_proposal"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f111",
+      "proposed": true,
+      "reasons": [
+        "bounded_source_located_proposal"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f122",
+      "proposed": false,
+      "reasons": [
+        "unverified_multi_column_continuation"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f129",
+      "proposed": true,
+      "reasons": [
+        "bounded_source_located_proposal"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f138",
+      "proposed": false,
+      "reasons": [
+        "no_explainable_closing_boundary"
+      ],
+      "boundary_and_98_match": false
+    },
+    {
+      "id": "f139",
+      "proposed": true,
+      "reasons": [
+        "bounded_source_located_proposal"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f153",
+      "proposed": false,
+      "reasons": [
+        "unverified_multi_column_continuation"
+      ],
+      "boundary_and_98_match": false
+    },
+    {
+      "id": "f154",
+      "proposed": false,
+      "reasons": [
+        "unverified_multi_column_continuation"
+      ],
+      "boundary_and_98_match": false
+    },
+    {
+      "id": "f155",
+      "proposed": false,
+      "reasons": [
+        "no_98_percent_source_alignment"
+      ],
+      "boundary_and_98_match": false
+    },
+    {
+      "id": "f157",
+      "proposed": true,
+      "reasons": [
+        "bounded_source_located_proposal"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f161",
+      "proposed": false,
+      "reasons": [
+        "unverified_multi_column_continuation"
+      ],
+      "boundary_and_98_match": false
+    },
+    {
+      "id": "f166",
+      "proposed": true,
+      "reasons": [
+        "bounded_source_located_proposal"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f171",
+      "proposed": false,
+      "reasons": [
+        "unverified_multi_column_continuation",
+        "exceeds_request_character_budget"
+      ],
+      "boundary_and_98_match": false
+    },
+    {
+      "id": "f173",
+      "proposed": true,
+      "reasons": [
+        "bounded_source_located_proposal"
+      ],
+      "boundary_and_98_match": true
+    },
+    {
+      "id": "f188",
+      "proposed": false,
+      "reasons": [
+        "unverified_multi_column_continuation"
+      ],
+      "boundary_and_98_match": false
+    }
+  ],
+  "expected_12_recovered": [
+    "f011",
+    "f037",
+    "f087",
+    "f089",
+    "f092",
+    "f103",
+    "f111",
+    "f129",
+    "f139",
+    "f157",
+    "f166",
+    "f173"
+  ],
+  "additional_primary_recovered_ids": [
+    "f058"
+  ],
+  "previous_primary_correct_lost_ids": [],
+  "preservation_against_v2": {
+    "status": "FAIL",
+    "old_correct": 91,
+    "remaining_preexisting_loss_ids": [
+      "f007",
+      "f012",
+      "f017",
+      "f021",
+      "f026",
+      "f028",
+      "f032",
+      "f039",
+      "f045",
+      "f053",
+      "f059",
+      "f070",
+      "f071",
+      "f079",
+      "f080",
+      "f081",
+      "f084",
+      "f085",
+      "f094",
+      "f096",
+      "f097",
+      "f098",
+      "f101",
+      "f102",
+      "f112",
+      "f113",
+      "f122",
+      "f131",
+      "f138",
+      "f142",
+      "f145",
+      "f146",
+      "f153",
+      "f154",
+      "f155",
+      "f158",
+      "f161",
+      "f171",
+      "f186",
+      "f188",
+      "f191",
+      "f195"
+    ]
+  },
+  "verification": {
+    "focused_v4_tests": {
+      "run": 130,
+      "passed": 129,
+      "skipped": 1
+    },
+    "standard_gate": {
+      "status": "PASS_WITH_EXTERNAL_GATES",
+      "run": 549,
+      "passed": 545,
+      "skipped": 4,
+      "failures": 0,
+      "errors": 0
+    },
+    "package": "PASS",
+    "peer_code_review": {
+      "kind": "separate_agent",
+      "verdict": "no_material_blocker_in_focused_rereview",
+      "scope": "code and authored/targeted fixtures; not human or unseen-paper qualification"
+    }
+  },
+  "source_identity": {
+    "native_schema_changed": false,
+    "unchanged_function_ASTs": [
+      "source_lines",
+      "validate_lines",
+      "validate_box",
+      "canonical",
+      "compare",
+      "validate_source_spans"
+    ],
+    "source_module_before_sha256": "df31e8d09cfe1502153ded6e87ca8ac9aad6d1b46012a6e7bf10b099a840f7e5",
+    "source_module_after_sha256": "064704b8e860e5dfc79687f6e2279292eb64f6c5e74d5bee4fa17d0e66128165",
+    "h149_negative_bbox_policy": "unchanged; strict native extraction error"
+  },
+  "limits": [
+    "Native extraction was not rerun; cached source metadata is not a fresh PDF-byte verification.",
+    "Already examined 200-case regression, not unseen or independently source-reviewed validation.",
+    "Historical alphanumeric scores do not certify notation or independently reviewed boundaries.",
+    "Final integrated bounded-runtime native replay and preservation gate remain outstanding.",
+    "Reported correctness means historical boundary-and-alphanumeric-98 agreement, not notation certification.",
+    "Frozen manual math-review-hold accounting is not recomputed by this cached diagnostic.",
+    "Changed cases compare status/proposal/reasons and historical numeric scores; exact source-text deltas are not separately certified.",
+    "The superseded intermediate receipt predates the peer-reviewed false-bridge repairs.",
+    "Original-PDF byte verification, integrated #13/#15/#16 replay, and attributed source-reviewed qualification remain outstanding."
+  ]
+}

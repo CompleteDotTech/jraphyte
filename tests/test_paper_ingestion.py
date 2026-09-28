@@ -2,7 +2,10 @@
 import unittest
 from unittest.mock import patch
 
-import fitz
+try:
+    import fitz
+except ImportError:  # optional PDF source fixture dependency is absent in base CI
+    fitz = None
 
 from trace_gc.catalog import Catalog
 from trace_gc.errors import ContractError
@@ -18,6 +21,7 @@ def paper(second_page="Abstract. The measured result was 17 units."):
     return data
 
 
+@unittest.skipIf(fitz is None, "optional PyMuPDF source fixture dependency unavailable")
 class ReviewedDocumentPageTests(unittest.TestCase):
     def setUp(self):
         self.pdf = paper()

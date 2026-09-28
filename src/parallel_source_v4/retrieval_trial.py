@@ -26,7 +26,7 @@ from .fields import parse_bound_json, source_path
 from .retrieval import evaluate, local_cross_encoder, normalize_queries
 from .specter2_cache import produce, verify_models
 
-VERSION = "retrieval-empirical-protocol-v1"
+VERSION = "retrieval-empirical-protocol-v2"
 PACKAGES = ("torch", "transformers", "adapters", "numpy", "tokenizers",
             "safetensors", "sentence-transformers")
 JSON_INPUTS = ("fields", "queries", "preparation_manifest", "dense_model_manifest",
@@ -155,6 +155,31 @@ def _source_readback(root, source_root, rows):
             "manifest_rows_sha256": digest_value(rows)}
 
 
+def _field_process(config, arguments):
+    executable = Path(config["field_verifier_python"]).resolve()
+    need(executable.is_file(), "pinned_field_verifier_interpreter_missing")
+    before = digest(executable)
+    env = os.environ.copy()
+    env.pop("PYTHONHOME", None)
+    env.pop("PYTHONPATH", None)
+    result = subprocess.run([str(executable), "-B", "-s", *arguments], cwd=REPO, env=env,
+                            capture_output=True)
+    need(digest(executable) == before, "field_verifier_interpreter_changed")
+    need(result.returncode == 0, "field_reconstruction_or_runtime_verification_failed")
+    return parse_bound_json(result.stdout)
+
+
+def field_runtime(config):
+    return _field_process(config, ["-c", "import json; from src.parallel_source_v4.fields import verification_runtime; print(json.dumps(verification_runtime()))"])
+
+
+def rebuild_fields(root, config):
+    result = _field_process(config, ["-m", "src.parallel_source_v4.fields", "--data-root", str(root),
+        "--source-root", config["source_root"], "--manifest", config["preparation_manifest"], "--verify-fields", config["fields"]])
+    need(result.get("status") == "VERIFIED", "field_reconstruction_verification_failed")
+    return result
+
+
 def inspect_inputs(root, config, *, full_sources):
     """Parse each input from its hashed buffer, then verify its linked artifacts."""
     records, hashes = {}, {}
@@ -188,34 +213,83 @@ def inspect_inputs(root, config, *, full_sources):
              all(row[key + "_sha256"] == field.get(key + "_sha256") for key in ("source", "page", "image", "native")),
              "field_source_binding_invalid")
         need(all(type(field.get(key)) is str for key in ("title", "abstract", "body")), "field_text_type_invalid")
+    from .retrieval_policy import coverage
+    policy_receipt = fields_record.get("corpus_policy_receipt")
+    need(isinstance(policy_receipt, dict), "explicit_corpus_field_policy_required")
+    need(policy_receipt == coverage(fields, policy_receipt["policy"]), "corpus_field_policy_receipt_mismatch")
+    need(policy_receipt["status"] == "READY", "corpus_field_policy_missing_genuine_inputs")
+    if fields_record.get("ocr_producer_code_sha256") is not None:
+        from .image_ocr import code_identity
+        need(fields_record["ocr_producer_code_sha256"] == code_identity(), "ocr_fields_require_final_code_tree_rebuild")
+    for relative, sha in fields_record.get("ocr_producer_asset_sha256", {}).items():
+        need(digest(child(root, relative)) == sha, "ocr_field_producer_artifact_changed")
+    if config.get("historical_fields"):
+        historical, raw_sha = archived_fields(child(root, config["historical_fields"]), ids)
+        need(raw_sha == config.get("historical_fields_sha256"), "historical_fields_external_hash_mismatch")
+        records["historical_fields"] = {"fields": historical}
+        hashes["historical_fields"] = raw_sha
     permuted = permutation(queries)
     dense_root = child(root, config["dense_model_root"])
     verify_models(dense_root, records["dense_model_manifest"])
     reranker = _reranker_files(child(root, config["reranker_directory"]), records["reranker_manifest"])
-    source_readback = _source_readback(root, Path(config["source_root"]), rows) if full_sources else None
+    verifier_runtime = field_runtime(config)
+    source_readback = None
+    if full_sources:
+        _source_readback(root, Path(config["source_root"]), rows)
+        source_readback = rebuild_fields(root, config)
+        need(source_readback.get("runtime") == verifier_runtime and source_readback.get("code_sha256") == code["files"]
+             and source_readback.get("fields_file_sha256") == hashes["fields"]
+             and source_readback.get("manifest_file_sha256") == hashes["preparation_manifest"]
+             and source_readback.get("document_count") == len(rows)
+             and source_readback.get("manifest_rows_sha256") == digest_value(rows), "field_reconstruction_identity_mismatch")
     snapshot = {"file_sha256": hashes, "code": code, "runtime": runtime_snapshot(),
                 "source_manifest_rows_sha256": digest_value(rows),
                 "fields_sha256": digest_value(fields), "document_ids_sha256": digest_value(ids),
                 "ranking_inputs_sha256": digest_value([{"id": q["id"], "query": q["query"]} for q in queries]),
                 "evaluation_labels_sha256": digest_value([{"id": q["id"], "target_id": q["target_id"]} for q in queries]),
                 "permuted_queries_sha256": digest_value(permuted), "reranker_files": reranker,
-                "dense_model_files": {k: v["files"] for k, v in records["dense_model_manifest"]["models"].items()}}
+                "dense_model_files": {k: v["files"] for k, v in records["dense_model_manifest"]["models"].items()},
+                "field_verifier_runtime": verifier_runtime}
     return snapshot, records, queries, permuted, source_readback
 
 
+def archived_fields(path, ids):
+    """Pinned legacy JSONL is a text-condition comparison, not fresh extraction.
+
+    Split only on LF: unicode scientific text can contain other line separators.
+    No filtering, target access, title repair or ID reordering is performed.
+    """
+    raw = path.read_bytes()
+    rows = [parse_bound_json(line) for line in raw.split(b"\n") if line.strip()]
+    need(all(type(row) is dict and all(type(row.get(key)) is str for key in ("id", "title", "abstract", "body"))
+             for row in rows), "historical_field_text_type_invalid")
+    need([row["id"] for row in rows] == ids, "historical_corpus_identity_or_order_mismatch")
+    fields = [{**{key: row[key] for key in ("id", "title", "abstract", "body")},
+               "searchable": any(row[key].strip() for key in ("title", "abstract", "body")),
+               "retrieval_only": True, "eligible_for_jev": False,
+               "field_condition": "archived_legacy_text_not_current_source_certification"} for row in rows]
+    return fields, hashlib.sha256(raw).hexdigest()
+
+
 def freeze(root: Path, config: dict, output: Path):
+    config = copy.deepcopy(config)
     need(not output.exists(), "protocol_output_already_exists")
     # The current dense producer explicitly uses four PyTorch threads.
     need(type(config["cpu_threads"]) is int and config["cpu_threads"] == 4 and
          config["candidate_depth"] == 50 and config["dense_batch_size"] == 16,
          "unsupported_trial_resource_policy")
-    need(type(config["without_dense_ablation"]) is bool, "invalid_ablation_policy")
+    need(type(config["without_dense_ablation"]) is bool and type(config.get("without_page_ablation", False)) is bool,
+         "invalid_ablation_policy")
+    need(bool(config.get("historical_fields")) == bool(config.get("historical_fields_sha256")),
+         "historical_fields_and_external_hash_required_together")
     snapshot, _, _, _, readback = inspect_inputs(root, config, full_sources=True)
     protocol = {"schema_version": VERSION, "configuration": config, "snapshot": snapshot,
                 "source_readback_at_freeze": readback, "label_permutation": "rotate_targets_left_one",
                 "metric_scope": "first_physical_page_known_item_retrieval",
                 "graph_admission_enabled": False, "new_paid_api_calls": 0,
-                "unsupported_ablations": ["without_page_channel", "historical_field_policy"]}
+                "unsupported_ablations": [],
+                "historical_comparison_scope": "archived_field_text_effect_with_current_ranking_and_fresh_embeddings",
+                "historical_source_certification": False}
     # A freeze itself must not publish a hash of inputs that changed while read.
     after, *_ = inspect_inputs(root, config, full_sources=False)
     need(after == snapshot, "inputs_changed_during_protocol_freeze")
@@ -312,15 +386,43 @@ def run(root: Path, protocol_path: Path, expected_protocol_sha256: str, output: 
              "dense_producer_readback_mismatch")
         dense_files = _dense_artifacts(dense_dir)
         _unchanged(root, protocol_path, protocol_sha, config, expected)
+        dense_conditions = {"current": (dense, dense_dir, dense_files, dense_sha)}
+        field_conditions = {"current": records["fields"]["fields"]}
+        if "historical_fields" in records:
+            field_conditions["historical"] = records["historical_fields"]["fields"]
+            historical_path = output / "historical-fields.json"
+            result_hashes[historical_path.name] = write_once(historical_path, records["historical_fields"])
+            historical_dir = output / "specter2-historical"
+            historical_dense = _timed(receipt, "historical_dense_production", lambda: produce(
+                root, historical_path, child(root, config["queries"]),
+                child(root, config["dense_model_root"]), child(root, config["dense_model_manifest"]),
+                historical_dir, device="cpu", batch_size=config["dense_batch_size"], top_k=config["candidate_depth"]))
+            observed_historical, historical_sha = bound_json(historical_dir / "dense_cache.json")
+            need(observed_historical == historical_dense and historical_dense.get("binding_version") == "ranking-inputs-v2",
+                 "dense_producer_readback_mismatch")
+            dense_conditions["historical"] = (historical_dense, historical_dir, _dense_artifacts(historical_dir), historical_sha)
+            _unchanged(root, protocol_path, protocol_sha, config, expected)
         model_scorer = _timed(receipt, "reranker_load", lambda: local_cross_encoder(
             child(root, config["reranker_directory"]), expected["reranker_files"]))
         need(getattr(model_scorer, "offline_receipt", {}).get("local_files_only") is True,
              "local_reranker_receipt_missing")
         _unchanged(root, protocol_path, protocol_sha, config, expected)
         measured = {}
-        for name, selected_queries, selected_dense in (
-            ("primary", queries, dense), ("target_permutation", permuted, dense),
-            *(([("without_dense", queries, None)]) if config["without_dense_ablation"] else [])):
+        conditions = [("primary", "current", True, True)]
+        if config.get("without_page_ablation"):
+            conditions.append(("without_page", "current", True, False))
+        if config["without_dense_ablation"]:
+            conditions.append(("without_dense", "current", False, True))
+        if "historical" in field_conditions:
+            conditions.append(("historical_fields", "historical", True, True))
+            if config.get("without_page_ablation"):
+                conditions.append(("historical_fields_without_page", "historical", True, False))
+        arms = [(name if not changed else ("target_permutation" if name == "primary" else name + "_target_permutation"),
+                 field_condition, use_dense, page_channel, permuted if changed else queries)
+                for name, field_condition, use_dense, page_channel in conditions for changed in (False, True)]
+        for name, field_condition, use_dense, page_channel, selected_queries in arms:
+            selected_fields = field_conditions[field_condition]
+            selected_dense = dense_conditions[field_condition][0] if use_dense else None
             stage_start, stage_cpu = time.perf_counter(), time.process_time()
             scored_calls = []
             def scorer(pairs):
@@ -331,35 +433,50 @@ def run(root: Path, protocol_path: Path, expected_protocol_sha256: str, output: 
                                      "scores": scores, "scores_sha256": digest_value(scores)})
                 return scores
             scorer.offline_receipt = model_scorer.offline_receipt
-            result = evaluate(copy.deepcopy(records["fields"]["fields"]), copy.deepcopy(selected_queries),
-                              dense_cache=copy.deepcopy(selected_dense), scorer=scorer, k=config["candidate_depth"])
+            result = evaluate(copy.deepcopy(selected_fields), copy.deepcopy(selected_queries),
+                              dense_cache=copy.deepcopy(selected_dense), scorer=scorer, k=config["candidate_depth"],
+                              page_channel=page_channel)
+            result["field_condition"] = field_condition
             result["stage"] = "local_cross_encoder"
             result["wall_seconds"] = time.perf_counter() - stage_start
             result["process_cpu_seconds"] = time.process_time() - stage_cpu
             result["scored_calls"] = scored_calls
-            result["rankings"] = _ranking_readback(result, selected_queries, records["fields"]["fields"], scored_calls)
+            result["rankings"] = _ranking_readback(result, selected_queries, selected_fields, scored_calls)
             result["reranker_model_manifest_sha256"] = expected["file_sha256"]["reranker_manifest"]
             _unchanged(root, protocol_path, protocol_sha, config, expected)
-            need(_dense_artifacts(dense_dir) == dense_files, "dense_artifact_changed_during_run")
+            need(all(_dense_artifacts(folder) == files for _, folder, files, _ in dense_conditions.values()),
+                 "dense_artifact_changed_during_run")
             measured[name] = result
             result_hashes[name + ".json"] = write_once(output / (name + ".json"),
                                                         {"status": "MEASURED_PENDING_FINAL_INTEGRITY", "result": result})
         metamorphic = _metamorphic(measured["primary"], measured["target_permutation"])
         receipt["target_permutation"] = metamorphic
         need(metamorphic["status"] == "PASS", "target_label_independence_failed")
+        receipt["all_arm_target_permutations"] = {}
+        for name, *_ in conditions:
+            other = "target_permutation" if name == "primary" else name + "_target_permutation"
+            check = _metamorphic(measured[name], measured[other])
+            receipt["all_arm_target_permutations"][name] = check
+            need(check["status"] == "PASS", "target_label_independence_failed")
         final_sources = _unchanged(root, protocol_path, protocol_sha, config, expected, full_sources=True)
         _unchanged(root, protocol_path, protocol_sha, config, expected)
-        need(_dense_artifacts(dense_dir) == dense_files, "dense_artifact_changed_before_publication")
+        need(all(_dense_artifacts(folder) == files for _, folder, files, _ in dense_conditions.values()),
+             "dense_artifact_changed_before_publication")
         need(all(digest(output / name) == sha for name, sha in result_hashes.items()),
              "measured_result_changed_before_publication")
         receipt.update(status="COMPLETE", source_readback_end=final_sources,
                        frozen_input_code_runtime_readback="MATCH", dense_cache_file_sha256=dense_sha,
                        dense_artifact_sha256=dense_files,
+                       dense_conditions={key: {"cache_sha256": item[3], "artifact_sha256": item[2]}
+                                         for key, item in dense_conditions.items()},
                        result_file_sha256=result_hashes,
                        document_count=config["document_count"], query_count=config["query_count"],
                        full_10000_by_60=config["document_count"] == 10000 and config["query_count"] == 60,
                        ablations={"without_dense": "MEASURED" if config["without_dense_ablation"] else "NOT_RUN",
-                                  "without_page_channel": "UNSUPPORTED", "historical_field_policy": "NOT_RUN"},
+                                  "without_page_channel": "MEASURED" if config.get("without_page_ablation") else "NOT_RUN",
+                                  "historical_field_policy": "ARCHIVED_FIELDS_MEASURED" if "historical" in field_conditions else "NOT_RUN"},
+                       corpus_policy_receipt=records["fields"]["corpus_policy_receipt"],
+                       historical_source_certification=False,
                        relevance_judgments="NOT_PERFORMED")
     except Exception as exc:
         code = str(exc) if isinstance(exc, Blocked) else "trial_execution_error:" + type(exc).__name__
@@ -379,10 +496,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     freeze_parser = sub.add_parser("freeze")
-    for name in (*JSON_INPUTS, "source_root", "dense_model_root", "reranker_directory"):
+    for name in (*JSON_INPUTS, "source_root", "dense_model_root", "reranker_directory", "field_verifier_python"):
         freeze_parser.add_argument("--" + name.replace("_", "-"), required=True)
     freeze_parser.add_argument("--cpu-threads", type=int, default=4)
     freeze_parser.add_argument("--without-dense-ablation", action="store_true")
+    freeze_parser.add_argument("--without-page-ablation", action="store_true")
+    freeze_parser.add_argument("--historical-fields")
+    freeze_parser.add_argument("--historical-fields-sha256")
     run_parser = sub.add_parser("run")
     run_parser.add_argument("--protocol", required=True)
     run_parser.add_argument("--expected-protocol-sha256", required=True)
@@ -393,9 +513,11 @@ def main():
     try:
         root = data_root(args.data_root)
         if args.command == "freeze":
-            config = {name: getattr(args, name) for name in (*JSON_INPUTS, "source_root", "dense_model_root", "reranker_directory")}
+            config = {name: getattr(args, name) for name in (*JSON_INPUTS, "source_root", "dense_model_root", "reranker_directory", "field_verifier_python")}
             config.update(source_root=str(Path(config["source_root"]).resolve()), cpu_threads=args.cpu_threads,
                           without_dense_ablation=args.without_dense_ablation, document_count=10000,
+                          without_page_ablation=args.without_page_ablation, historical_fields=args.historical_fields,
+                          historical_fields_sha256=args.historical_fields_sha256,
                           query_count=60, candidate_depth=50, dense_batch_size=16)
             sha = freeze(root, config, child(root, args.output))
             print(json.dumps({"status": "FROZEN_NOT_MEASURED", "protocol_sha256": sha}))

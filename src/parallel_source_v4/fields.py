@@ -1,6 +1,7 @@
 """Build source-hashed, query-independent fields from a prepared page-one manifest."""
 from __future__ import annotations
 import argparse
+import copy
 import hashlib
 import io
 import json
@@ -157,11 +158,28 @@ def bound_assessment(root: Path, entry: dict, row: dict, native: list[dict], pag
     return assessment
 
 
-def build_fields(root: Path, manifest: dict, output: Path, *, title_reviews=None, ocr_caches=None,
-                 abstract_assessments=None, source_root: Path | None=None) -> dict:
+def build_fields(root: Path, manifest: dict, output: Path | None, *, title_reviews=None, ocr_caches=None,
+                 abstract_assessments=None, source_root: Path | None=None, corpus_policy=None) -> dict:
     import fitz
     import PIL
+    manifest,title_reviews,ocr_caches,abstract_assessments,corpus_policy=copy.deepcopy(
+        (manifest,title_reviews,ocr_caches,abstract_assessments,corpus_policy))
     started=time.perf_counter(); fields=[]; ids=set(); rows=manifest['pdfs']
+    from .retrieval_policy import validate_policy,eligibility,field_decisions,coverage,local_ocr_cache
+    from .image_ocr import code_identity
+    image_code=code_identity() if corpus_policy and corpus_policy.get('ocr_mode')=='empty_native_local' else None
+    asset_hashes={}
+    def read_asset(descriptor):
+        if (not isinstance(descriptor,dict) or set(descriptor)!={'relative','sha256'} or
+                not isinstance(descriptor['sha256'],str) or not SHA256.fullmatch(descriptor['sha256'])):
+            raise ValueError('invalid_retrieval_ocr_asset_descriptor')
+        path=child(root,descriptor['relative']);payload=path.read_bytes()
+        if hashlib.sha256(payload).hexdigest()!=descriptor['sha256']:
+            raise ValueError('retrieval_ocr_asset_hash_mismatch')
+        if path in asset_hashes and asset_hashes[path]!=descriptor['sha256']:
+            raise ValueError('retrieval_ocr_conflicting_asset_identity')
+        asset_hashes[path]=descriptor['sha256']
+        return payload
     bound_code=method_hashes(REPO)
     current_extractor={'python':sys.version.split()[0],'pymupdf':fitz.VersionBind,
                        'mupdf':fitz.VersionFitz,'pillow':PIL.__version__,
@@ -179,6 +197,15 @@ def build_fields(root: Path, manifest: dict, output: Path, *, title_reviews=None
         if not isinstance(sid,str) or sid in ids:raise ValueError('duplicate_field_document_id')
         ids.add(sid)
     method,entries=assessment_entries(abstract_assessments,ids)
+    if corpus_policy is not None:
+        validate_policy(corpus_policy)
+        if title_reviews or (ocr_caches is not None and (not isinstance(ocr_caches,dict) or not set(ocr_caches)<=ids)):
+            raise ValueError('corpus_policy_forbids_selective_titles_or_unknown_ocr_ids')
+        if ((corpus_policy['abstract_mode']=='disabled' and abstract_assessments is not None) or
+                (abstract_assessments is not None and method!=corpus_policy['assessment_method'])):
+            raise ValueError('assessment_map_does_not_match_corpus_policy')
+        if corpus_policy['ocr_mode']=='disabled' and ocr_caches:
+            raise ValueError('disabled_field_policy_received_artifact:ocr')
     for row in manifest['pdfs']:
         sid=row['sample_id']
         if row.get('physical_page')!=1:raise ValueError('retrieval_fields_require_first_physical_page')
@@ -187,8 +214,23 @@ def build_fields(root: Path, manifest: dict, output: Path, *, title_reviews=None
                 (sid in entries or sid in (title_reviews or {}) or sid in (ocr_caches or {}))):
             raise ValueError('derived_fields_require_matching_cached_page:'+sid)
         assessment=bound_assessment(root,entries[sid],row,native,page_size,abstract_assessments['extractor_version']) if sid in entries else None
+        ocr=(ocr_caches or {}).get(sid)
+        if corpus_policy is not None:
+            eligible=eligibility(row,native,page_cache)
+            if ocr is not None:
+                if eligible['ocr']!='eligible' or corpus_policy['ocr_mode']=='disabled':
+                    raise ValueError('ineligible_field_policy_received_artifact:ocr')
+                pdf_bytes=source_path(root,row,source_root).read_bytes()
+                if hashlib.sha256(pdf_bytes).hexdigest()!=row['source_sha256']:
+                    raise ValueError('retrieval_ocr_source_changed')
+                ocr=local_ocr_cache(ocr,root=root,row=row,pdf_bytes=pdf_bytes,
+                                    policy=corpus_policy,code=image_code,read_asset=read_asset)
+            decisions=field_decisions(corpus_policy,eligible,assessment,ocr)
         field=extract_fields(sid,native,page_size=page_size,source_sha256=row['source_sha256'],page_sha256=row['page_sha256'],image_sha256=row['image_sha256'],
-                             abstract_assessment=assessment,reviewed_title=(title_reviews or {}).get(sid),ocr_cache=(ocr_caches or {}).get(sid))
+                             abstract_assessment=assessment,reviewed_title=(title_reviews or {}).get(sid),ocr_cache=ocr)
+        if corpus_policy is not None:
+            field['corpus_policy']=decisions
+            field['corpus_eligibility']=eligible
         field['native_sha256']=row['native_sha256']
         field['native_extraction_state']=row.get('native_extraction_state','complete')
         field['native_extraction_error']=row.get('native_extraction_error')
@@ -222,6 +264,8 @@ def build_fields(root: Path, manifest: dict, output: Path, *, title_reviews=None
     for sid,entry in entries.items():
         if digest(child(root,entry['assessment_relative']))!=entry['assessment_sha256']:
             raise ValueError('assessment_changed_before_field_publication:'+sid)
+    if any(digest(path)!=sha for path,sha in asset_hashes.items()) or (image_code is not None and code_identity()!=image_code):
+        raise ValueError('retrieval_ocr_input_or_code_changed_before_publication')
     if method_hashes(REPO)!=bound_code or end_extractor!=current_extractor:
         raise ValueError('field_builder_code_changed_during_run')
     result={'fields':fields,'fields_sha256':digest_value(fields),'field_count':len(fields),
@@ -237,6 +281,11 @@ def build_fields(root: Path, manifest: dict, output: Path, *, title_reviews=None
             'source_verification':'original_first_page_render_and_native_readback',
             'assessment_map_sha256':digest_value(abstract_assessments) if abstract_assessments is not None else None,
             'assessment_method':method,
+            'build_inputs':{'title_reviews':title_reviews,'ocr_caches':ocr_caches,
+                            'abstract_assessments':abstract_assessments,'corpus_policy':corpus_policy},
+            'corpus_policy_receipt':coverage(fields,corpus_policy) if corpus_policy is not None else None,
+            'ocr_producer_code_sha256':image_code,
+            'ocr_producer_asset_sha256':{path.relative_to(root).as_posix():sha for path,sha in asset_hashes.items()},
             'assessment_method_provenance':'caller_declared_and_assessment_path_scoped',
             'abstract_assessment_counts':{state:sum(x['abstract_assessment_state']==state for x in fields)
                                           for state in sorted({x['abstract_assessment_state'] for x in fields})},
@@ -247,18 +296,63 @@ def build_fields(root: Path, manifest: dict, output: Path, *, title_reviews=None
             'cached_page_render_state_counts':{state:sum(x['cached_page_render']['state']==state for x in fields)
                                                for state in sorted({x['cached_page_render']['state'] for x in fields})},
             'runtime_seconds':time.perf_counter()-started,'new_paid_api_calls':0,'production_graph_writes':0}
-    write_once(output,result)
+    if output is not None:
+        write_once(output,result)
     return result
+
+
+def verification_runtime():
+    import importlib.metadata
+    return {'python':sys.version.split()[0], 'executable_sha256':digest(Path(sys.executable)),
+            'base_executable_sha256':digest(Path(getattr(sys,'_base_executable',sys.executable))),
+            'installed_distributions':sorted([d.metadata.get('Name',''),d.version]
+                                             for d in importlib.metadata.distributions())}
+
+
+def verify_fields(root: Path, manifest_path: Path, fields_path: Path, source_root: Path | None):
+    """Rebuild the claimed field receipt; self-hashes are not evidence of derivation."""
+    runtime=verification_runtime()
+    raw_manifest,raw_fields=manifest_path.read_bytes(),fields_path.read_bytes()
+    manifest,recorded=parse_bound_json(raw_manifest),parse_bound_json(raw_fields)
+    inputs=recorded.get('build_inputs')
+    if not isinstance(inputs,dict) or set(inputs)!={'title_reviews','ocr_caches','abstract_assessments','corpus_policy'}:
+        raise ValueError('field_replay_requires_owned_build_inputs')
+    from .retrieval_policy import validate_policy
+    validate_policy(inputs['corpus_policy'])
+    rebuilt=build_fields(root,manifest,None,source_root=source_root,**inputs)
+    def semantic(value):
+        return {k:v for k,v in value.items() if k!='runtime_seconds'}
+    if digest_value(semantic(rebuilt))!=digest_value(semantic(recorded)):
+        raise ValueError('field_replay_derived_receipt_mismatch')
+    if (manifest_path.read_bytes()!=raw_manifest or fields_path.read_bytes()!=raw_fields or
+            verification_runtime()!=runtime):
+        raise ValueError('field_replay_input_or_runtime_changed')
+    return {'status':'VERIFIED','document_count':len(manifest['pdfs']),
+            'artifact_count':4*len(manifest['pdfs']),'manifest_rows_sha256':digest_value(manifest['pdfs']),
+            'fields_file_sha256':hashlib.sha256(raw_fields).hexdigest(),
+            'manifest_file_sha256':hashlib.sha256(raw_manifest).hexdigest(),
+            'semantic_receipt_sha256':digest_value(semantic(rebuilt)),
+            'runtime':runtime,'code_sha256':rebuilt['field_builder_code_sha256']}
 
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--data-root');p.add_argument('--manifest',required=True)
-    p.add_argument('--title-reviews');p.add_argument('--ocr-caches');p.add_argument('--abstract-assessments');p.add_argument('--source-root');p.add_argument('--output',required=True)
+    p.add_argument('--title-reviews');p.add_argument('--ocr-caches');p.add_argument('--abstract-assessments');p.add_argument('--source-root');p.add_argument('--corpus-policy');p.add_argument('--output');p.add_argument('--verify-fields')
     a=p.parse_args();root=data_root(a.data_root)
+    if a.verify_fields:
+        if a.output or a.title_reviews or a.ocr_caches or a.abstract_assessments or a.corpus_policy:
+            p.error('--verify-fields consumes only the recorded build inputs')
+        try:
+            result=verify_fields(root,child(root,a.manifest),child(root,a.verify_fields),Path(a.source_root) if a.source_root else None)
+            print(json.dumps(result));return 0
+        except Exception as exc:
+            print(json.dumps({'status':'BLOCKED','failure_code':'field_replay_failed:'+type(exc).__name__}));return 2
+    if not a.output:p.error('--output is required for a field build')
     build_fields(root,strict_json(child(root,a.manifest)),child(root,a.output),
                  title_reviews=strict_json(child(root,a.title_reviews)) if a.title_reviews else None,
                  ocr_caches=strict_json(child(root,a.ocr_caches)) if a.ocr_caches else None,
                  abstract_assessments=strict_json(child(root,a.abstract_assessments)) if a.abstract_assessments else None,
+                 corpus_policy=strict_json(child(root,a.corpus_policy)) if a.corpus_policy else None,
                  source_root=Path(a.source_root) if a.source_root else None)
     return 0
 

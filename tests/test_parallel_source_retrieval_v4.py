@@ -102,6 +102,23 @@ class RetrievalTests(unittest.TestCase):
         self.assertIn('title-field-miss',new_pool)
         self.assertLessEqual(len(new_pool),150)
 
+    def test_page_ablation_removes_only_page_candidates_not_reranker_text(self):
+        fields=[{'id':'a','title':'needle needle','abstract':'','body':'background '*100},
+                {'id':'b','title':'unrelated','abstract':'','body':'needle needle'}]
+        query=[{'id':'q','query':'needle','target_id':'b'}]
+        pairs=[]
+        def scorer(values):
+            pairs.append(copy.deepcopy(values));return [0.] * len(values)
+        full=evaluate(fields,query,k=1,scorer=scorer)
+        without=evaluate(fields,query,k=1,scorer=scorer,page_channel=False)
+        self.assertEqual(full['candidates']['q']['pool'],['a','b'])
+        self.assertEqual(without['candidates']['q']['pool'],['a'])
+        self.assertEqual(pairs[0][0],pairs[1][0])
+        self.assertEqual(full['fields_sha256'],without['fields_sha256'])
+        self.assertEqual(full['candidates']['q']['field_weighted_bm25_parallel_v4_topk'],
+                         without['candidates']['q']['field_weighted_bm25_parallel_v4_topk'])
+        self.assertEqual(without['candidate_stage_metrics']['bm25_page'],{'status':'NOT_RUN'})
+
     def test_target_label_does_not_change_candidate_pool(self):
         fields=[{'id':'a','title':'transport network','body':'','abstract':''},
                 {'id':'b','title':'algebraic topology','body':'','abstract':''}]

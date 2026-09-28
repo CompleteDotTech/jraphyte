@@ -10,10 +10,21 @@ from src.parallel_source_v4.retrieval import (extract_fields, candidate_pool, re
     evaluate, local_cross_encoder, BM25, normalize_queries)
 from src.parallel_source_v4.metrics import ranking_metrics, score_case, summary, fallback_increment
 from src.parallel_source_v4.common import digest
+from src.parallel_source_v4.specter2_cache import read_hashed_json
 from test_parallel_source_v4 import line, assess, ABSTRACT, PARAMS
 
 
 class RetrievalTests(unittest.TestCase):
+    def test_specter2_input_rejects_ambiguous_json(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'input.json'
+            path.write_text('{"id":"first","id":"second"}',encoding='utf-8')
+            with self.assertRaisesRegex(ValueError,'duplicate_key_in_specter2_input'):
+                read_hashed_json(path)
+            path.write_text('{"score":NaN}',encoding='utf-8')
+            with self.assertRaisesRegex(ValueError,'nonfinite_specter2_input'):
+                read_hashed_json(path)
+
     def test_graphical_heading_not_title_even_when_largest(self):
         lines=[line(0,'Graphical Abstract',50,size=24),
                line(1,'Quantum transport in disordered materials',450,size=15),
@@ -108,6 +119,38 @@ class RetrievalTests(unittest.TestCase):
         self.assertEqual(evaluate(fields,queries,dense_cache=cache)['dense_stage'],'supplied_bound_cache')
         with self.assertRaises(ValueError):evaluate([{**fields[0],'title':'Repaired title'}],queries,dense_cache=cache)
         with self.assertRaises(ValueError):evaluate(fields,[{**queries[0],'query':'new query'}],dense_cache=cache)
+
+    def test_dense_ranking_and_rerank_are_independent_of_target_labels(self):
+        fields=[{'id':'a','title':'Transport networks','body':'','abstract':''},
+                {'id':'b','title':'Algebraic topology','body':'','abstract':''}]
+        query={'id':'q','query':'transport','target_id':'a'}
+        ranking_inputs=[{'id':'q','query':'transport'}]
+        cache={'binding_version':'ranking-inputs-v2','fields_sha256':digest_value(fields),
+               'ranking_inputs_sha256':digest_value(ranking_inputs),'model_revision':'c'*40,
+               'channel':'specter2','rankings':{'q':['b','a']},
+               'ranking_sha256':digest_value({'q':['b','a']}),
+               'document_ids_sha256':digest_value(['a','b']),
+               'query_ids_sha256':digest_value(['q']),
+               'target_ids_used_for_ranking':False,'top_k':2}
+        def scorer(pairs):
+            return [len(text) for _,text in pairs]
+        first=evaluate(fields,[query],dense_cache=cache,scorer=scorer,k=2)
+        second=evaluate(fields,[{**query,'target_id':'b'}],dense_cache=cache,scorer=scorer,k=2)
+        self.assertEqual(first['ranking_inputs_sha256'],second['ranking_inputs_sha256'])
+        self.assertNotEqual(first['evaluation_labels_sha256'],second['evaluation_labels_sha256'])
+        self.assertEqual(first['candidates'],second['candidates'])
+        self.assertEqual(first['ranking_outputs_sha256'],second['ranking_outputs_sha256'])
+        self.assertEqual(first['dense_cache_binding'],'ranking_inputs_only_v2')
+        self.assertEqual(first['candidate_stage_metrics']['specter2']['status'],'MEASURED')
+        self.assertNotEqual(first['details'][0]['target_id'],second['details'][0]['target_id'])
+        with self.assertRaisesRegex(ValueError,'dense_cache_query_or_model_binding_invalid'):
+            evaluate(fields,[{**query,'query':'different'}],dense_cache=cache,scorer=scorer,k=2)
+        with self.assertRaisesRegex(ValueError,'unsupported_dense_cache_binding_version'):
+            evaluate(fields,[query],dense_cache={**cache,'binding_version':'unknown'},scorer=scorer,k=2)
+        with self.assertRaisesRegex(ValueError,'dense_cache_ranking_provenance_invalid'):
+            evaluate(fields,[query],dense_cache={**cache,'rankings':{'q':['a','b']}},scorer=scorer,k=2)
+        with self.assertRaisesRegex(ValueError,'v2_dense_cache_requires_explicit_query_identifiers'):
+            evaluate(fields,{'a':'transport'},dense_cache=cache,scorer=scorer,k=2)
 
     def test_frozen_query_id_text_schema_supported(self):
         result=normalize_queries({'queries':[{'query_id':'q1','text':'transport','target_id':'paper'}]})

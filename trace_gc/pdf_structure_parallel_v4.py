@@ -17,6 +17,7 @@ SECTION_OWNERSHIP_VERSION = "source-section-ownership-v1"
 ABSTRACT_STRUCTURE_VERSION = "source-abstract-sections-v2"
 PREFIX_RETENTION_VERSION = "source-prefix-hold-retention-v1"
 INTERIOR_FOOTNOTE_VERSION = "source-linked-interior-footnote-exclusion-v1"
+EMBEDDED_ROLE_VERSION = "source-embedded-nonabstract-role-hold-v1"
 ABSTRACT = re.compile(r"^\s*a\s*b\s*s\s*t\s*r\s*a\s*c\s*t\b\s*[.:—–-]?\s*", re.I)
 EXCLUDED = {"page_header", "page_footer", "footnote", "caption", "picture", "table", "document_index"}
 BODY_WORDS = r"(?:overview|introduction|background|preliminaries|related\s+work|methods?|materials\s+and\s+methods|results|discussion|conclusions?|references|contents|table\s+of\s+contents)"
@@ -24,6 +25,14 @@ METADATA_WORDS = r"(?:key\s*words?|additional\s+key\s+words\s+and\s+phrases|inde
 METADATA_START = re.compile(r"^\s*(?:"+METADATA_WORDS+r"|(?:[\d,a-z*†‡]+\s+)?(?:department|university|institute|school|faculty|laboratory|college|cent(?:re|er))\b|©|copyright\b|all\s+rights\s+reserved|e-?mail\b|https?://|we\s+(?:thank|congratulate)\b|this\s+(?:work|paper|research)\s+(?:was|is)\s+(?:funded|supported)\b)", re.I)
 COPYRIGHT_FOOTER = re.compile(r"^\s*(?:\\\([^)]*\\\)\s*)?(?:[©ⓒ]\s*)?(?:copyright\s*)?\d{4}\b.{0,120}\ball\s+rights\s+reserved[.\s]*$", re.I)
 NON_ABSTRACT = re.compile(r"^\s*(?:graphical\s+abstract|highlights?|key\s+points|executive\s+summary|(?:Fig(?:ure)?\.?|Table)\s*\d+|author\s+(?:list|notes?|details)|dedication|contents|table\s+of\s+contents)\b", re.I)
+# An affiliation marker is a number, symbol or single letter, not an arbitrary
+# preceding word (for example, the prose sentence "The university ...").
+EMBEDDED_ROLE_START = re.compile(
+    r"^\s*(?:"+METADATA_WORDS+r"\b|(?:department|university|institute|school|faculty|laboratory|college|cent(?:re|er))(?=\s|[:.;,]|$)"
+    r"|(?:affiliations?|corresponding\s+authors?)\s*[:.—–-]"
+    r"|©|copyright\b|all\s+rights\s+reserved|e-?mail\b|https?://|we\s+(?:thank|congratulate)\b"
+    r"|this\s+(?:work|paper|research)\s+(?:was|is)\s+(?:funded|supported)\b)", re.I)
+EMBEDDED_ROLE_MARKER = re.compile(r"^\s*(?:[\d,*†‡]+|[a-z])\s+", re.I)
 NARRATIVE = re.compile(r"\b(?:we|this\s+(?:paper|study|work|article)|propos\w+|investigat\w+|demonstrat\w+|establish\w+|present\w+|introduc\w+|obtain\w+|develop\w+|show\w+|prove\w+)\b", re.I)
 SENTENCE_END = re.compile(r"[.!?][\s\"'’”\])}†‡*\d]*$")
 INTERNAL = {"context", "aim", "aims", "background", "objective", "objectives", "methods", "method", "results", "discussion", "conclusion", "conclusions", "purpose", "findings", "interpretation"}
@@ -110,19 +119,70 @@ def _structured(text: str) -> bool:
     return bool(re.search(r"(?:^|\n)\s*Methods?\s*:", text, re.I) and re.search(r"(?:^|\n)\s*Results\s*:", text, re.I))
 
 
+def _nonabstract_role_label(text: str):
+    match = NON_ABSTRACT.match(text)
+    # A native line wrap before "highlight the ..." or "Figure 1 shows ..."
+    # does not establish a heading/caption. Require the label's own structure.
+    if (match and match.group(0).strip() == "highlight" and
+            not re.match(r"[ \t]*(?::|[.—–-](?=\s|$))", text[match.end():])):
+        return None
+    if match and re.match(r"[ \t]*(?::|[.—–-](?=\s|$)|\r?\n|$)", text[match.end():]):
+        return match
+    return None
+
+
+def _embedded_role(text: str, *, continuation: bool = False):
+    def match_role(value):
+        found = EMBEDDED_ROLE_START.match(value) or _nonabstract_role_label(value)
+        if found and continuation and re.match(r"\s*https?://", found.group(0), re.I):
+            return None
+        return found
+
+    direct = match_role(text)
+    if direct:
+        return direct
+    marker = EMBEDDED_ROLE_MARKER.match(text)
+    if marker:
+        suffix = text[marker.end():]
+        institution = re.match(r"(?:department|university|institute|school|faculty|laboratory|college|cent(?:re|er))\b", suffix, re.I)
+        if (institution and not suffix[0].isupper() and
+                not re.match(r"[ \t]*[:.;,]", suffix[institution.end():])):
+            # A wrapped article, e.g. "a university can ...", is not an
+            # affiliation marker. Keep proper role names or explicit labels.
+            return None
+        return match_role(suffix)
+    return None
+
+
 def _cut(text: str, structured: bool) -> tuple[str, dict | None]:
     """Find semantic boundaries without deleting interior words like 'overview'."""
-    starts = [(0, text)]
-    starts.extend((m.end(), text[m.end():]) for m in re.finditer(r"\n|(?<=[.!?])\s+(?=[A-Z])", text))
-    for pos, suffix in starts:
+    starts = [(0, text, False)]
+    starts.extend((m.end(), text[m.end():], False) for m in re.finditer(r"\n|(?<=[.!?])\s+(?=[A-Z])", text))
+    existing = {pos for pos, _, _ in starts}
+    # Role-only checks also cover lowercase and symbol/marker-led suffixes.
+    # Keep the established semantic heading/cut positions unchanged.
+    role_separator = SENTENCE_END.pattern.removesuffix("$") + r"(?<=\s)(?=\S)"
+    starts.extend((m.end(), text[m.end():], True) for m in re.finditer(role_separator, text)
+                  if m.end() not in existing and
+                  _embedded_role(text[m.end():]))
+    for pos, suffix, role_only in sorted(starts):
         if not suffix.strip():
             continue
         # A section word in a running sentence is not a heading. Require a
         # standalone heading, separator or a numeric structural prefix.
-        meta = re.match(r"\s*("+METADATA_WORDS+r")\b\s*(?:[:.—–-]|\s|$)", suffix, re.I)
-        section = re.match(r"\s*("+NUMBER+BODY_WORDS+r")\s*(?:[:.—–-]\s*|\n|$)", suffix, re.I)
+        meta = None if role_only else re.match(r"\s*("+METADATA_WORDS+r")\b\s*(?:[:.—–-]|\s|$)", suffix, re.I)
+        section = None if role_only else re.match(r"\s*("+NUMBER+BODY_WORDS+r")\s*(?:[:.—–-]\s*|\n|$)", suffix, re.I)
         match = meta or section
         if not match:
+            role = _embedded_role(suffix, continuation=bool(pos and not SENTENCE_END.search(text[:pos])))
+            if role:
+                # Converter region boundaries must not decide whether a known
+                # nonabstract role is included. These broader role prefixes can
+                # also occur in legitimate prose, so retain the complete text
+                # as an uncertain candidate instead of certifying its prefix.
+                return text, {"kind": "unresolved_embedded_nonabstract_role",
+                              "offset": pos, "label": role.group(0).strip(),
+                              "version": EMBEDDED_ROLE_VERSION}
             continue
         name = normalize(match.group(1)).lower().rstrip(": .")
         if structured and section and name in INTERNAL:
@@ -926,6 +986,10 @@ def _collect(start: dict, ordered: list[dict], native: list[dict], explicit: boo
             break
         if semantic:
             boundary = {**semantic, "ref": x["ref"]}
+            if semantic["kind"] == "unresolved_embedded_nonabstract_role":
+                witness = locate(source_text[semantic["offset"]:], native, region_boxes=x["boxes"])
+                boundary.update(source_location=witness["status"], source_spans=witness.get("spans", []),
+                                source_text_scope="retained_candidate_suffix_requires_role_review")
             break
         previous_region = x
         if selected_lines:
@@ -1318,6 +1382,8 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                 result.update(status="uncertain", reasons=["structured_abstract_boundary_requires_review"])
             elif selected["boundary"]["kind"] == "unresolved_section_ownership":
                 result.update(status="uncertain", reasons=["section_ownership_requires_source_review"])
+            elif selected["boundary"]["kind"] == "unresolved_embedded_nonabstract_role":
+                result.update(status="uncertain", reasons=["embedded_nonabstract_role_requires_source_review"])
             elif (selected["boundary"]["kind"] == "embedded_body_section" and explicit and
                   not selected["structured"] and
                   normalize(selected["boundary"].get("label", "")).lower().rstrip(": .") in INTERNAL):

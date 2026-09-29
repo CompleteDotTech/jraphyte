@@ -166,6 +166,7 @@ class SourceGeometry:
                 if lines and lines[0][0][1] < following.rect.height * .2:
                     first_box, first_text = lines[0]
                     preceding_header = None
+                    preceding_bibliography = None
                     # A title-page PDF may repeat its title above a contents
                     # page. Keep that header as evidence; the selector must
                     # match it to the located first-page title before using
@@ -180,6 +181,24 @@ class SourceGeometry:
                                             "text_sha256": hashlib.sha256(first_text.encode()).hexdigest(),
                                             "box": first_box}
                         first_box, first_text = lines[1]
+                    # Some proceedings put the running title and author on
+                    # opposite ends of one header row, then begin the body
+                    # with a numbered Introduction. Retain the exact pair for
+                    # first-page title/author verification by the selector.
+                    elif (len(lines) > 2 and abs(lines[0][0][1] - lines[1][0][1]) < 3
+                          and max(lines[0][0][3], lines[1][0][3]) + 12 < lines[2][0][1]
+                          and lines[2][0][1] < following.rect.height * .2):
+                        left, right = sorted(lines[:2], key=lambda row: row[0][0])
+                        if (left[0][0] < following.rect.width * .4
+                                and right[0][0] > following.rect.width * .55
+                                and 8 <= len(left[1]) <= 180 and 8 <= len(right[1]) <= 180
+                                and re.fullmatch(r"(?:[IVX]+|\d+)[.)]?\s+introduction", lines[2][1], re.I)):
+                            preceding_bibliography = {
+                                "running_title": {"text": left[1], "box": left[0],
+                                                  "text_sha256": hashlib.sha256(left[1].encode()).hexdigest()},
+                                "running_author": {"text": right[1], "box": right[0],
+                                                   "text_sha256": hashlib.sha256(right[1].encode()).hexdigest()}}
+                            first_box, first_text = lines[2]
                     opening = first_text
                     boxes = [first_box]
                     if (re.fullmatch(r"(?:[IVX]+|\d+)[.)]?", first_text, re.I)
@@ -196,6 +215,8 @@ class SourceGeometry:
                                              "boxes": boxes, "page_size": [following.rect.width, following.rect.height]}
                         if preceding_header is not None:
                             next_page_opening["preceding_header"] = preceding_header
+                        if preceding_bibliography is not None:
+                            next_page_opening["preceding_bibliography"] = preceding_bibliography
             # Vector extraction is not a visibility guarantee. Unsupported
             # clipping/group compositing and annotation overlays stay held.
             unsupported_compositing = (any(path.get("type") in {"clip", "group"} for path in drawings)

@@ -177,14 +177,17 @@ class SourceGeometry:
                             or type(seq) is not int or not 0 <= seq < len(paint)
                             or paint[seq][0] != "fill-path"):
                         continue
-                    # A later image, shading, clip or differently colored fill
-                    # can obscure the inset. Text painted over its fill is
-                    # expected and remains independently source located.
+                    # The fill must underlie all text in its footprint. A
+                    # later matching fill is an overpaint, not a new backdrop.
+                    if any(kind in {"fill-text", "stroke-text", "ignore-text"}
+                           and fitz.Rect(bounds).intersects(box)
+                           for kind, bounds in paint[:seq]):
+                        continue
+                    # Any later non-text paint can obscure inset text. A
+                    # same-color redraw is no exception when it follows text.
+                    # Text painted over the fill is independently located.
                     if any(kind not in {"fill-text", "stroke-text", "ignore-text"}
                            and fitz.Rect(bounds).intersects(box)
-                           and not (kind == "fill-path" and any(
-                               other.get("seqno") == index and other.get("fill") == fill
-                               and other.get("rect") == box for other in drawings))
                            for index, (kind, bounds) in enumerate(paint[seq+1:], seq+1)):
                         continue
                     entry = {"box": list(box), "fill": list(fill), "paint_sequence": seq}

@@ -13,6 +13,9 @@ field under the existing legacy boundary/text metric. The source fill, heading
 and body are distinct evidence; field agreement alone never closes the section.
 The synopsis is excluded from the selected abstract. Missing, overpainted or
 ambiguous geometry retains the hold.
+The fill must precede every text paint operation in its footprint, and no
+later non-text paint may intersect it. A repeated same-color fill after text
+is overpaint and cannot establish a visible synopsis.
 
 The [redacted receipt](../review/shaded_synopsis_abstract_closure_v1/receipt.json)
 binds a fresh 200-paper, four-method run to the measured source files and

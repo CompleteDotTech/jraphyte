@@ -1,0 +1,57 @@
+{
+  "schema": "source-shaded-synopsis-experiment-v1",
+  "scope": "200 previously examined first-page papers; four frozen converter methods; verified original PDFs",
+  "source_geometry_policy": "source_fraction_v1",
+  "measured_base_commit": "b8ea25de5f2150476d6c23492b0f11c6317d8c50",
+  "private_evidence": {
+    "preflight": "validation_v3_private/issue17-shaded-f119-full200-20260929-02/preflight.json",
+    "preflight_sha256": "d71ed33419cc22b58c4c613e7fcf669393dc213da65435e9016cd81e92e50dfa",
+    "result": "validation_v3_private/issue17-shaded-f119-full200-20260929-02/results.json",
+    "result_sha256": "016aab004ad78a542c15500cd5221a70007b3147c9513ef025c991d437b900ac",
+    "native_manifest_sha256": "29feb5e6d97464fd84c7ddd75f81ba654a5462de469d7c564e15f8c45f60b119",
+    "prior_result_sha256": "e8ba81c08bc510f1b821783aab5629ae6b91a05ec6dad3f95fbe11f79d350ed3",
+    "source_review_sha256": "2a8c92fd624d1c51390aa66f24c9d35ad2983160924cc3b3dfb3cd808016c8f5",
+    "f119_assessment_sha256": {
+      "parallel_structure_v4": "2be71c8773eccc489ab53f76f37606c3a959d49ed1929e23355d5ec73a0345c3",
+      "parallel_grobid_v4": "d33ef645d35fb7c3c0e0dc10071af4f33f8dc5205a65d0b14be5e77e4fcd0118",
+      "parallel_mineru_v4": "b4942d564df36c3862c00f964745b1f9614bbb6418702a373f3cf312d60bea33",
+      "parallel_olmocr_v4": "d3ac8f2fcb6590deb56c342287083963b002eb4417fde60bbea29aeed5ad8b42"
+    }
+  },
+  "measured_code_sha256": {
+    "trace_gc/pdf_source_parallel_v4.py": "2ece824467dc8242c2806848fc41bd0910170df64c566fffd546ba5107177ace",
+    "trace_gc/pdf_structure_parallel_v4.py": "d42fa5f99f71cb8466bff3013e76afdae027645dab0d495d38007a5f2ed7dcdd"
+  },
+  "runtime_sha256": "f091b827709308eb9f30695b100a798c67355ad1e6e506e393b49e7021026a67",
+  "local_validation": {
+    "unittest_discover": "1227 tests passed, 6 skipped",
+    "package_validation": "PASS",
+    "authored_shaded_region_tests": "3 passed"
+  },
+  "regression": {
+    "status": "FAILED_REGRESSION_PRESERVATION_GATE",
+    "saved_v2_replay": "PASS",
+    "assessments": 800,
+    "assessment_file_hash_readback": "PASS",
+    "changed_case_ids": ["f119"],
+    "changed_assessment_files": 4,
+    "source_and_native_identities_changed": false,
+    "correct_before_after": {
+      "parallel_structure_v4": [91, 92],
+      "parallel_grobid_v4": [80, 81],
+      "parallel_mineru_v4": [72, 73],
+      "parallel_olmocr_v4": [66, 67]
+    },
+    "false_proposals_all_methods": 0,
+    "historical_91_preservation_lost_ids": ["f079", "f081", "f122", "f153"],
+    "new_paid_api_calls": 0,
+    "production_graph_writes": 0,
+    "runtime_seconds": 926.577095399989
+  },
+  "review": {
+    "attribution": "assistant original-PDF visual and source-geometry review; no independent-human claim",
+    "boundary": "A separately filled synopsis inset lies below the native-located bold abstract; a numbered outer heading and body prose follow it.",
+    "admission": "source_review_required"
+  },
+  "limitations": "Four historical successes remain held; scientific notation, visual completeness, unseen-paper precision, automatic promotion and graph admission are not qualified. The optional source geometry route remains disabled by default."
+}

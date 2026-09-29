@@ -152,6 +152,45 @@ class SourceGeometry:
             drawings = page.get_drawings(extended=True)
             paint = page.get_bboxlog()
             trace = page.get_texttrace()
+            # Only an opaque, normally composited page group may contain a
+            # usable filled inset. Its PDF paint order remains inspectable.
+            benign_groups = all(path.get("type") != "group" or (
+                path.get("level") == 0 and path.get("isolated") is True
+                and path.get("knockout") is False
+                and path.get("blendmode") == "Normal"
+                and path.get("opacity") == 1.0
+                and path.get("rect") == page.rect and not path.get("layer"))
+                for path in drawings)
+            shaded_regions = []
+            if benign_groups and page.first_annot is None and page.first_widget is None:
+                for path in drawings:
+                    box, fill = path.get("rect"), path.get("fill")
+                    seq = path.get("seqno")
+                    if (path.get("type") not in {"f", "fs"} or path.get("layer")
+                            or path.get("fill_opacity") != 1.0 or box is None
+                            or fill is None or len(fill) != 3
+                            or not all(.8 <= channel <= 1 for channel in fill)
+                            or min(fill) >= .995 or box.width < page.rect.width * .6
+                            or not 35 <= box.height <= page.rect.height * .3
+                            or not 0 <= box.x0 < box.x1 <= page.rect.width
+                            or not 0 <= box.y0 < box.y1 <= page.rect.height
+                            or type(seq) is not int or not 0 <= seq < len(paint)
+                            or paint[seq][0] != "fill-path"):
+                        continue
+                    # A later image, shading, clip or differently colored fill
+                    # can obscure the inset. Text painted over its fill is
+                    # expected and remains independently source located.
+                    if any(kind not in {"fill-text", "stroke-text", "ignore-text"}
+                           and fitz.Rect(bounds).intersects(box)
+                           and not (kind == "fill-path" and any(
+                               other.get("seqno") == index and other.get("fill") == fill
+                               and other.get("rect") == box for other in drawings))
+                           for index, (kind, bounds) in enumerate(paint[seq+1:], seq+1)):
+                        continue
+                    entry = {"box": list(box), "fill": list(fill), "paint_sequence": seq}
+                    if not any(existing["box"] == entry["box"] and existing["fill"] == entry["fill"]
+                               for existing in shaded_regions):
+                        shaded_regions.append(entry)
             # A clipped vector plot supplies a bounded, PDF-owned figure
             # footprint.  The selector still has to prove caption and text
             # ownership; this evidence alone never closes an abstract.
@@ -293,6 +332,8 @@ class SourceGeometry:
                         "painted_glyphs": _painted_glyphs(page, native, trace, paint) if rules else {}}
             if figure_regions:
                 evidence["vector_figure_regions"] = figure_regions
+            if shaded_regions:
+                evidence["shaded_regions"] = shaded_regions
         instance = object.__new__(cls)
         object.__setattr__(instance, "_evidence", json_bytes(evidence))
         return instance

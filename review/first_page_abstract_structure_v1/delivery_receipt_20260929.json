@@ -1,0 +1,251 @@
+{
+  "version": "issue17-targeted-structure-delivery-v1",
+  "issue": "https://github.com/Jev-Engineering/jraphyte/issues/17",
+  "status": "PASS_TARGETED_STRUCTURE",
+  "measured_delivery_head": "9986c19fdaf7385b00e0b7678de05c114a95273a",
+  "source_structure_version": "source-abstract-sections-v1",
+  "source_structure_code_sha256": "e8193a8bb62d826774ab239cfe7ffa966d3cf42cafa431b3e40c50d358dbb5e4",
+  "scope": "Targeted structural acceptance on previously examined development papers; not full selector promotion or unseen qualification.",
+  "target_cases": [
+    {
+      "id": "f113",
+      "complete": true,
+      "proposed": true,
+      "text98": true,
+      "boundary98": true,
+      "review_dimensions": {
+        "boundary": "pass",
+        "notation": "pass",
+        "reading_order": "pass",
+        "source_location": "pass"
+      },
+      "closure_kind": "reviewed_section_transition",
+      "image_route": true,
+      "native_closure_kind": "metadata_or_nonabstract_region"
+    },
+    {
+      "id": "f186",
+      "complete": true,
+      "proposed": true,
+      "text98": true,
+      "boundary98": true,
+      "review_dimensions": {
+        "boundary": "pass",
+        "notation": "pass",
+        "reading_order": "pass",
+        "source_location": "pass"
+      },
+      "closure_kind": "body_section",
+      "image_route": false,
+      "native_closure_kind": "body_section"
+    },
+    {
+      "id": "f017",
+      "complete": true,
+      "proposed": true,
+      "text98": true,
+      "boundary98": true,
+      "review_dimensions": {
+        "boundary": "pass",
+        "notation": "pass",
+        "reading_order": "pass",
+        "source_location": "pass"
+      },
+      "closure_kind": "metadata_or_nonabstract_region",
+      "image_route": false,
+      "native_closure_kind": "metadata_or_nonabstract_region"
+    },
+    {
+      "id": "f119",
+      "complete": true,
+      "proposed": true,
+      "text98": true,
+      "boundary98": true,
+      "review_dimensions": {
+        "boundary": "pass",
+        "notation": "pass",
+        "reading_order": "pass",
+        "source_location": "pass"
+      },
+      "closure_kind": "reviewed_section_transition",
+      "image_route": false,
+      "native_closure_kind": "source_shaded_synopsis_outer_heading_closure"
+    },
+    {
+      "id": "f080",
+      "complete": true,
+      "proposed": true,
+      "text98": true,
+      "boundary98": true,
+      "review_dimensions": {
+        "boundary": "pass",
+        "notation": "pass",
+        "reading_order": "pass",
+        "source_location": "pass"
+      },
+      "closure_kind": "publication_event_metadata",
+      "image_route": false,
+      "native_closure_kind": "publication_event_metadata"
+    },
+    {
+      "id": "f007",
+      "complete": true,
+      "proposed": true,
+      "text98": true,
+      "boundary98": true,
+      "review_dimensions": {
+        "boundary": "pass",
+        "notation": "pass",
+        "reading_order": "pass",
+        "source_location": "pass"
+      },
+      "closure_kind": "reviewed_title_page_end",
+      "image_route": false,
+      "native_closure_kind": "next_page_opening_after_title_abstract"
+    },
+    {
+      "id": "f085",
+      "complete": true,
+      "proposed": true,
+      "text98": true,
+      "boundary98": true,
+      "review_dimensions": {
+        "boundary": "pass",
+        "notation": "pass",
+        "reading_order": "pass",
+        "source_location": "pass"
+      },
+      "closure_kind": "reviewed_title_page_end",
+      "image_route": false,
+      "native_closure_kind": "next_page_opening_after_title_abstract"
+    },
+    {
+      "id": "f131",
+      "complete": true,
+      "proposed": true,
+      "text98": true,
+      "boundary98": true,
+      "review_dimensions": {
+        "boundary": "pass",
+        "notation": "pass",
+        "reading_order": "pass",
+        "source_location": "pass"
+      },
+      "closure_kind": "reviewed_title_page_end",
+      "image_route": true,
+      "native_closure_kind": "next_page_opening_after_title_abstract"
+    },
+    {
+      "id": "f084",
+      "complete": true,
+      "proposed": true,
+      "text98": true,
+      "boundary98": true,
+      "review_dimensions": {
+        "boundary": "pass",
+        "notation": "pass",
+        "reading_order": "pass",
+        "source_location": "pass"
+      },
+      "closure_kind": "metadata_or_nonabstract_region",
+      "image_route": false,
+      "native_closure_kind": "metadata_or_nonabstract_region"
+    }
+  ],
+  "focused_tests": {
+    "command": "pinned Python 3.12 unittest discover three files",
+    "run": 58,
+    "passed": 58,
+    "failed": 0,
+    "files": [
+      "test_parallel_source_abstract_structure_v4.py",
+      "test_parallel_source_structure_followup_v4.py",
+      "test_parallel_source_embedded_metadata_v4.py"
+    ]
+  },
+  "automatic_four_arm_report": [
+    {
+      "arm": "parallel_structure_v4",
+      "pages": 200,
+      "proposed": 93,
+      "correct98": 93,
+      "false_proposals": 0,
+      "complete_withheld": 18
+    },
+    {
+      "arm": "parallel_grobid_v4",
+      "pages": 200,
+      "proposed": 81,
+      "correct98": 81,
+      "false_proposals": 0,
+      "complete_withheld": 30
+    },
+    {
+      "arm": "parallel_mineru_v4",
+      "pages": 200,
+      "proposed": 74,
+      "correct98": 74,
+      "false_proposals": 0,
+      "complete_withheld": 37
+    },
+    {
+      "arm": "parallel_olmocr_v4",
+      "pages": 200,
+      "proposed": 67,
+      "correct98": 67,
+      "false_proposals": 0,
+      "complete_withheld": 44
+    }
+  ],
+  "selected_reviewed_configuration": {
+    "proposed": 97,
+    "source_fidelity_status": "PASS",
+    "image_routes": 24,
+    "manual_closure_overrides": 0,
+    "full200_status": "FAIL",
+    "legacy_text98_failures": [],
+    "legacy_boundary_gate_failures": [
+      "f081"
+    ],
+    "original_91_legacy_preserved": true
+  },
+  "evidence": {
+    "independent_audit": {
+      "relative": "validation_v3_private/issue17-current-independent-acceptance-audit-20260929-01/AUDIT.json",
+      "sha256": "f5af7cc1617a1dc25de68ee178f00d5fbc166edbc7b1e2b7302e3d676d94082d"
+    },
+    "current_full200": {
+      "relative": "validation_v3_private/issue19-current-all200-final-acceptance-20260929-03/acceptance.json",
+      "sha256": "6581453af3a819b60c358c3fa7bf3f4c253aea1a1d9d31d28dcf818d83bd13ca"
+    },
+    "native_four_arm": {
+      "relative": "validation_v3_private/issue17-keyword-f150-reviewfix-full200-20260929-02/results.json",
+      "sha256": "07411d68c69da18d10f6f7600c7dfc08572a94ea42d9b90858ffb97f7c1baf41"
+    },
+    "historical_public_receipt": {
+      "relative": "review/first_page_abstract_structure_v1/evaluation_receipt.json",
+      "sha256": "f2888c82a1fef4f4bdffc51de77f94edb2c1ab91ab92bb5e786dcf82ca4c1be3"
+    },
+    "reviewed_unicode_overlay": {
+      "relative": "validation_v3_private/issue19-current-legacy-notation-cause-20260929-01/OVERLAY_READBACK.json",
+      "sha256": "0f051cdc0c3e3176eabf069bdb83806a86f1482ae6c112ff240fdc13c91bb327"
+    }
+  },
+  "review": "Attributed internal assistant source review; previously exposed, nonblind; no independent-human qualification.",
+  "dependencies": [
+    {
+      "issue": 15,
+      "state": "CLOSED",
+      "pr": 81,
+      "merge": "9986c19fdaf7385b00e0b7678de05c114a95273a"
+    },
+    {
+      "issue": 16,
+      "state": "CLOSED"
+    }
+  ],
+  "graph_admission_enabled": false,
+  "automatic_fallback_enabled": false,
+  "paid_calls": 0,
+  "production_graph_writes": 0
+}

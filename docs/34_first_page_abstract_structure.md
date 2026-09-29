@@ -95,6 +95,9 @@ attributed fidelity metric and its unresolved review dimensions.
 
 ## Measurement status
 
+The measurements below describe the historical implementation receipt. Current
+targeted delivery is recorded in the final section.
+
 The frozen full replay completed all 800 assessments in 824.808 seconds. Source
 preflight and the historical saved-assessment replay passed. All 200 native
 representations remained byte-identical to the combined prerequisite baseline.
@@ -128,3 +131,39 @@ authored tests. Repository validation ran 664 tests (658 passed, six skipped),
 with no failures; package validation passed. No paid API calls or production
 graph writes occurred. Post-integration promotion and source-review gates remain
 required.
+
+## Targeted delivery, 2026-09-29
+
+The [current structure receipt](../review/first_page_abstract_structure_v1/delivery_receipt_20260929.json)
+records an independent code and evidence audit on delivered main
+`9986c19fdaf7385b00e0b7678de05c114a95273a`. All nine named cases satisfy the
+targeted structural criteria: `f113`, `f186`, `f017`, `f119`, `f080`, `f007`,
+`f085`, `f131` and `f084`. Their selected candidates have complete first-page
+scope, matching legacy text and boundaries, and passing attributed source
+reviews for notation, boundary, reading order and source location.
+
+Seven use native spans; `f113` and `f131` use current reviewed image
+transcriptions. `f113` retains its internal abstract subsections and excludes
+Keywords; `f119` excludes the separate synopsis. The title-page closures of
+`f007`, `f085` and `f131` are now corroborated by the original PDF's next-page
+opening, rather than punctuation or page-bottom spacing. These later results
+supersede the targeted holds in the historical measurement above.
+
+The current automatic four-arm run still accounts for all 200 originals per
+method: primary 93 correct legacy proposals, GROBID 81, MinerU 74 and olmOCR 67,
+with zero automatic false proposals. The selected reviewed configuration has
+97 source-verified proposals, including 24 reviewed image routes. Its separate
+full legacy selector acceptance receipt remains **FAIL**: the remaining legacy
+boundary-gate failure (`f081`) is reported under
+[#19](https://github.com/Jev-Engineering/jraphyte/issues/19). This targeted
+structure receipt does not claim full selector promotion.
+
+The focused structure, follow-up and embedded-metadata suites passed all 58
+tests on the delivered code. They retain negative coverage for later body
+headings, competing candidates, ambiguous scope, classification and other
+metadata, title-page footers and page-two continuation. The receipt binds the
+independent audit, full four-arm experiment, reviewed configuration and prior
+public measurements by hash. Source review is attributed internal assistant
+review of previously examined development papers; no blind or independent-human
+qualification is claimed. Automatic fallback and graph admission remain
+disabled, with no paid calls or production graph writes.

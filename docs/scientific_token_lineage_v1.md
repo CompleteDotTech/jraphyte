@@ -27,6 +27,31 @@ children. Each output-character record identifies one source glyph and its
 exact character offset. Every glyph must be consumed fully, once, and in
 order; only the five explicit Latin ligature code points `ﬀ`, `ﬁ`, `ﬂ`, `ﬃ`,
 and `ﬄ` can expand to multiple output characters. Other normalization is held.
+Two additional, tightly scoped review events are supported. A
+`reviewed_delta_alias` character can emit only Greek capital `Δ` from one raw
+PDF increment glyph `∆` (U+2206), with its exact glyph ID and offset. This is
+a candidate mapping to be checked against the source image and author TeX;
+the event name does not assert that a reviewer has accepted it. No other
+Unicode normalization or case conversion is permitted. The alias record must
+also repeat the exact source glyph box, line ID, line offset and
+`abstract_body` role from the bound source-line inventory.
+
+A `line_join_space` can emit one space between the final glyph of a source
+`abstract_body` line and the first glyph of the next included
+`abstract_body` line. It needs a `line_join` typed node with those exact
+endpoints and a source-line inventory. Each source line records its ID, role,
+ordered complete glyph IDs and enclosing box; each glyph records matching
+line ID, zero-based line offset and role. Lines between the endpoints may
+exist only with explicit excluded roles; intervening numeric source line IDs
+cannot be omitted. The inventory partitions the packet's
+glyphs. The join node and output character both repeat the exact endpoint
+boxes, roles and line offsets. The verifier checks that the synthetic space occurs precisely between
+the endpoint glyph events. It does not infer line ownership from geometry or
+silently skip a line, and it cannot justify a removed wrap hyphen. Callers must
+regenerate and independently review the full source-line inventory from the
+original PDF. When `source_lines` is present, it joins the glyphs and rules in
+the canonical evidence hash; old packets without it retain their v1 hash.
+
 The typed tree is recursively serialized to exact glyph-offset and synthetic
 slash events, so a fraction rule emits one slash precisely between its full
 numerator and denominator, including inside nested fractions. Ligature output

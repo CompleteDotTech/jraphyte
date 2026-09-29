@@ -15,6 +15,8 @@ def digest(value):
 
 def evidence_digest(packet):
     value = {"glyphs": packet["glyphs"], "rules": packet["rules"]}
+    if packet.get("source_lines"):
+        value["source_lines"] = packet["source_lines"]
     raw = json.dumps(value, ensure_ascii=False, sort_keys=True,
                      separators=(",", ":")).encode()
     return digest(raw)
@@ -61,7 +63,137 @@ def verify(packet, *, trusted_evidence=None):
         evidence_sha256=trusted_evidence or evidence_digest(packet))
 
 
+def join_fixture():
+    packet = fixture()
+    packet["tex"] = "Alpha Beta"
+    packet["source"]["tex_sha256"] = digest(packet["tex"].encode())
+    packet["text"] = "A B"
+    packet["rules"] = []
+    packet["glyphs"] = [
+        {"id": 1, "char": "A", "box": [1, 1, 2, 2],
+         "line_id": 20, "line_offset": 0, "role": "abstract_body"},
+        {"id": 2, "char": "B", "box": [1, 3, 2, 4],
+         "line_id": 21, "line_offset": 0, "role": "abstract_body"},
+    ]
+    packet["source_lines"] = [
+        {"id": 20, "role": "abstract_body", "glyph_ids": [1], "box": [1, 1, 2, 2]},
+        {"id": 21, "role": "abstract_body", "glyph_ids": [2], "box": [1, 3, 2, 4]},
+    ]
+    join = {"left_line_id": 20, "right_line_id": 21,
+            "left_glyph_id": 1, "right_glyph_id": 2,
+            "left_box": [1, 1, 2, 2], "right_box": [1, 3, 2, 4],
+            "left_role": "abstract_body", "right_role": "abstract_body",
+            "left_line_offset": 0, "right_line_offset": 0}
+    packet["tokens"] = [{
+        "range": [0, 3], "text": "A B", "tex_anchor": "Alpha Beta",
+        "alternate_scopes": [{"decision": "rejected", "reason": "reviewed source lines"}],
+        "characters": [
+            {"char": "A", "kind": "glyph", "glyph_ids": [1], "glyph_offset": 0},
+            {"char": " ", "kind": "line_join_space", **join},
+            {"char": "B", "kind": "glyph", "glyph_ids": [2], "glyph_offset": 0},
+        ],
+        "tree": {"kind": "line_join", **join, "children": {
+            "left": {"kind": "literal", "glyph_ids": [1]},
+            "right": {"kind": "literal", "glyph_ids": [2]},
+        }},
+    }]
+    return packet
+
+
+def delta_fixture():
+    packet = fixture()
+    packet["tex"] = r"$\Delta$"
+    packet["source"]["tex_sha256"] = digest(packet["tex"].encode())
+    packet["text"] = "Δ"
+    packet["glyphs"] = [{"id": 1, "char": "∆", "box": [1, 1, 2, 2],
+                         "line_id": 20, "line_offset": 0, "role": "abstract_body"}]
+    packet["source_lines"] = [{"id": 20, "role": "abstract_body",
+                               "glyph_ids": [1], "box": [1, 1, 2, 2]}]
+    packet["rules"] = []
+    packet["tokens"] = [{
+        "range": [0, 1], "text": "Δ", "tex_anchor": r"\Delta",
+        "alternate_scopes": [{"decision": "rejected", "reason": "reviewed PDF shape and TeX"}],
+        "characters": [{"char": "Δ", "kind": "reviewed_delta_alias",
+                        "glyph_ids": [1], "glyph_offset": 0, "raw_char": "∆",
+                        "source_box": [1, 1, 2, 2], "source_line_id": 20,
+                        "source_line_offset": 0, "source_role": "abstract_body"}],
+        "tree": {"kind": "literal", "glyph_ids": [1]},
+    }]
+    return packet
+
+
 class ScientificTokenVerifierTest(unittest.TestCase):
+    def test_source_line_join_and_delta_alias_stay_review_required(self):
+        for packet in (join_fixture(), delta_fixture()):
+            with self.subTest(packet=packet["text"]):
+                self.assertEqual(verify(packet).status,
+                                 "MECHANICALLY_VERIFIED_REVIEW_REQUIRED")
+
+    def test_line_join_requires_exact_bound_source_and_output(self):
+        changes = (
+            lambda p: p["source_lines"][1].update(role="excluded_margin"),
+            lambda p: p["glyphs"][1].update(line_offset=1),
+            lambda p: p["tokens"][0]["characters"][1].update(right_glyph_id=1),
+            lambda p: p["tokens"][0]["tree"].update(left_glyph_id=2),
+            lambda p: p["tokens"][0]["characters"][1].update(left_box=[0, 0, 1, 1]),
+            lambda p: p["tokens"][0]["tree"].update(right_role="excluded_margin"),
+            lambda p: p["tokens"][0]["characters"][1].update(char="/"),
+            lambda p: p["tokens"][0]["characters"][1].update(left_line_id=[]),
+            lambda p: p["tokens"][0]["tree"].update(right_line_id={}),
+            lambda p: p["source_lines"][0].update(role=[]),
+        )
+        for change in changes:
+            packet = join_fixture()
+            change(packet)
+            with self.assertRaises(TokenLineageError):
+                verify(packet)
+
+    def test_line_join_rejects_intervening_abstract_line(self):
+        packet = join_fixture()
+        packet["source_lines"].insert(1, {"id": 20 + 1, "role": "abstract_body",
+                                         "glyph_ids": [3], "box": [3, 2, 4, 3]})
+        packet["source_lines"][2]["id"] = 22
+        packet["glyphs"][1]["line_id"] = 22
+        packet["glyphs"].append({"id": 3, "char": "X", "box": [3, 2, 4, 3],
+                                  "line_id": 21, "line_offset": 0, "role": "abstract_body"})
+        join = packet["tokens"][0]["characters"][1]
+        join["right_line_id"] = 22
+        packet["tokens"][0]["tree"]["right_line_id"] = 22
+        with self.assertRaisesRegex(TokenLineageError, "unowned source line"):
+            verify(packet)
+
+    def test_line_join_crosses_explicit_excluded_margin_only(self):
+        packet = join_fixture()
+        packet["source_lines"].insert(1, {"id": 21, "role": "excluded_margin",
+                                         "glyph_ids": [3], "box": [3, 2, 4, 3]})
+        packet["source_lines"][2]["id"] = 22
+        packet["glyphs"][1]["line_id"] = 22
+        packet["glyphs"].append({"id": 3, "char": "X", "box": [3, 2, 4, 3],
+                                  "line_id": 21, "line_offset": 0, "role": "excluded_margin"})
+        packet["tokens"][0]["characters"][1]["right_line_id"] = 22
+        packet["tokens"][0]["tree"]["right_line_id"] = 22
+        self.assertEqual(verify(packet).status, "MECHANICALLY_VERIFIED_REVIEW_REQUIRED")
+        packet["source_lines"].pop(1)
+        packet["glyphs"].pop()
+        with self.assertRaisesRegex(TokenLineageError, "omits intervening"):
+            verify(packet)
+
+    def test_delta_alias_rejects_unreviewed_normalization(self):
+        for change in (
+            lambda p: p["glyphs"][0].update(char="δ"),
+            lambda p: p["tokens"][0]["characters"][0].update(raw_char="Δ"),
+            lambda p: p["tokens"][0]["characters"][0].update(glyph_offset=1),
+            lambda p: p["tokens"][0]["characters"][0].update(source_box=[0, 0, 1, 1]),
+            lambda p: p["tokens"][0]["characters"][0].update(source_role="excluded_margin"),
+            lambda p: p["tokens"][0]["characters"][0].update(kind="glyph"),
+            lambda p: p["glyphs"][0].update(line_id=[]),
+            lambda p: p["source_lines"][0].update(role={}),
+        ):
+            packet = delta_fixture()
+            change(packet)
+            with self.assertRaises(TokenLineageError):
+                verify(packet)
+
     def test_fraction_with_exact_rule_and_output_lineage_stays_review_required(self):
         result = verify(fixture())
         self.assertEqual(result.status, "MECHANICALLY_VERIFIED_REVIEW_REQUIRED")

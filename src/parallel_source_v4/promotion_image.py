@@ -47,13 +47,23 @@ def _attribution(value, evaluated_at):
 
 def apply_image_route(original, selected, entry, *, source_identity, pdf_bytes,
                       load_json, load_asset, fidelity_reference, evaluated_at,
-                      native_failure_policy="disabled", candidate_failures=None):
+                      native_failure_policy="disabled", candidate_failures=None,
+                      native_lines=None, source_geometry=None):
     """Return a reviewed image assessment or an explicit hold; no native offsets."""
     from trace_gc.canonical import digest as canonical_digest, loads, text_digest
     from trace_gc.catalog import Catalog
     from trace_gc.pdf_image_evidence import candidate_hash, handoff, held_reason, verify_artifacts
     from .image_ocr import code_identity
     verify_assessment(original)
+    from trace_gc.pdf_source_parallel_v4 import digest_value, verify_source_geometry_policy
+    if original.get('source_geometry_policy') is not None and native_lines is None:
+        raise ValueError('image_route_enabled_geometry_requires_original_native')
+    if native_lines is not None or original.get('source_geometry_policy') is not None:
+        verify_source_geometry_policy(original.get('source_geometry_policy'), source_geometry,
+            source_sha256=source_identity['source_sha256'],
+            native_sha256=digest_value(native_lines))
+    if selected is not None and selected.get('source_geometry_policy') != original.get('source_geometry_policy'):
+        raise ValueError('image_route_selected_geometry_policy_mismatch')
     if native_failure_policy not in {"disabled", FAILED_NATIVE_POLICY}:
         raise ValueError("unknown_failed_native_image_policy")
     if not isinstance(entry, dict) or set(entry) != ROUTE_FIELDS:

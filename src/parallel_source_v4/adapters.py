@@ -67,7 +67,8 @@ def olmocr_assess(raw: dict, **kwargs) -> dict:
     items, unlocated, alignments = [], [], []
     for index, paragraph in enumerate(parts):
         value = plain(paragraph)
-        alignment = locate(value, kwargs.get("native_lines") or [])
+        alignment = locate(value, kwargs.get("native_lines") or [],
+                           source_geometry=kwargs.get("source_geometry"))
         located = alignment["status"] == "located"
         boxes = [s["bbox"] for s in alignment["spans"]] if located else []
         if not located:

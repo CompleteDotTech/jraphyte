@@ -1,0 +1,47 @@
+{
+  "schema": "source-geometry-consumers-experiment-v1",
+  "scope": "200 previously examined first-page papers, four cached converter methods",
+  "implementation": "opt-in source_fraction_v1; default disabled; no automatic admission or production graph writes",
+  "source_context": "verified original PDF, physical page one, exact original-derived native lines",
+  "private_evidence": {
+    "preflight_sha256": "473b12f74c48cbb20fbd9197c926bd79c5d1e204d2ee66c7e6e84c27e048b858",
+    "results_sha256": "93a1674991aa0dd6a530d84c87e9def4b2451355c7d3f8f8bbfcecdb680b3c6f",
+    "native_manifest_sha256": "05eb2212653838a3c593e6823cc36ca0892e77233db9ae894cd9ee28002c96e3",
+    "native_copy_diff_sha256": "c15952db29596fc2d96b9b8cae376b2ac0d3bcb7315bc33366d56e79b9ae3f35",
+    "previous_default_results_sha256": "997eac6d465c7eed0a44c6519d85a8859dfea89347d13626dbff9a978b4688e2"
+  },
+  "preflight": {
+    "status": "PASS",
+    "verified_sources": 200,
+    "changed_native_ids": ["f012", "f195"],
+    "native_difference": "Only span font names differ between original PDFs and cached single-page copies: 37 spans in f012, 20 in f195. Text, coordinates and page sizes agree. Changed native digests are distinct inputs."
+  },
+  "result": {
+    "status": "FAILED_REGRESSION_PRESERVATION_GATE",
+    "saved_v2_replay": "PASS",
+    "frozen_v2_correct": 91,
+    "previous_default": {
+      "primary_correct": 77,
+      "grobid_correct": 71,
+      "mineru_correct": 68,
+      "olmocr_correct": 65
+    },
+    "geometry_enabled": {
+      "primary_correct": 79,
+      "grobid_correct": 73,
+      "mineru_correct": 67,
+      "olmocr_correct": 64,
+      "false_proposals": 0,
+      "automatic_admissions": 0,
+      "new_paid_api_calls": 0,
+      "production_graph_writes": 0
+    },
+    "primary_gained_proposals": ["f098", "f111", "f142"],
+    "primary_lost_proposals": ["f188"],
+    "mineru_gained_proposals": ["f142"],
+    "mineru_lost_proposals": ["f149", "f188"],
+    "olmocr_lost_proposals": ["f149"],
+    "remaining_primary_historical_losses": ["f007", "f012", "f026", "f032", "f045", "f059", "f079", "f081", "f085", "f096", "f122", "f131", "f153", "f158", "f171", "f188"]
+  },
+  "interpretation": "The opt-in geometry context recovers three proposed legacy-text98 cases in the primary method but fails the 91-paper preservation gate. f149 is newly held by an interior-footnote marker check; f188 is held by the unowned-source-prose check. f059 remains held for section ownership and scientific-notation review. These holds require source-grounded follow-up before enabling the policy or closing issues 15 and 16. The frozen results are an offline diagnostic, not independent or unseen-paper qualification."
+}

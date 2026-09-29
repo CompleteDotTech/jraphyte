@@ -209,6 +209,26 @@ class SourceGeometry:
         return json.loads(self._evidence)
 
 
+def verify_source_geometry_policy(policy: dict | None, context: SourceGeometry | None,
+                                  *, source_sha256: str, native_sha256: str) -> None:
+    """Require exact source/native/version replay for an enabled assessment."""
+    if policy is None:
+        if context is not None:
+            raise ValueError("source_geometry_context_not_declared_by_assessment")
+        return
+    if type(context) is not SourceGeometry or not isinstance(policy, dict):
+        raise ValueError("source_geometry_verified_context_required")
+    descriptor = context.descriptor()
+    if (policy.get("enabled") is not True or policy.get("version") != descriptor.get("version") or
+            policy.get("source_sha256") != source_sha256 or
+            policy.get("native_sha256") != native_sha256 or
+            policy.get("descriptor_sha256") != digest_value(descriptor) or
+            descriptor.get("source_sha256") != source_sha256 or
+            descriptor.get("native_sha256") != native_sha256 or
+            descriptor.get("physical_page") != 1):
+        raise ValueError("source_geometry_assessment_identity_mismatch")
+
+
 def _painted_glyphs(page, native: list[dict], trace: list[dict], paint: list) -> dict:
     """Exact RAWDICT-to-trace visibility witnesses; uncertain mappings omitted.
 

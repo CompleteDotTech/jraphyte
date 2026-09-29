@@ -13,7 +13,7 @@ import re
 import time
 import sys
 
-from trace_gc.pdf_source_parallel_v4 import digest_value, source_lines, validate_lines
+from trace_gc.pdf_source_parallel_v4 import SourceGeometry, digest_value, source_lines, validate_lines
 from trace_gc.pdf_structure_parallel_v4 import assess_document, seal
 from .adapters import document, item, grobid_assess, mineru_document, olmocr_assess
 from .common import REPO, child, data_root, digest, method_hashes, read, read_hashed_json, verify_files, write_once, within
@@ -23,6 +23,7 @@ from .runtime import (DEFAULT_RUNTIME_LOCK, InputGateError, configure_baseline,
                       runtime_receipt, verify_native_manifest)
 
 METHODS = ('parallel_structure_v4', 'parallel_grobid_v4', 'parallel_mineru_v4', 'parallel_olmocr_v4')
+GEOMETRY_POLICIES = ('disabled', 'source_fraction_v1')
 # Evaluation holds, not selector exceptions. Preserved from the frozen receipt.
 MATH_HOLDS = ['f026','f033','f103','f111','f122','f125','f131','f142','f146','f153','f154','f158','f166','f189']
 
@@ -104,7 +105,8 @@ def validate_cached_input(name: str, value, *, case_id=None, page_size=None) -> 
 
 def preflight(root: Path, source_map: dict | None = None, *, repo: Path = REPO,
               methods=METHODS, replay_saved=True, runtime_lock=DEFAULT_RUNTIME_LOCK,
-              native_mode='fresh', native_manifest=None, native_manifest_sha256=None) -> dict:
+              native_mode='fresh', native_manifest=None, native_manifest_sha256=None,
+              geometry_policy='disabled') -> dict:
     base=root/'validation_expanded200'
     if not (base/'manifest.json').is_file():
         return blocked('authorized_private_regression_data_unavailable', required_relative='validation_expanded200/manifest.json')
@@ -113,6 +115,11 @@ def preflight(root: Path, source_map: dict | None = None, *, repo: Path = REPO,
         code_hashes = method_hashes(repo)
         if native_mode not in {'fresh', 'replay'}:
             raise InputGateError('invalid_native_mode')
+        if geometry_policy not in GEOMETRY_POLICIES:
+            raise InputGateError('unsupported_source_geometry_policy')
+        if geometry_policy != 'disabled' and native_mode == 'replay':
+            raise InputGateError('source_geometry_requires_fresh_original_native',
+                                 action='extract_first_page_native_from_verified_original_pdf')
         if not methods or len(set(methods)) != len(methods) or set(methods)-set(METHODS):
             raise InputGateError('invalid_or_duplicate_methods')
         baseline = configure_baseline(root) if replay_saved else None
@@ -205,23 +212,28 @@ def preflight(root: Path, source_map: dict | None = None, *, repo: Path = REPO,
                 input_hashes[native_path.relative_to(root).as_posix()]=native_file_sha
             else:
                 import fitz
-                page_bytes=(page/'page.pdf').read_bytes()
-                if hashlib.sha256(page_bytes).hexdigest()!=hashes['page']:
-                    raise InputGateError('page_changed_after_verification',case_id=sid)
-                with fitz.open(stream=page_bytes,filetype='pdf') as pdf:
-                    if len(pdf)!=1:
-                        raise InputGateError('expected_single_first_page_extract',case_id=sid)
+                native_source=source if geometry_policy != 'disabled' else page/'page.pdf'
+                native_bytes=native_source.read_bytes()
+                expected_sha=hashes['source'] if geometry_policy != 'disabled' else hashes['page']
+                if hashlib.sha256(native_bytes).hexdigest()!=expected_sha:
+                    raise InputGateError('native_source_changed_after_verification',case_id=sid)
+                with fitz.open(stream=native_bytes,filetype='pdf') as pdf:
+                    if not len(pdf) or (geometry_policy == 'disabled' and len(pdf)!=1):
+                        raise InputGateError('expected_first_physical_page_extract',case_id=sid)
                     native=source_lines(pdf[0])
                     if [pdf[0].rect.width,pdf[0].rect.height]!=receipt['page_size']:
-                        raise InputGateError('cached_page_size_changed',case_id=sid)
+                        raise InputGateError('source_page_size_mismatch',case_id=sid)
             native_sha=digest_value(native)
             if native_mode=='replay' and native_sha!=references[sid]['native_sha256']:
                 raise InputGateError('native_representation_changed_after_verification',case_id=sid)
             native_identity={**identity,'page_size':receipt['page_size'],'native_sha256':native_sha,
                              'mode':native_mode,'reference_native_sha256':references.get(sid,{}).get('native_sha256'),
                              'changed_from_reference':native_sha!=references[sid]['native_sha256'] if references else None}
+            if geometry_policy != 'disabled':
+                native_identity['extraction_pdf']='verified_original_source' if native_mode=='fresh' else 'frozen_native_replay'
             native_receipts.append(native_identity)
-            cases.append({**identity,'page_path':page/'page.pdf','page_size':receipt['page_size'],
+            cases.append({**identity,'page_path':page/'page.pdf','source_path':source,
+                          'page_size':receipt['page_size'],
                           'paths':paths,'native_lines':native,'native_identity':native_identity,
                           'input_hashes':{name:input_hashes[path.relative_to(root).as_posix()] for name,path in all_inputs.items()}})
             if baseline:
@@ -236,7 +248,7 @@ def preflight(root: Path, source_map: dict | None = None, *, repo: Path = REPO,
             raise InputGateError('experiment_code_changed_during_preflight',action='restart_with_stable_checkout')
         if runtime_receipt(runtime_lock)!=runtime:
             raise InputGateError('experiment_runtime_changed_during_preflight',action='restart_with_locked_runtime')
-        return {'status':'PASS','verified_sources':verified, 'source_hash_verification':'original_source_page_and_image_bytes',
+        gate={'status':'PASS','verified_sources':verified, 'source_hash_verification':'original_source_page_and_image_bytes',
                 'rows':rows,'labels':labels,'cases':cases,'baseline_predictions':baseline_predictions,
                 'runtime':runtime,'method_hashes':code_hashes,'input_file_hashes':input_hashes,
                 'repository_input_hashes':repository_inputs,
@@ -248,6 +260,9 @@ def preflight(root: Path, source_map: dict | None = None, *, repo: Path = REPO,
                 'native_comparison':{'status':'COMPARED' if native_reference else 'NO_REFERENCE_SUPPLIED',
                     'changed_ids':[r['id'] for r in native_receipts if r['changed_from_reference']]},
                 'frozen_protocol_sha256':protocol_sha}
+        if geometry_policy != 'disabled':
+            gate['source_geometry_policy']=geometry_policy
+        return gate
     except InputGateError as exc:
         return blocked(exc.code,**exc.details)
     except (OSError,KeyError,TypeError,ValueError,AttributeError) as exc:
@@ -318,8 +333,10 @@ def predict(method: str, paths: dict, kwargs: dict, *, expected_input_hashes=Non
 
 
 def run_cases(cases: list[dict], labels: dict, output: Path, cohort: str, methods=METHODS,
-              *, input_receipt=None, root=None) -> dict:
+              *, input_receipt=None, root=None, geometry_policy='disabled') -> dict:
     import fitz
+    if geometry_policy not in GEOMETRY_POLICIES:
+        raise InputGateError('unsupported_source_geometry_policy')
     started=time.perf_counter(); by_method={m:[] for m in methods}; native_records=[]; assessment_files={}
     for case in cases:
         sid=case['id']; page=case['page_path']
@@ -330,6 +347,19 @@ def run_cases(cases: list[dict], labels: dict, output: Path, cohort: str, method
             with fitz.open(page) as pdf:
                 native=source_lines(pdf[0]); size=[pdf[0].rect.width,pdf[0].rect.height]
         kwargs={'page_size':size,'source_sha256':case['source_sha256'],'page_sha256':case['page_sha256'],'native_lines':native}
+        if geometry_policy == 'source_fraction_v1':
+            source_path=case.get('source_path')
+            if source_path is None:
+                raise InputGateError('source_geometry_original_pdf_required',case_id=sid)
+            payload=source_path.read_bytes()
+            if hashlib.sha256(payload).hexdigest()!=case['source_sha256']:
+                raise InputGateError('source_geometry_original_pdf_changed',case_id=sid)
+            try:
+                kwargs['source_geometry']=SourceGeometry.from_pdf(
+                    payload,native,expected_source_sha256=case['source_sha256'])
+            except (ValueError,TypeError,KeyError) as exc:
+                raise InputGateError('source_geometry_original_native_mismatch',case_id=sid,
+                                     error_class=type(exc).__name__) from exc
         native_path=output/'native'/f'{sid}.json'
         file_sha=write_once(native_path,native)
         if root is not None:
@@ -346,6 +376,8 @@ def run_cases(cases: list[dict], labels: dict, output: Path, cohort: str, method
             'runtime_seconds':time.perf_counter()-started,'environment':{'python':sys.version.split()[0],'pymupdf':fitz.VersionBind},'new_paid_api_calls':0,'measured_api_spend_usd':0,
             'production_graph_writes':0,'independent_human_validation':'outstanding','automatic_fallback_enabled':False,
             'assessment_files_sha256':assessment_files}
+    if geometry_policy != 'disabled':
+        result['source_geometry_policy']=geometry_policy
     if 'parallel_structure_v4' in by_method:
         result['fallback_increment']={m:fallback_increment(by_method['parallel_structure_v4'],by_method[m]) for m in ('parallel_mineru_v4','parallel_olmocr_v4') if m in by_method}
     if input_receipt is not None:
@@ -353,6 +385,8 @@ def run_cases(cases: list[dict], labels: dict, output: Path, cohort: str, method
         result['experiment_sha256']=digest_value(identity)
         result['execution_identity']={k:identity[k] for k in ('runtime','method_hashes','native_mode',
             'native_manifest_sha256','extractor_identity','native_comparison')}
+        if 'source_geometry_policy' in identity:
+            result['execution_identity']['source_geometry_policy']=identity['source_geometry_policy']
         result['native_manifest_sha256']=write_once(output/'native_manifest.json',{
             'schema_version':1,'mode':identity['native_mode'],'cases':native_records,
             'extractor_identity':identity['extractor_identity'],'experiment_sha256':result['experiment_sha256']})
@@ -360,20 +394,27 @@ def run_cases(cases: list[dict], labels: dict, output: Path, cohort: str, method
 
 
 def regression(root: Path, output: Path, source_map=None, methods=METHODS, *, replay_saved=True,
-               runtime_lock=DEFAULT_RUNTIME_LOCK,native_mode='fresh',native_manifest=None,native_manifest_sha256=None) -> dict:
+               runtime_lock=DEFAULT_RUNTIME_LOCK,native_mode='fresh',native_manifest=None,native_manifest_sha256=None,
+               geometry_policy='disabled') -> dict:
     output=within(root,output)
     if output==root or output.relative_to(root).parts[0] in {'validation_expanded200','validation_v2','validation_200_10k','sample_comparison_100'}:
         raise ValueError('parallel_v4_outputs_must_not_enter_frozen_cache_directories')
     gate=preflight(root,source_map,methods=methods,replay_saved=replay_saved,runtime_lock=runtime_lock,
-                   native_mode=native_mode,native_manifest=native_manifest,native_manifest_sha256=native_manifest_sha256)
+                   native_mode=native_mode,native_manifest=native_manifest,
+                   native_manifest_sha256=native_manifest_sha256,geometry_policy=geometry_policy)
     write_once(output/'preflight.json',public_preflight(gate))
     if gate['status']!='PASS':return gate
-    write_once(output/'protocol.json',{'cohort':'regression200_already_examined','method_hashes':method_hashes(),
-                                      'frozen_at':dt.datetime.now(dt.timezone.utc).isoformat(),'promotion':'source_review_required'})
+    protocol={'cohort':'regression200_already_examined','method_hashes':method_hashes(),
+              'frozen_at':dt.datetime.now(dt.timezone.utc).isoformat(),
+              'promotion':'source_review_required'}
+    if geometry_policy != 'disabled':
+        protocol['source_geometry_policy']=geometry_policy
+    write_once(output/'protocol.json',protocol)
     cases=gate['cases']
     try:
         verify_preflight_inputs(root,gate,runtime_lock)
-        result=run_cases(cases,gate['labels'],output,'regression200',methods,input_receipt=gate,root=root)
+        result=run_cases(cases,gate['labels'],output,'regression200',methods,input_receipt=gate,root=root,
+                         geometry_policy=geometry_policy)
     except InputGateError as exc:
         result=blocked(exc.code,**exc.details)
         write_once(output/'results.json',result)
@@ -418,15 +459,20 @@ def regression(root: Path, output: Path, source_map=None, methods=METHODS, *, re
     return result
 
 
-def frozen_cohort(root: Path, freeze: dict, output: Path, methods=METHODS, *, runtime_lock=DEFAULT_RUNTIME_LOCK) -> dict:
+def frozen_cohort(root: Path, freeze: dict, output: Path, methods=METHODS, *,
+                  runtime_lock=DEFAULT_RUNTIME_LOCK, geometry_policy='disabled') -> dict:
     output=within(root,output)
     try:
         runtime=runtime_receipt(runtime_lock)
+        if geometry_policy not in GEOMETRY_POLICIES:
+            raise InputGateError('unsupported_source_geometry_policy')
         if not methods or len(set(methods))!=len(methods) or set(methods)-set(METHODS):
             raise InputGateError('invalid_or_duplicate_methods')
         verify_freeze(root,freeze)
         gate={'status':'PASS','runtime':runtime,'method_hashes':method_hashes(),
               'input_file_hashes':{},'freeze_sha256':freeze['freeze_sha256']}
+        if geometry_policy != 'disabled':
+            gate['source_geometry_policy']=geometry_policy
         cases=[];native_inputs={}
         import fitz
         for row in freeze['manifest']['pdfs']:
@@ -463,12 +509,14 @@ def frozen_cohort(root: Path, freeze: dict, output: Path, methods=METHODS, *, ru
                 gate['input_file_hashes'][paths[name].relative_to(root).as_posix()]=sha
             native_inputs[sid]=native_sha
             cases.append({'id':sid,'page_path':page_path,
+                          'source_path':child(root,row['source_relative']),
                           'source_sha256':row['source_sha256'],'page_sha256':row['page_sha256'],'paths':paths,
                           'native_lines':native,'page_size':size,'input_hashes':input_hashes})
         verify_preflight_inputs(root,gate,runtime_lock)
         verify_freeze(root,freeze)
         write_once(output/'preflight.json',gate)
-        result=run_cases(cases,freeze['labels'],output,freeze['cohort_kind'],methods)
+        result=run_cases(cases,freeze['labels'],output,freeze['cohort_kind'],methods,
+                         geometry_policy=geometry_policy)
         verify_preflight_inputs(root,gate,runtime_lock)
         verify_freeze(root,freeze)
         result.update(freeze_sha256=freeze['freeze_sha256'],runtime=runtime,
@@ -492,6 +540,7 @@ def main() -> int:
     parser.add_argument('--freeze')
     parser.add_argument('--runtime-lock',type=Path,default=DEFAULT_RUNTIME_LOCK)
     parser.add_argument('--native-mode',choices=['fresh','replay'],default='fresh')
+    parser.add_argument('--source-geometry-policy',choices=GEOMETRY_POLICIES,default='disabled')
     parser.add_argument('--native-manifest',help='Pinned saved-native manifest relative to data root')
     parser.add_argument('--native-manifest-sha256',help='Externally recorded manifest SHA-256')
     parser.add_argument('--output',required=True,help='New run path relative to the authorized test-data root')
@@ -502,7 +551,8 @@ def main() -> int:
         mapping=read(child(root,args.source_map)) if args.source_map else None
         identity={'runtime_lock':args.runtime_lock,'native_mode':args.native_mode,
                   'native_manifest':child(root,args.native_manifest) if args.native_manifest else None,
-                  'native_manifest_sha256':args.native_manifest_sha256}
+                  'native_manifest_sha256':args.native_manifest_sha256,
+                  'geometry_policy':args.source_geometry_policy}
         if args.stage=='preflight':
             result=preflight(root,mapping,methods=tuple(args.methods),**identity)
             write_once(output/'preflight.json',public_preflight(result))
@@ -511,7 +561,8 @@ def main() -> int:
             if not args.freeze:parser.error('cohort requires --freeze')
             if args.native_mode!='fresh' or args.native_manifest or args.native_manifest_sha256:
                 parser.error('cohort uses its source-reviewed freeze; native replay options apply to regression')
-            result=frozen_cohort(root,read(child(root,args.freeze)),output,tuple(args.methods),runtime_lock=args.runtime_lock)
+            result=frozen_cohort(root,read(child(root,args.freeze)),output,tuple(args.methods),
+                                 runtime_lock=args.runtime_lock,geometry_policy=args.source_geometry_policy)
     except InputGateError as exc:
         result=blocked(exc.code,**exc.details)
     except (OSError,ValueError,KeyError,TypeError,AttributeError) as exc:

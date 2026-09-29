@@ -16,7 +16,7 @@ from typing import Callable, Sequence
 from trace_gc.pdf_source_parallel_v4 import (SourceGeometry, canonical, digest_value, locate, normalize,
     style, validate_lines, validate_source_spans, verify_source_geometry_policy)
 from trace_gc.pdf_structure_parallel_v4 import (METADATA_START, VERSION as ASSESSMENT_VERSION,
-    _author_like, _compose_section_spans, verify_assessment, verify_interior_footnote_exclusion)
+    _author_like, _compose_section_spans, _header, verify_assessment, verify_interior_footnote_exclusion)
 from .adapters import conversion_state
 from .common import child, data_root, digest, read, write_once
 from .metrics import ranking_metrics
@@ -184,17 +184,31 @@ def _verify_source_owned_paragraph_groups(assessment: dict, native: list[dict],
             [group.get("bbox") for group in groups]):
         raise ValueError("abstract_paragraph_groups_not_source_owned")
     boundary = assessment.get("closing_boundary")
-    if (not isinstance(boundary, dict) or boundary.get("kind") != "metadata_or_nonabstract_region" or
-            boundary.get("ref") in refs or not boundary.get("source_spans")):
+    if (not isinstance(boundary, dict) or
+            boundary.get("kind") not in {"metadata_or_nonabstract_region", "body_section"} or
+            boundary.get("ref") in refs or not boundary.get("source_spans") or
+            boundary.get("source_location") != "located"):
         raise ValueError("abstract_paragraph_group_closure_missing")
     try:
         validate_source_spans(boundary["source_spans"], native)
     except (KeyError, TypeError, ValueError) as exc:
         raise ValueError("abstract_paragraph_group_closure_mismatch") from exc
     last = composed["paragraph_groups"][-1]["bbox"]
-    first_boundary_y = min(span["bbox"][1] for span in boundary["source_spans"])
+    closure_spans = boundary["source_spans"]
+    first_boundary_y = min(span["bbox"][1] for span in closure_spans)
     if first_boundary_y < last[3] - 2:
         raise ValueError("abstract_paragraph_group_closure_before_abstract")
+    if boundary["kind"] == "body_section":
+        label = boundary.get("label", "")
+        box = [min(span["bbox"][0] for span in closure_spans), first_boundary_y,
+               max(span["bbox"][2] for span in closure_spans),
+               max(span["bbox"][3] for span in closure_spans)]
+        width = min(box[2] - box[0], last[2] - last[0])
+        horizontal_overlap = max(0, min(box[2], last[2]) - max(box[0], last[0]))
+        if (not _header(label) or
+                normalize(" ".join(span["text"] for span in closure_spans)) != normalize(label) or
+                width <= 0 or horizontal_overlap < .8 * width):
+            raise ValueError("abstract_paragraph_group_body_closure_not_source_owned")
 
 
 def extract_fields(case_id: str, native: list[dict], *, page_size: list,

@@ -159,3 +159,7 @@ class ApplicationTests(unittest.TestCase):
         with self.assertRaises(ContractError):
             require_complete_native_anchor(native, 0, len("Complete source sentence. Next"),
                                            "Complete source sentence. Next")
+        mid_start = native.index("sentence.")
+        with self.assertRaises(ContractError):
+            require_complete_native_anchor(native, mid_start, len("Complete source sentence."),
+                                           "sentence.")

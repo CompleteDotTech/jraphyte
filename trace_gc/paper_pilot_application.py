@@ -16,11 +16,13 @@ from .trust import IssuerPolicy, Signer, TrustStore
 
 
 def require_complete_native_anchor(native: str, start: int, end: int, quote: str) -> None:
+    line_prefix = native[native.rfind("\n", 0, start) + 1:start] if 0 <= start <= len(native) else ""
     require(0 <= start < end <= len(native) and native[start:end] == quote and
             (start == 0 or not native[start - 1].isalnum()) and
             (end == len(native) or not native[end].isalnum()) and
+            (not line_prefix.strip() or line_prefix.rstrip().endswith((".", "!", "?"))) and
             quote.rstrip().endswith((".", "!", "?")),
-            "APPLICATION_BOUNDARY", "native anchor must cover complete source sentence")
+            "APPLICATION_BOUNDARY", "native anchor fails mechanical sentence-edge checks")
 
 
 class LocalPaperPilotApplication:

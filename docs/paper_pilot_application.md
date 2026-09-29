@@ -55,7 +55,11 @@ page pixels. It does not mislabel image text as native offsets. The protocol's
 edition-label comparison must cite both the cover and inner page.
 The earlier v2 protocol is preserved as rejected before activation: several
 native anchors ended mid-word or mid-sentence. The application requires v3
-and checks complete-sentence native boundaries against the exact page text.
+and applies mechanical source-span checks: exact quote, word edges, terminal
+punctuation and no nonterminal text earlier on the same line. A line break can
+occur within a sentence, so these checks do not establish true sentence or
+abstract boundaries. An attributed reviewer must inspect the original page
+and decide `boundaries` before signing a source review.
 PyMuPDF and Pillow are optional dependencies for the package; this real-page
 stage requires PyMuPDF at runtime, and its authored image tests skip when the
 optional image stack is absent.

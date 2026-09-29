@@ -155,15 +155,28 @@ class FrontmatterCandidateTests(unittest.TestCase):
         native = self.frontmatter('This work was funded by the Example Foundation. '+ABSTRACT)
         self.assertFalse(assess(native, doc(native, labels={0:'title',4:'section_header'}))['proposal'])
 
-    def test_many_author_names_support_a_held_frontmatter_candidate(self):
+    def test_many_author_names_and_source_introduction_bound_frontmatter(self):
         native = self.frontmatter()
         authors = 'Alice Smith, Bob Jones, Chris Brown, David Green, Emma White and Frank Black'
         native[1] = line(1, authors, 65, x=120, right=490, size=11)
         result = assess(native, doc(native, labels={0:'title',4:'section_header'}))
         self.assertTrue(compare(result['text'], ABSTRACT)['boundary_and_98_match'], result)
-        self.assertIn('unlabelled_frontmatter_ownership_requires_source_review', result['reasons'])
+        self.assertTrue(result['proposal'], result)
+        self.assertEqual(result['section_owner'], 'abstract')
+        self.assertEqual(result['closing_boundary']['kind'], 'source_frontmatter_intro_closure')
+        validate_source_spans(result['closing_boundary']['source_spans'], native)
+
+    def test_metadata_after_frontmatter_does_not_certify_abstract(self):
+        native = self.frontmatter()
+        native[4] = line(4, 'Correspondence: editor@example.org', 160, size=9)
+        result = assess(native, doc(native, labels={0:'title'}))
         self.assertFalse(result['proposal'])
-        self.assertIsNone(result['section_owner'])
+
+    def test_introduction_above_frontmatter_does_not_certify_abstract(self):
+        native = self.frontmatter()
+        native[4] = line(4, '1 Introduction', 110, size=12, bold=True)
+        result = assess(native, doc(native, labels={0:'title',4:'section_header'}))
+        self.assertFalse(result['proposal'])
 
     def test_plain_body_without_frontmatter_ownership_is_not_promoted(self):
         native = [line(0, ABSTRACT, 100, x=90, right=530, size=9),

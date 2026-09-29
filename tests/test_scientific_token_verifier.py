@@ -185,6 +185,57 @@ class ScientificTokenVerifierTest(unittest.TestCase):
         with self.assertRaises(TokenLineageError):
             verify(packet)
 
+    def test_fraction_rule_cannot_emit_two_slashes(self):
+        packet = fixture()
+        packet["text"] = "1//2"
+        token = packet["tokens"][0]
+        token["range"] = [0, 4]
+        token["text"] = "1//2"
+        token["characters"].insert(2, {"char": "/", "kind": "fraction_slash",
+                                          "rule_id": 4})
+        with self.assertRaisesRegex(TokenLineageError, "exactly one output slash"):
+            verify(packet)
+
+    def test_ligature_cannot_straddle_synthetic_slash(self):
+        packet = fixture()
+        packet["glyphs"][0]["char"] = "\ufb01"
+        packet["text"] = "f/i2"
+        token = packet["tokens"][0]
+        token["range"] = [0, 4]
+        token["text"] = "f/i2"
+        token["characters"][0]["char"] = "f"
+        token["characters"].insert(2, {"char": "i", "kind": "glyph",
+                                          "glyph_ids": [1], "glyph_offset": 1})
+        with self.assertRaisesRegex(TokenLineageError, "not contiguous"):
+            verify(packet)
+
+    def test_fraction_slash_must_follow_numerator_and_precede_denominator(self):
+        for value, order in (("/12", (1, 0, 2)), ("12/", (0, 2, 1))):
+            with self.subTest(value=value):
+                packet = fixture()
+                original = packet["tokens"][0]["characters"]
+                packet["text"] = value
+                packet["tokens"][0]["text"] = value
+                packet["tokens"][0]["characters"] = [original[i] for i in order]
+                with self.assertRaisesRegex(TokenLineageError, "typed serialization"):
+                    verify(packet)
+
+    def test_fraction_slash_cannot_split_multiglyph_numerator(self):
+        packet = fixture()
+        packet["text"] = "1/23"
+        packet["glyphs"][1]["char"] = "3"
+        packet["glyphs"].append({"id": 3, "char": "2", "box": [2, 1, 3, 2]})
+        packet["rules"][0]["numerator_ids"] = [1, 3]
+        token = packet["tokens"][0]
+        token["range"] = [0, 4]
+        token["text"] = "1/23"
+        token["characters"].insert(2, {"char": "2", "kind": "glyph",
+                                          "glyph_ids": [3], "glyph_offset": 0})
+        token["characters"][3]["char"] = "3"
+        token["tree"]["children"]["numerator"]["glyph_ids"] = [1, 3]
+        with self.assertRaisesRegex(TokenLineageError, "typed serialization"):
+            verify(packet)
+
 
 if __name__ == "__main__":
     unittest.main()

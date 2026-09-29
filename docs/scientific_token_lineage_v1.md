@@ -27,6 +27,10 @@ children. Each output-character record identifies one source glyph and its
 exact character offset. Every glyph must be consumed fully, once, and in
 order; only the five explicit Latin ligature code points `ﬀ`, `ﬁ`, `ﬂ`, `ﬃ`,
 and `ﬄ` can expand to multiple output characters. Other normalization is held.
+The typed tree is recursively serialized to exact glyph-offset and synthetic
+slash events, so a fraction rule emits one slash precisely between its full
+numerator and denominator, including inside nested fractions. Ligature output
+must remain contiguous.
 The script geometry and required relation/unit children are structural checks,
 not proof of a scientifically correct subscript, equation, or unit attachment.
 

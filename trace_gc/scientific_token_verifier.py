@@ -169,6 +169,24 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                  "quantity": ("value", "unit")}[node["kind"]]
         return [gid for key in order for gid in tree_order(node["children"][key])]
 
+    def tree_events(node: dict) -> list[tuple[str, int, int]]:
+        """Serialize each typed node to its exact output lineage events."""
+        kind = node["kind"]
+        if kind == "literal":
+            return [("glyph", gid, offset)
+                    for gid in node["glyph_ids"]
+                    for offset in range(len(_glyph_output(glyph_map[gid]["char"])))
+                   ]
+        children = node["children"]
+        if kind == "fraction":
+            return (tree_events(children["numerator"])
+                    + [("fraction_slash", node["rule_id"], 0)]
+                    + tree_events(children["denominator"]))
+        order = {"script": ("base", "subscript"),
+                 "relation": ("left", "operator", "right"),
+                 "quantity": ("value", "unit")}[kind]
+        return [event for key in order for event in tree_events(children[key])]
+
     position = 0
     global_ids: set[int] = set()
     for token in tokens:
@@ -195,8 +213,10 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
         local_ids: set[int] = set()
         character_order: list[int] = []
         consumed_offsets: dict[int, list[int]] = {}
-        synthetic_rules: set[int] = set()
-        for actual, record in zip(token_text, chars):
+        consumed_positions: dict[int, list[int]] = {}
+        synthetic_rule_counts: dict[int, int] = {}
+        actual_events: list[tuple[str, int, int]] = []
+        for output_position, (actual, record) in enumerate(zip(token_text, chars)):
             _require(isinstance(record, dict) and record.get("char") == actual,
                      "output character mismatch")
             kind = record.get("kind")
@@ -212,17 +232,23 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                 _require(actual == source_output[offset],
                          "output character lacks exact source character")
                 consumed_offsets.setdefault(gid, []).append(offset)
+                consumed_positions.setdefault(gid, []).append(output_position)
+                actual_events.append(("glyph", gid, offset))
                 local_ids.update(ids)
                 character_order.extend(ids)
             elif kind == "fraction_slash":
                 rid = record.get("rule_id")
                 _require(actual == "/" and rid in rule_map, "unbound synthetic fraction slash")
-                synthetic_rules.add(rid)
+                synthetic_rule_counts[rid] = synthetic_rule_counts.get(rid, 0) + 1
+                actual_events.append(("fraction_slash", rid, 0))
             else:
                 raise TokenLineageError("unbound output character")
         for gid, offsets in consumed_offsets.items():
             _require(offsets == list(range(len(_glyph_output(glyph_map[gid]["char"])))),
                      "source glyph not consumed exactly once in order")
+            positions = consumed_positions[gid]
+            _require(positions == list(range(positions[0], positions[0] + len(positions))),
+                     "source glyph expansion is not contiguous")
         _require(not global_ids & local_ids, "glyph reused by another token")
         global_ids |= local_ids
         used_rules: set[int] = set()
@@ -231,7 +257,11 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
         # A ligature may produce more than one output character from one glyph.
         _require(list(dict.fromkeys(character_order)) == tree_order(token["tree"]),
                  "typed tree/output glyph order mismatch")
-        _require(synthetic_rules == used_rules, "fraction rule/output mismatch")
+        _require(set(synthetic_rule_counts) == used_rules
+                 and all(count == 1 for count in synthetic_rule_counts.values()),
+                 "fraction rule must emit exactly one output slash")
+        _require(actual_events == tree_events(token["tree"]),
+                 "output events disagree with typed serialization")
     _require(position == len(text), "output text is not fully tokenized")
     canonical = json.dumps(packet, ensure_ascii=False, sort_keys=True,
                            separators=(",", ":")).encode("utf-8")

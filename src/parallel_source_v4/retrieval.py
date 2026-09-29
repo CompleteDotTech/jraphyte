@@ -21,14 +21,66 @@ from .common import child, data_root, digest, read, write_once
 from .metrics import ranking_metrics
 
 BOILERPLATE = re.compile(r"^(?:graphical\s+abstract|abstract|highlights?|key\s+points|contents|table\s+of\s+contents|executive\s+summary|cover|original\s+article|research\s+article|introduction)\s*[.:]?$", re.I)
+TITLE_POLICY_VERSION = "native-title-runs-v2"
+AFFILIATION_WORD = re.compile(r"\b(?:university|laboratory|department|institute|academy|school|college)\b", re.I)
+INSTITUTION_TITLE_START = re.compile(r"^(?:University|Department|Institute|School|Laboratory|College)\s+(?!(?:of|for|at)\b)\S+.*:\s+\S+", re.I)
 
 
 def _title_like(text: str) -> bool:
     text = normalize(text)
+    metadata = METADATA_START.match(text) and not INSTITUTION_TITLE_START.match(text)
     return bool(12 <= len(text) <= 600 and not BOILERPLATE.fullmatch(text) and
-                not METADATA_START.match(text) and not _author_like(text) and
+                not metadata and not _author_like(text) and
                 not re.search(r"@|arXiv:|^(?:preprint|draft version|running title|prepared for)\b", text, re.I) and
-                len(re.findall(r"[.!?]\s+[A-Z]", text)) < 2)
+                len(re.findall(r"(?<!\b[A-Z])[.!?]\s+[A-Z]", text)) < 2)
+
+
+def _title_runs(block: list[dict]) -> list[list[dict]]:
+    """Keep source lines intact when small leading metadata shares a PDF block.
+
+    PDF text blocks are layout artifacts: a classification line can be grouped
+    with a larger title. Split only at a visible style and role boundary, and
+    retain the original line IDs for the candidate provenance.
+    """
+    if len(block) < 2:
+        return [block]
+    prefix = 0
+    while prefix < len(block)-1 and METADATA_START.match(normalize(block[prefix]["text"])):
+        prefix += 1
+    if not prefix:
+        return [block]
+    metadata_size = max(style(line).get("size", 0) for line in block[:prefix])
+    following_size = style(block[prefix]).get("size", 0)
+    if not metadata_size or following_size < metadata_size * 1.25:
+        return [block]
+    title_end = prefix+1
+    while title_end < len(block) and style(block[title_end]).get("size", 0) >= following_size*.85:
+        title_end += 1
+    if not _title_like(" ".join(line["text"] for line in block[prefix:title_end])):
+        return [block]
+    runs = [block[:prefix], block[prefix:title_end]]
+    if title_end < len(block):
+        runs.append(block[title_end:])
+    return runs
+
+
+def _affiliation_linked_author(block: dict, following: dict | None) -> bool:
+    """Require both small inline markers and a following marked affiliation."""
+    if not following or len(block["lines"]) != 1:
+        return False
+    line = block["lines"][0]
+    spans = line.get("spans", [])
+    main_size = style(line).get("size", 0)
+    if not main_size:
+        return False
+    small = [normalize(s.get("text", "")) for s in spans
+             if s.get("size", main_size) <= .75 * main_size]
+    markers = [s.lstrip(",").casefold() for s in small if re.fullmatch(r"[a-z]|,?\d{1,2}", s, re.I)]
+    next_text = following["text"]
+    marker = re.match(r"^([a-z]|\d{1,2})(?=[A-Z][a-z]+|\s+(?:Department|University|Institute|School|Laboratory|College)\b)", next_text)
+    return (len(markers) >= 2 and marker is not None and
+            marker.group(1).casefold() in markers and
+            bool(AFFILIATION_WORD.search(next_text[:80])))
 
 
 def verify_source_bound_assessment(assessment: dict, native: list[dict], *, page_size: list,
@@ -82,24 +134,36 @@ def extract_fields(case_id: str, native: list[dict], *, page_size: list,
     for line in native:
         groups[line.get("block_id", str(line["id"]))].append(line)
     blocks = []
-    for block in groups.values():
-        block.sort(key=lambda x: (x["bbox"][1], x["bbox"][0]))
-        text = normalize(" ".join(x["text"] for x in block))
-        weights = [(style(x), len(canonical(x["text"]))) for x in block]
-        total = sum(n for s, n in weights if s)
-        size = sum(s.get("size", 0)*n for s, n in weights)/total if total else 0
-        blocks.append({"text": text, "size": size, "y": min(x["bbox"][1] for x in block), "line_ids": [x["id"] for x in block]})
+    for source_block in groups.values():
+        source_block.sort(key=lambda x: (x["bbox"][1], x["bbox"][0]))
+        for block in _title_runs(source_block):
+            text = normalize(" ".join(x["text"] for x in block))
+            weights = [(style(x), len(canonical(x["text"]))) for x in block]
+            total = sum(n for s, n in weights if s)
+            size = sum(s.get("size", 0)*n for s, n in weights)/total if total else 0
+            blocks.append({"text": text, "size": size, "y": min(x["bbox"][1] for x in block),
+                           "line_ids": [x["id"] for x in block], "lines": block})
     blocks.sort(key=lambda x: x["y"])
     result = {"id": case_id, "source_sha256": source_sha256, "page_sha256": page_sha256,
               "physical_page": 1, "title": "", "abstract": "", "body": "\n".join(x["text"] for x in native),
               "field_provenance": {}, "retrieval_only": True, "eligible_for_jev": False}
-    eligible = [b for b in blocks if _title_like(b["text"])]
+    non_title_roles = set()
+    for i, block in enumerate(blocks[:-1]):
+        if _affiliation_linked_author(block, blocks[i+1]):
+            non_title_roles.update((i,i+1))
+    eligible = [b for i,b in enumerate(blocks) if i not in non_title_roles and _title_like(b["text"])]
     if eligible:
         # Unlike v2, a boilerplate heading cannot win merely by being largest;
         # title candidates below 45% of the page remain available.
         winner = max(eligible, key=lambda b: (b["size"], -b["y"]))
         result["title"] = winner["text"]
-        result["field_provenance"]["title"] = {"kind": "native_title_candidate", "line_ids": winner["line_ids"], "source_reviewed": False}
+        result["field_provenance"]["title"] = {"kind": "native_title_candidate", "line_ids": winner["line_ids"],
+                                                 "source_reviewed": False, "policy_version": TITLE_POLICY_VERSION,
+                                                 "source_line_spans": [
+                                                     {"line_id": line["id"], "bbox": line["bbox"],
+                                                      "spans": [{k: span[k] for k in ("start", "end", "bbox", "font", "size") if k in span}
+                                                                for span in line.get("spans", [])]}
+                                                     for line in winner["lines"]]}
     if reviewed_title:
         if (reviewed_title.get("source_sha256") != source_sha256 or reviewed_title.get("page_sha256") != page_sha256 or
                 reviewed_title.get("image_sha256") != image_sha256 or not image_sha256 or

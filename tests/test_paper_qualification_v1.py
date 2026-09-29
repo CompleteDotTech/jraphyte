@@ -189,6 +189,17 @@ class ProtocolTests(unittest.TestCase):
             "evidence":{"relative":"proof.json","sha256":"a"*64}}]
         with self.assertRaisesRegex(EvidenceError,"cannot_be_replaced"):validate_selection(selection)
 
+    def test_untyped_or_selected_alias_exclusion_cannot_silently_change_rank(self):
+        selection=self.selection()
+        selection["identity_exclusions"]=[{"work_id":sid(1999),"reason":"same_source","evidence_sha256":"a"*64}]
+        with self.assertRaisesRegex(EvidenceError,"identity_exclusion_contract"):
+            validate_selection(selection)
+        selection=self.selection()
+        selection["identity_exclusions"]=[{"work_id":selection["primary"][0],"reason":"same_source",
+            "evidence":{"relative":"proof.json","sha256":"a"*64}}]
+        with self.assertRaisesRegex(EvidenceError,"rank_selection"):
+            validate_selection(selection)
+
     def test_no_prediction_screen_and_no_versioned_alias(self):
         selection=self.selection();selection["screen"][next(iter(selection["screen"]))]["prediction_access"]=True
         with self.assertRaisesRegex(EvidenceError,"source_only"):validate_selection(selection)

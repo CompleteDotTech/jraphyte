@@ -121,6 +121,23 @@ class MathReviewPacketTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unmarked_trace_unicode_disagreement"):
             packet(sidecar, assessment, native)
 
+    def test_held_formula_is_separate_and_keywords_cannot_bleed(self):
+        sidecar, assessment, native = fixture()
+        assessment["region_ownership"][0]["source_spans"].pop()
+        held = {"decision": "held", "candidate_native_extent": {"status": "canonical_extent_only",
+                "accepted": False, "spans": [{"line_id": 1, "start": 0, "end": 1, "text": "x",
+                "bbox": [0, 12, 10, 22], "page_no": 1}]}}
+        assessment["region_ownership"].append(held)
+        assessment["closing_boundary"] = {"source_spans": [{"bbox": [0, 30, 30, 40]}]}
+        seal(assessment)
+        result = packet(sidecar, assessment, native)
+        self.assertEqual([c["raw"] for c in result["held_candidate"]["characters"]], ["x"])
+        self.assertFalse(result["held_candidate"]["accepted"])
+        self.assertEqual(result["boundary_crossing_relation_ids"], [0])
+        with self.assertRaisesRegex(ValueError, "reviewer_witness_not_bounded_before_closure"):
+            packet_from_sidecar(sidecar, assessment, native, page_sha256=PAGE_HASH,
+                                witness_line_ids=(0,))
+
 
 if __name__ == "__main__":
     unittest.main()

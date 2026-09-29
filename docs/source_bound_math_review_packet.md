@@ -11,6 +11,12 @@ owned by the abstract. Each glyph retains its raw Unicode, box, origin, font
 resource references, trace witnesses and uncertainty. Fraction candidates
 retain the observed vector rule and separate numerator/denominator glyph IDs.
 Relations that cross the abstract boundary are listed but excluded.
+Held formula regions are exposed separately as `held_candidate` from their
+assessment-bound canonical native extents. A reviewer may explicitly name a
+nearby native line as a witness; it must lie immediately above that candidate
+and before the source-located closing boundary. Candidate glyphs and witnesses
+remain unconfirmed and disjoint from included abstract glyphs. In particular,
+f079's detached numerator is an explicit witness, not a promoted source span.
 
 The packet always has `accepted: false`, `proposal: false`, no section owner and
 no scientific transcription. Geometry, converter text and normalized text
@@ -39,5 +45,8 @@ contains unresolved control glyphs in three expressions. All four remain held.
 Focused tests cover owned fraction geometry, cross-boundary exclusion, control
 glyph retention, changed source/page/native identity, duplicate and malformed
 glyph offsets, missing uncertainty markers and a missing source rule. The four
+source-first calls also read back the held formula scope for f079 and f122;
+an authored negative checks that a body or Keywords line cannot bleed in.
+The four
 real-paper calls were read-only diagnostics and no packets were published or
 used for proposals.

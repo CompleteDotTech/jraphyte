@@ -28,7 +28,8 @@ def _safe_character(char):
             "trace_witnesses": char["trace_witnesses"], "uncertainty": char["uncertainty"]}
 
 
-def packet_from_sidecar(sidecar: dict, assessment: dict, native: list[dict], *, page_sha256: str) -> dict:
+def packet_from_sidecar(sidecar: dict, assessment: dict, native: list[dict], *, page_sha256: str,
+                        witness_line_ids: tuple[int, ...] = ()) -> dict:
     """Bind abstract-owned glyphs and candidate relations to exact source spans.
 
     Fail closed if an accepted text region crosses an unbound native character,
@@ -60,10 +61,36 @@ def packet_from_sidecar(sidecar: dict, assessment: dict, native: list[dict], *, 
     validate_source_spans(spans, native)
     owned = {(str(span["line_id"]), offset)
              for span in spans for offset in range(span["start"], span["end"])}
+    held_extents = [entry["candidate_native_extent"] for entry in assessment.get("region_ownership", [])
+                    if entry.get("decision") == "held" and
+                    entry.get("candidate_native_extent", {}).get("status") == "canonical_extent_only"]
+    held_spans = [span for extent in held_extents for span in extent.get("spans", [])]
+    if held_spans:
+        validate_source_spans(held_spans, native)
+    by_id = {str(line["id"]): line for line in native}
+    candidate_line_ids = {str(span["line_id"]) for span in held_spans}
+    if len(witness_line_ids) != len(set(witness_line_ids)):
+        raise ValueError("duplicate_reviewer_witness_line")
+    closing = assessment.get("closing_boundary") or {}
+    closing_y = min((span["bbox"][1] for span in closing.get("source_spans", [])), default=float("inf"))
+    for witness_id in witness_line_ids:
+        line = by_id.get(str(witness_id))
+        if line is None or not held_spans or str(witness_id) in candidate_line_ids:
+            raise ValueError("invalid_reviewer_witness_line")
+        box = line["bbox"]
+        neighboring = [by_id[str(span["line_id"])]["bbox"] for span in held_spans]
+        if (box[1] >= closing_y or not any(
+                box[1] <= other[1] and other[1] - box[3] <= max(other[3]-other[1], 1)
+                and box[0] >= other[0]-3 and box[2] <= other[2]+3
+                for other in neighboring)):
+            raise ValueError("reviewer_witness_not_bounded_before_closure")
+        candidate_line_ids.add(str(witness_id))
+    candidate_refs = {(str(line["id"]), offset) for line in native
+                      if str(line["id"]) in candidate_line_ids
+                      for offset in range(len(line["text"]))} - owned
     chars = sidecar.get("characters", [])
     if [char.get("id") for char in chars] != list(range(len(chars))):
         raise ValueError("noncontiguous_character_ids")
-    by_id = {str(line["id"]): line for line in native}
     all_refs = []
     for char in chars:
         ref = char.get("native_ref", {})
@@ -89,10 +116,13 @@ def packet_from_sidecar(sidecar: dict, assessment: dict, native: list[dict], *, 
     if len(set(all_refs)) != len(all_refs):
         raise ValueError("duplicate_native_character_projection")
     included = [char for char, ref in zip(chars, all_refs) if ref in owned]
+    candidates = [char for char, ref in zip(chars, all_refs) if ref in candidate_refs]
     refs = {(str(char["native_ref"]["line_id"]), char["native_ref"]["start"])
             for char in included}
     if len(included) != len(owned) or refs != owned:
         raise ValueError("abstract_glyph_projection_incomplete")
+    if len(candidates) != len(candidate_refs):
+        raise ValueError("held_candidate_glyph_projection_incomplete")
     ids = {char["id"] for char in included}
     rules = {rule["id"]: rule for rule in sidecar.get("rules", [])}
     relations = []
@@ -130,6 +160,14 @@ def packet_from_sidecar(sidecar: dict, assessment: dict, native: list[dict], *, 
             "assessment_sha256": assessment.get("assessment_sha256"),
             "abstract_source_spans_sha256": digest_value(spans),
             "characters": [_safe_character(char) for char in included],
+            "held_candidate": {"scope": "unconfirmed_source_proximity_review_only",
+                               "candidate_native_extents": held_extents,
+                               "reviewer_witness_line_ids": list(witness_line_ids),
+                               "characters": [_safe_character(char) for char in candidates],
+                               "relation_ids": [relation["id"] for relation in sidecar.get("relations", [])
+                                                if set(relation.get("character_ids", [])).intersection(
+                                                    {char["id"] for char in candidates})],
+                               "accepted": False},
             "relations": relations, "boundary_crossing_relation_ids": boundary_crossings,
             "unresolved_character_ids": unresolved, "control_or_replacement_character_ids": controls,
             "status": "review_required", "accepted": False, "proposal": False,
@@ -141,7 +179,8 @@ def packet_from_sidecar(sidecar: dict, assessment: dict, native: list[dict], *, 
 
 
 def capture_math_review_packet(pdf_bytes: bytes, page_bytes: bytes,
-                               native: list[dict], assessment: dict) -> dict:
+                               native: list[dict], assessment: dict,
+                               *, witness_line_ids: tuple[int, ...] = ()) -> dict:
     """Re-extract from original PDF bytes; no cached image or converter is trusted."""
     if not isinstance(pdf_bytes, bytes) or not isinstance(page_bytes, bytes):
         raise ValueError("original_pdf_and_cached_page_bytes_required")
@@ -149,4 +188,5 @@ def capture_math_review_packet(pdf_bytes: bytes, page_bytes: bytes,
     if sidecar.get("source", {}).get("original_pdf_sha256") != hashlib.sha256(pdf_bytes).hexdigest():
         raise ValueError("source_hash_mismatch")
     return packet_from_sidecar(sidecar, assessment, native,
-                               page_sha256=hashlib.sha256(page_bytes).hexdigest())
+                               page_sha256=hashlib.sha256(page_bytes).hexdigest(),
+                               witness_line_ids=witness_line_ids)

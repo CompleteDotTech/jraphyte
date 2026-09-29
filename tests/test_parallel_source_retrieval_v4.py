@@ -1,11 +1,16 @@
 """Query-independent field and candidate coverage tests with no model downloads."""
 import copy
+import hashlib
 import json
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from trace_gc.pdf_source_parallel_v4 import digest_value
+try:
+    import fitz
+except ImportError:  # PyMuPDF is optional in the package validation environment.
+    fitz = None
+from trace_gc.pdf_source_parallel_v4 import digest_value, source_lines
 from trace_gc.pdf_structure_parallel_v4 import seal
 from src.parallel_source_v4.retrieval import (extract_fields, candidate_pool, rerank_pool,
     evaluate, local_cross_encoder, BM25, normalize_queries)
@@ -35,6 +40,98 @@ class RetrievalTests(unittest.TestCase):
         self.assertEqual(fields['abstract'],'')
         self.assertTrue(fields['retrieval_only'])
         self.assertFalse(fields['eligible_for_jev'])
+
+    def test_small_classification_line_sharing_title_block(self):
+        lines=[line(0,'MSC: 65M60, 65M12, 35L65',55,size=10,block=0),
+               line(1,'A Second-Order Maximum-Principle-Preserving Crouzeix-Raviart',72,size=17,block=0),
+               line(2,'Finite Element Method for Time-dependent Transport Equation',94,size=17,block=0),
+               line(3,'Shipeng Maoa,1, Mingyang Zhanga,1',123,size=12,block=1)]
+        result=extract_fields('mixed',lines,**PARAMS)
+        self.assertEqual(result['title'],lines[1]['text']+' '+lines[2]['text'])
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[1,2])
+        self.assertFalse(result['field_provenance']['title']['source_reviewed'])
+        self.assertEqual([x['line_id'] for x in result['field_provenance']['title']['source_line_spans']],[1,2])
+        self.assertEqual(result['field_provenance']['title']['source_line_spans'][0]['spans'][0]['end'],len(lines[1]['text']))
+
+    @unittest.skipUnless(fitz, 'PyMuPDF optional authored PDF fixture')
+    def test_authored_pdf_native_mixed_block_title(self):
+        pdf=fitz.open()
+        page=pdf.new_page(width=600,height=800)
+        page.insert_text((40,65),'MSC: 65M60, 65M12',fontsize=10)
+        page.insert_text((40,85),'A Second-Order Maximum-Principle-Preserving',fontsize=17)
+        page.insert_text((40,108),'Finite Element Method for Transport',fontsize=17)
+        page.insert_text((40,126),'Ada Lovelace, Grace Hopper',fontsize=12)
+        payload=pdf.tobytes()
+        with fitz.open(stream=payload,filetype='pdf') as saved:
+            native=source_lines(saved[0])
+            self.assertEqual([x['block_id'] for x in native[:4]],[0,0,0,0])
+            result=extract_fields('authored-pdf',native,page_size=[600,800],
+                                  source_sha256=hashlib.sha256(payload).hexdigest(),
+                                  page_sha256=hashlib.sha256(payload).hexdigest())
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[1,2])
+        self.assertEqual(result['title'],native[1]['text']+' '+native[2]['text'])
+
+    def test_metadata_split_requires_visible_style_boundary(self):
+        lines=[line(0,'MSC: 65M60',55,size=10,block=0),
+               line(1,'The transport equation',72,size=11,block=0),
+               line(2,'A genuine larger title elsewhere',130,size=14,block=1)]
+        result=extract_fields('no-split',lines,**PARAMS)
+        self.assertEqual(result['title'],lines[2]['text'])
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[2])
+
+    def test_short_first_title_line_stays_with_same_style_continuation(self):
+        lines=[line(0,'MSC: 65M60',55,size=10,block=0),
+               line(1,'Quantum',75,size=17,block=0),
+               line(2,'Transport and coherence in interacting systems',98,size=17,block=0),
+               line(3,'Ada Lovelace, Grace Hopper',130,size=12,block=1)]
+        result=extract_fields('short-title-line',lines,**PARAMS)
+        self.assertEqual(result['title'],'Quantum Transport and coherence in interacting systems')
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[1,2])
+
+    def test_title_numeric_superscripts_do_not_imply_author_affiliation(self):
+        title=line(0,'Comparing L1 and L2 networks under perturbations12',60,size=17)
+        start=len(title['text'])-2
+        title['spans']=[{'start':0,'end':start,'text':title['text'][:start],'size':17},
+                        {'start':start,'end':start+1,'text':'1','size':10},
+                        {'start':start+1,'end':start+2,'text':'2','size':10}]
+        prose=line(1,'An analysis of University network datasets provides new findings.',100,size=10)
+        result=extract_fields('numeric-title',[title,prose],**PARAMS)
+        self.assertEqual(result['title'],title['text'])
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[0])
+
+    def test_institution_affiliation_with_colon_is_not_title(self):
+        lines=[line(0,'Department of Physics: Example University',50,size=18),
+               line(1,'Quantum transport in disordered materials',120,size=16)]
+        result=extract_fields('affiliation-colon',lines,**PARAMS)
+        self.assertEqual(result['title'],lines[1]['text'])
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[1])
+
+    def test_author_markers_need_following_affiliation_evidence(self):
+        author=line(1,'Ada Lovelacea,1, Grace Hoppera,1',125,size=12)
+        author['spans']=[{'start':0,'end':12,'text':'Ada Lovelace','size':12},
+                         {'start':12,'end':13,'text':'a','size':8},
+                         {'start':13,'end':15,'text':',1','size':8},
+                         {'start':15,'end':29,'text':', Grace Hopper','size':12},
+                         {'start':29,'end':30,'text':'a','size':8},
+                         {'start':30,'end':32,'text':',1','size':8}]
+        affiliation=line(2,'aDepartment of Mathematics, Example University',145,size=8)
+        result=extract_fields('authors',[author,affiliation],**PARAMS)
+        self.assertNotEqual(result['title'],author['text'])
+        genuine=line(0,'University Networks in 3D: An A. B. Test',60,size=17)
+        result=extract_fields('genuine',[genuine,author,affiliation],**PARAMS)
+        self.assertEqual(result['title'],genuine['text'])
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[0])
+
+    def test_two_authors_sharing_same_affiliation_marker(self):
+        author=line(0,'Ada Lovelacea, Grace Hoppera',125,size=12)
+        last=len(author['text'])-1
+        author['spans']=[{'start':0,'end':12,'text':author['text'][:12],'size':12},
+                         {'start':12,'end':13,'text':'a','size':8},
+                         {'start':13,'end':last,'text':author['text'][13:last],'size':12},
+                         {'start':last,'end':last+1,'text':'a','size':8}]
+        affiliation=line(1,'aDepartment of Mathematics, Example University',145,size=8)
+        result=extract_fields('shared-affiliation',[author,affiliation],**PARAMS)
+        self.assertEqual(result['title'],'')
 
     def test_empty_image_page_is_not_invented(self):
         fields=extract_fields('image',[],**PARAMS)

@@ -152,6 +152,31 @@ class SourceGeometry:
             drawings = page.get_drawings(extended=True)
             paint = page.get_bboxlog()
             trace = page.get_texttrace()
+            # A clipped vector plot supplies a bounded, PDF-owned figure
+            # footprint.  The selector still has to prove caption and text
+            # ownership; this evidence alone never closes an abstract.
+            figure_regions = []
+            if page.first_annot is None and page.first_widget is None:
+                for drawing in drawings:
+                    framed = (drawing.get("type") == "s" and len(drawing.get("items", [])) == 1
+                              and drawing["items"][0][0] == "re")
+                    if drawing.get("type") != "clip" and not framed:
+                        continue
+                    box = drawing.get("scissor") if drawing.get("type") == "clip" else drawing.get("rect")
+                    if box is None:
+                        continue
+                    if (box.width < page.rect.width * .3 or box.height < page.rect.height * .1
+                            or box.y0 < 0 or box.y1 > page.rect.height):
+                        continue
+                    bars = [path for path in drawings if path.get("type") in {"f", "fs"}
+                            and path.get("rect") and path.get("fill") is not None
+                            and 5 <= path["rect"].width <= 40
+                            and box.x0 <= path["rect"].x0 <= path["rect"].x1 <= box.x1
+                            and box.y0 <= path["rect"].y0 < box.y1]
+                    if len({round(path["rect"].x0, 1) for path in bars}) >= 8:
+                        entry = list(box)
+                        if entry not in figure_regions:
+                            figure_regions.append(entry)
             next_page_opening = None
             if len(document) > 1:
                 following = document[1]
@@ -266,6 +291,8 @@ class SourceGeometry:
                         "next_page_opening": next_page_opening,
                         "unsupported_compositing": unsupported_compositing,
                         "painted_glyphs": _painted_glyphs(page, native, trace, paint) if rules else {}}
+            if figure_regions:
+                evidence["vector_figure_regions"] = figure_regions
         instance = object.__new__(cls)
         object.__setattr__(instance, "_evidence", json_bytes(evidence))
         return instance

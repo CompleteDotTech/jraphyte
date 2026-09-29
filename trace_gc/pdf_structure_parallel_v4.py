@@ -1600,6 +1600,74 @@ def _source_two_column_onset_closure(result: dict, native: list[dict], ordered: 
             "body_onset_y": body_top, "scholarly_boundary_and_98_corroborated": True}
 
 
+def _source_figure_then_intro_closure(result: dict, native: list[dict], page_size: list[float],
+                                      source_geometry) -> dict | None:
+    """Close an explicit abstract before a bounded vector plot and page-two body.
+
+    Native plot labels must all lie inside the PDF-derived plot footprint. A
+    figure caption and numbered next-page Introduction bound the other side.
+    This does not infer abstract closure from a small font or a final period.
+    """
+    boundary, spans = result.get("closing_boundary"), result.get("spans") or []
+    if (type(source_geometry) is not SourceGeometry or not result.get("explicit_heading")
+            or not boundary or boundary.get("kind") != "unresolved_section_ownership"
+            or boundary.get("reason") != "smaller_separate_source_region"
+            or not spans or not SENTENCE_END.search(result.get("text", ""))):
+        return None
+    descriptor = source_geometry.descriptor()
+    opening = descriptor.get("next_page_opening") or {}
+    if (opening.get("kind") != "body_section" or opening.get("physical_page") != 2
+            or not re.fullmatch(r"(?:[IVX]+|\d+)[.)]?\s+introduction", opening.get("text", ""), re.I)):
+        return None
+    bottom = max(s["bbox"][3] for s in spans)
+    selected = {str(s["line_id"]) for s in spans}
+    candidates = []
+    for box in descriptor.get("vector_figure_regions", []):
+        if (len(box) != 4 or not 8 <= box[1]-bottom <= 35
+                or box[2]-box[0] < page_size[0]*.3):
+            continue
+        captions = [n for n in native if re.match(r"^Figure\s+\d+[.:]\s+\S", n["text"], re.I)
+                    and 2 <= n["bbox"][1]-box[3] <= 25]
+        if len(captions) != 1:
+            continue
+        caption = captions[0]
+        between = [n for n in native if str(n["id"]) not in selected
+                   and bottom+2 < n["bbox"][1] < caption["bbox"][1]-2]
+        if (len(between) < 8 or not any(str(n["id"]) == str(boundary.get("source_spans", [{}])[0].get("line_id"))
+                                      for n in between)
+                or any(n["bbox"][0] < box[0]-5 or n["bbox"][2] > box[2]+5
+                       or n["bbox"][1] < box[1]-5 or n["bbox"][3] > box[3]+5 for n in between)):
+            continue
+        # The caption can wrap, but later narrative cannot be assigned to the
+        # figure or silently treated as page-one abstract closure.
+        caption_lines = [caption]
+        caption_end = caption["bbox"][3]
+        for n in sorted(native, key=lambda n: n["bbox"][1]):
+            if SENTENCE_END.search(caption_lines[-1]["text"]):
+                break
+            if (str(n["id"]) != str(caption["id"])
+                    and n["bbox"][1] >= caption_end-2 and n["bbox"][1]-caption_end <= 5
+                    and n["bbox"][0] <= caption["bbox"][0]+5
+                    and n["bbox"][2] >= page_size[0]*.5):
+                caption_lines.append(n)
+                caption_end = max(caption_end, n["bbox"][3])
+        if not SENTENCE_END.search(caption_lines[-1]["text"]):
+            continue
+        caption_ids = {str(n["id"]) for n in caption_lines}
+        if any(str(n["id"]) not in caption_ids
+               and n["bbox"][1] >= caption_end-2 and n["bbox"][1] < page_size[1]*.93
+               and len(canonical(n["text"])) >= 30 for n in native):
+            continue
+        candidates.append((box, caption, between))
+    if len(candidates) != 1:
+        return None
+    box, caption, labels = candidates[0]
+    return {"kind": "source_vector_figure_page_two_intro_closure", "source": "verified_original_pdf",
+            "figure_box": box, "figure_label_line_ids": [n["id"] for n in labels],
+            "caption_first_line_id": caption["id"], "abstract_terminal_line_id": spans[-1]["line_id"],
+            "opening": opening}
+
+
 def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                     native_lines=None, scholarly_abstract="", max_input_chars=4000,
                     conversion_status="success", source_geometry=None) -> dict:
@@ -1750,12 +1818,16 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                 closure = (_next_page_bibliographic_intro_closure(
                     result, native, ordered, page_size, scholarly_abstract, source_geometry)
                     or _source_two_column_onset_closure(
-                        result, native, ordered, page_size, scholarly_abstract, source_geometry))
+                        result, native, ordered, page_size, scholarly_abstract, source_geometry)
+                    or _source_figure_then_intro_closure(
+                        result, native, page_size, source_geometry))
                 if closure:
                     result.update(status="complete", complete_candidate=True, closing_boundary=closure,
                                   proposal_basis=("source_page_two_bibliographic_intro_bounded" if
                                                   closure["kind"] == "source_page_two_bibliographic_intro_closure" else
-                                                  "source_two_column_onset_bounded"),
+                                                  "source_two_column_onset_bounded" if
+                                                  closure["kind"] == "source_two_column_body_onset_closure" else
+                                                  "source_vector_figure_intro_bounded"),
                                   reasons=["bounded_source_located_proposal"])
                 else:
                     result.update(status="uncertain", reasons=["section_ownership_requires_source_review"])

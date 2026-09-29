@@ -79,7 +79,12 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
     tokens = packet.get("tokens")
     _require(isinstance(glyphs, list) and isinstance(rules, list)
              and isinstance(tokens, list) and tokens, "missing evidence inventory")
-    evidence = json.dumps({"glyphs": glyphs, "rules": rules}, ensure_ascii=False,
+    source_lines = packet.get("source_lines", [])
+    _require(isinstance(source_lines, list), "invalid source line inventory")
+    evidence_body = {"glyphs": glyphs, "rules": rules}
+    if source_lines:
+        evidence_body["source_lines"] = source_lines
+    evidence = json.dumps(evidence_body, ensure_ascii=False,
                           sort_keys=True, separators=(",", ":")).encode("utf-8")
     _require(sha256(evidence).hexdigest() == evidence_sha256,
              "source glyph/rule evidence mismatch")
@@ -97,6 +102,62 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                  and all(type(v) in (int, float) for v in box)
                  and box[0] < box[2] and box[1] < box[3], "invalid glyph box")
         glyph_map[gid] = glyph
+    line_map = {}
+    for line in source_lines:
+        _require(isinstance(line, dict), "invalid source line")
+        lid = line.get("id")
+        _require(type(lid) is int and lid >= 0 and lid not in line_map,
+                 "duplicate or invalid source line ID")
+        role = line.get("role")
+        _require(isinstance(role, str)
+                 and role in {"abstract_body", "excluded_margin", "excluded_other"},
+                 "invalid source line role")
+        ids = _ids(line.get("glyph_ids"), "source line")
+        _require(set(ids) <= glyph_map.keys(), "source line has unknown glyph")
+        for offset, gid in enumerate(ids):
+            glyph = glyph_map[gid]
+            _require(glyph.get("line_id") == lid and glyph.get("line_offset") == offset,
+                     "glyph source line or offset mismatch")
+            _require(glyph.get("role") == line["role"], "glyph source role mismatch")
+        box = line.get("box")
+        _require(isinstance(box, list) and len(box) == 4
+                 and all(type(v) in (int, float) for v in box)
+                 and box[0] < box[2] and box[1] < box[3], "invalid source line box")
+        for gid in ids:
+            gb = glyph_map[gid]["box"]
+            _require(box[0] <= gb[0] < gb[2] <= box[2]
+                     and box[1] <= gb[1] < gb[3] <= box[3],
+                     "glyph outside source line box")
+        line_map[lid] = line
+    if source_lines:
+        all_line_ids = [gid for line in source_lines for gid in line["glyph_ids"]]
+        _require(len(all_line_ids) == len(set(all_line_ids))
+                 and set(all_line_ids) == glyph_map.keys(),
+                 "source lines must partition glyph inventory")
+
+    def checked_join(node: dict) -> tuple[int, int]:
+        left, right = node.get("left_line_id"), node.get("right_line_id")
+        _require(type(left) is int and type(right) is int
+                 and left in line_map and right in line_map and left < right,
+                 "line join lacks ordered source lines")
+        _require(line_map[left]["role"] == line_map[right]["role"] == "abstract_body",
+                 "line join lacks abstract body roles")
+        _require(all(i in line_map for i in range(left + 1, right)),
+                 "line join omits intervening source line")
+        between = [line_map[i] for i in sorted(line_map) if left < i < right]
+        _require(all(line["role"].startswith("excluded_") for line in between),
+                 "line join crosses unowned source line")
+        _require(node.get("left_glyph_id") == line_map[left]["glyph_ids"][-1]
+                 and node.get("right_glyph_id") == line_map[right]["glyph_ids"][0],
+                 "line join lacks exact source endpoints")
+        for side, gid in (("left", node["left_glyph_id"]),
+                          ("right", node["right_glyph_id"])):
+            glyph = glyph_map[gid]
+            _require(node.get(f"{side}_box") == glyph["box"]
+                     and node.get(f"{side}_role") == glyph["role"]
+                     and node.get(f"{side}_line_offset") == glyph["line_offset"],
+                     "line join source witness mismatch")
+        return node["left_glyph_id"], node["right_glyph_id"]
     rule_map = {}
     for rule in rules:
         _require(isinstance(rule, dict), "invalid rule")
@@ -126,13 +187,23 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
     def verify_node(node: dict, output_ids: set[int], used_rules: set[int]) -> set[int]:
         _require(isinstance(node, dict), "invalid typed node")
         kind = node.get("kind")
-        _require(kind in {"literal", "script", "fraction", "relation", "quantity"},
+        _require(kind in {"literal", "script", "fraction", "relation", "quantity", "line_join"},
                  "unknown typed node")
         if kind == "literal":
             ids = _ids(node.get("glyph_ids"), "literal")
             _require(set(ids) <= glyph_map.keys(), "literal references unknown glyph")
             _require(set(ids) <= output_ids, "literal is absent from output")
             return set(ids)
+        if kind == "line_join":
+            left, right = checked_join(node)
+            children = node.get("children")
+            _require(isinstance(children, dict) and set(children) == {"left", "right"},
+                     "incomplete line join operands")
+            a = verify_node(children["left"], output_ids, used_rules)
+            b = verify_node(children["right"], output_ids, used_rules)
+            _require(a and b and not a & b and left in a and right in b,
+                     "line join operands lack source endpoints")
+            return a | b
         children = node.get("children")
         expected = {"script": ("base", "subscript"),
                     "fraction": ("numerator", "denominator"),
@@ -163,6 +234,8 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
     def tree_order(node: dict) -> list[int]:
         if node["kind"] == "literal":
             return node["glyph_ids"]
+        if node["kind"] == "line_join":
+            return tree_order(node["children"]["left"]) + tree_order(node["children"]["right"])
         order = {"script": ("base", "subscript"),
                  "fraction": ("numerator", "denominator"),
                  "relation": ("left", "operator", "right"),
@@ -178,6 +251,11 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                     for offset in range(len(_glyph_output(glyph_map[gid]["char"])))
                    ]
         children = node["children"]
+        if kind == "line_join":
+            left, right = checked_join(node)
+            return (tree_events(children["left"])
+                    + [("line_join_space", left, right)]
+                    + tree_events(children["right"]))
         if kind == "fraction":
             return (tree_events(children["numerator"])
                     + [("fraction_slash", node["rule_id"], 0)]
@@ -236,6 +314,35 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                 actual_events.append(("glyph", gid, offset))
                 local_ids.update(ids)
                 character_order.extend(ids)
+            elif kind == "reviewed_delta_alias":
+                ids = _ids(record.get("glyph_ids"), "delta alias")
+                _require(len(ids) == 1 and ids[0] in glyph_map,
+                         "delta alias has unknown source glyph")
+                gid = ids[0]
+                _require(actual == "Δ" and glyph_map[gid]["char"] == "∆"
+                         and record.get("raw_char") == "∆" and record.get("glyph_offset") == 0,
+                         "delta alias lacks exact raw glyph")
+                glyph = glyph_map[gid]
+                _require(type(glyph.get("line_id")) is int
+                         and glyph["line_id"] in line_map
+                         and line_map[glyph["line_id"]]["role"] == "abstract_body"
+                         and record.get("source_box") == glyph["box"]
+                         and record.get("source_line_id") == glyph["line_id"]
+                         and record.get("source_line_offset") == glyph["line_offset"]
+                         and record.get("source_role") == glyph["role"],
+                         "delta alias source witness mismatch")
+                consumed_offsets.setdefault(gid, []).append(0)
+                consumed_positions.setdefault(gid, []).append(output_position)
+                actual_events.append(("glyph", gid, 0))
+                local_ids.add(gid)
+                character_order.append(gid)
+            elif kind == "line_join_space":
+                _require(actual == " ", "line join must emit one space")
+                left, right = checked_join(record)
+                last_offset = len(_glyph_output(glyph_map[left]["char"])) - 1
+                _require(actual_events and actual_events[-1] == ("glyph", left, last_offset),
+                         "line join is not after left endpoint")
+                actual_events.append(("line_join_space", left, right))
             elif kind == "fraction_slash":
                 rid = record.get("rule_id")
                 _require(actual == "/" and rid in rule_map, "unbound synthetic fraction slash")

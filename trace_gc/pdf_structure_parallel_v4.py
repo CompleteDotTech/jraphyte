@@ -1538,6 +1538,68 @@ def _next_page_bibliographic_intro_closure(result: dict, native: list[dict], ord
             "scholarly_boundary_and_98_corroborated": True}
 
 
+def _source_two_column_onset_closure(result: dict, native: list[dict], ordered: list[dict],
+                                    page_size: list[float], scholarly_abstract: str,
+                                    source_geometry) -> dict | None:
+    """Separate a source-matched inset summary from a simultaneous body onset.
+
+    Two long native body lanes must begin on the same baseline below the
+    complete inset paragraph and continue independently. Converter lane
+    estimates and scholarly field agreement alone are insufficient.
+    """
+    boundary, spans = result.get("closing_boundary"), result.get("spans") or []
+    if (type(source_geometry) is not SourceGeometry or not scholarly_abstract
+            or result.get("proposal_basis") != "source_paragraph_group_corroborated_by_scholarly_field"
+            or not boundary or boundary.get("kind") != "unresolved_section_ownership"
+            or boundary.get("reason") != "multiple_body_lanes" or not boundary.get("peer_refs")
+            or not spans or len(canonical(result.get("text", ""))) < 100
+            or not SENTENCE_END.search(result["text"])
+            or not compare(result["text"], scholarly_abstract)["boundary_and_98_match"]):
+        return None
+    width, height = page_size
+    top, bottom = min(s["bbox"][1] for s in spans), max(s["bbox"][3] for s in spans)
+    inset_left, inset_right = min(s["bbox"][0] for s in spans), max(s["bbox"][2] for s in spans)
+    if bottom > height * .4 or inset_right-inset_left < width * .6:
+        return None
+    region = next((r for r in ordered if r["ref"] == boundary.get("ref")), None)
+    if region is None:
+        return None
+    body = locate(region["text"], native, region_boxes=region["boxes"], source_geometry=source_geometry)
+    if body["status"] != "located" or body.get("column_change") or len(body.get("spans", [])) < 3:
+        return None
+    first = body["spans"][0]
+    body_top = first["bbox"][1]
+    if (not 12 <= body_top-bottom <= 40 or first["bbox"][0] > width*.16
+            or not width*.28 <= first["bbox"][2]-first["bbox"][0] <= width*.48):
+        return None
+    others = [line for line in native if str(line["id"]) != str(first["line_id"])
+              and abs(line["bbox"][1]-body_top) <= 2
+              and line["bbox"][0] >= first["bbox"][2]+10
+              and width*.28 <= line["bbox"][2]-line["bbox"][0] <= width*.48]
+    if len(others) != 1:
+        return None
+    right = others[0]
+    if (right["bbox"][0] < width*.5 or inset_left < first["bbox"][0]+20
+            or inset_right > right["bbox"][2]-20):
+        return None
+    def continued(anchor: dict) -> bool:
+        return any(line["id"] != anchor["id"] and body_top+5 <= line["bbox"][1] <= body_top+25
+                   and overlap(line["bbox"], anchor["bbox"]) >= .8
+                   and line["bbox"][2]-line["bbox"][0] >= width*.25
+                   for line in native)
+    left_line = next((line for line in native if str(line["id"]) == str(first["line_id"])), None)
+    if left_line is None or not continued(left_line) or not continued(right):
+        return None
+    selected_ids = {str(s["line_id"]) for s in spans}
+    if any(str(line["id"]) not in selected_ids and line["bbox"][2]-line["bbox"][0] > line["bbox"][3]-line["bbox"][1]
+           and bottom+2 < line["bbox"][1] < body_top-2 for line in native):
+        return None
+    return {"kind": "source_two_column_body_onset_closure", "source": "verified_original_pdf",
+            "abstract_terminal_line_id": spans[-1]["line_id"],
+            "body_first_left_line_id": left_line["id"], "body_first_right_line_id": right["id"],
+            "body_onset_y": body_top, "scholarly_boundary_and_98_corroborated": True}
+
+
 def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                     native_lines=None, scholarly_abstract="", max_input_chars=4000,
                     conversion_status="success", source_geometry=None) -> dict:
@@ -1685,11 +1747,15 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
             elif selected["boundary"]["kind"] == "ambiguous_structured_or_body_section":
                 result.update(status="uncertain", reasons=["structured_abstract_boundary_requires_review"])
             elif selected["boundary"]["kind"] == "unresolved_section_ownership":
-                closure = _next_page_bibliographic_intro_closure(
+                closure = (_next_page_bibliographic_intro_closure(
                     result, native, ordered, page_size, scholarly_abstract, source_geometry)
+                    or _source_two_column_onset_closure(
+                        result, native, ordered, page_size, scholarly_abstract, source_geometry))
                 if closure:
                     result.update(status="complete", complete_candidate=True, closing_boundary=closure,
-                                  proposal_basis="source_page_two_bibliographic_intro_bounded",
+                                  proposal_basis=("source_page_two_bibliographic_intro_bounded" if
+                                                  closure["kind"] == "source_page_two_bibliographic_intro_closure" else
+                                                  "source_two_column_onset_bounded"),
                                   reasons=["bounded_source_located_proposal"])
                 else:
                     result.update(status="uncertain", reasons=["section_ownership_requires_source_review"])

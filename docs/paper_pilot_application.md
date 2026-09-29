@@ -5,7 +5,7 @@ protocol to the durable `PaperPilot` and `PaperPilotController`. This first
 application stage verifies every original PDF and exact native source anchor,
 requires explicitly enrolled narrow private signing identities, checks the
 current exact-grant ACL, and prepares all native evidence packets. It returns
-`WAIT_SOURCE_REVIEW`. Image-only anchors are reported as held. There is no
+`WAIT_SOURCE_REVIEW` for v3. Image-only anchors are reported as held. There is no
 provider call, signed review, source admission or graph publication in this
 stage.
 
@@ -63,6 +63,43 @@ and decide `boundaries` before signing a source review.
 PyMuPDF and Pillow are optional dependencies for the package; this real-page
 stage requires PyMuPDF at runtime, and its authored image tests skip when the
 optional image stack is absent.
+
+## Prospective v4 source preparation
+
+The v3 protocol and v1 controller manifest remain exact. A separate v4 path
+requires a final protocol with version `issue23-real-paper-source-first-protocol-v4`
+and status `APPROVED_SOURCE_REFERENCE_FROZEN_PENDING_RUN_ACTIVATION`. The caller
+must pass `approved_v4_sha256`, `parent_protocol_path`, exact
+`image_candidate_paths`, and an application-owned `approval_manifest_path` plus
+`approval_manifest_sha256`. The approval manifest binds the final protocol hash,
+the v3 parent hash, a source-reference-only decision, and attribution/time.
+Its `approved_by` field is **not** a cryptographic signature or an independent
+review. No public code contains a private protocol hash. The current private
+v4 draft has a prospective status and is rejected by this entry point.
+
+The v4 application compares documents, all original anchor bodies, questions
+and numeric gates with the exact parent v3 bytes. It reconstructs both frozen
+image candidates from the original PDFs and checks page, render, crop,
+transcription, producer and file hashes. The v2 controller journal includes
+native and image work items in one full-cohort preflight; a missing or changed
+PDF prevents every prepare call. It reconciles image prepare requests after
+reopen. `prepare_sources()` returns seven native packets and two image packets
+at `WAIT_IMAGE_SOURCE_REVIEW`, with the f113 native notation anchor still on
+HOLD. No checks are signed, source admitted, ACL changed, model called or graph
+assertion published by this stage. The image candidates require fresh source
+review in the new run; earlier private trial receipts do not transfer.
+
+For v4, the approved `anchor_scoring_routes` map selects a separately reviewed
+image source for the cover and a `native_corrupt` image crop alternative for
+f113 page four. The native f113 anchor remains HOLD; no native offsets are
+assigned to either image source. This application prepares sources only; later
+scoring must count each mapped anchor once after signed review, separate source
+admission and exact current ACL checks.
+
+`PaperPilot` freezes all `trace_gc` code hashes, so the merged v4 application
+cannot reopen a v3 or draft-code run. Use a new run ID, checkpoint, controller
+journal, isolated backend and private keys after the final v4 protocol and
+approval manifest have been reviewed and frozen.
 
 ## Subsequent reviewed stages
 

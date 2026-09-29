@@ -39,9 +39,9 @@ def fixture():
             "alternate_scopes": [{"decision": "rejected",
                                   "reason": "image and TeX show a stacked fraction"}],
             "characters": [
-                {"char": "1", "kind": "glyph", "glyph_ids": [1]},
+                {"char": "1", "kind": "glyph", "glyph_ids": [1], "glyph_offset": 0},
                 {"char": "/", "kind": "fraction_slash", "rule_id": 4},
-                {"char": "2", "kind": "glyph", "glyph_ids": [2]},
+                {"char": "2", "kind": "glyph", "glyph_ids": [2], "glyph_offset": 0},
             ],
             "tree": {"kind": "fraction", "rule_id": 4, "children": {
                 "numerator": {"kind": "literal", "glyph_ids": [1]},
@@ -123,7 +123,7 @@ class ScientificTokenVerifierTest(unittest.TestCase):
         packet["text"] = "1-2"
         token = packet["tokens"][0]
         token["text"] = "1-2"
-        token["characters"][1] = {"char": "-", "kind": "glyph", "glyph_ids": [1],
+        token["characters"][1] = {"char": "-", "kind": "glyph", "glyph_ids": [1], "glyph_offset": 0,
                                    "normalization": "reviewed"}
         with self.assertRaises(TokenLineageError):
             verify(packet)
@@ -137,8 +137,8 @@ class ScientificTokenVerifierTest(unittest.TestCase):
         packet["rules"] = []
         token = packet["tokens"][0]
         token.update({"range": [0, 2], "text": "A2", "tex_anchor": "A_{2}",
-                      "characters": [{"char": "A", "kind": "glyph", "glyph_ids": [1]},
-                                     {"char": "2", "kind": "glyph", "glyph_ids": [2]}],
+                      "characters": [{"char": "A", "kind": "glyph", "glyph_ids": [1], "glyph_offset": 0},
+                                     {"char": "2", "kind": "glyph", "glyph_ids": [2], "glyph_offset": 0}],
                       "tree": {"kind": "script", "children": {
                           "base": {"kind": "literal", "glyph_ids": [1]},
                           "subscript": {"kind": "literal", "glyph_ids": [2]},
@@ -146,6 +146,43 @@ class ScientificTokenVerifierTest(unittest.TestCase):
         self.assertEqual(verify(packet).token_count, 1)
         packet["glyphs"][1]["box"] = [1, 0, 2, 1]
         with self.assertRaisesRegex(TokenLineageError, "vertical scope"):
+            verify(packet)
+
+    def test_same_glyph_cannot_emit_digit_twice(self):
+        packet = fixture()
+        packet["text"] = "11/2"
+        token = packet["tokens"][0]
+        token["range"] = [0, 4]
+        token["text"] = "11/2"
+        token["characters"].insert(1, {"char": "1", "kind": "glyph",
+                                          "glyph_ids": [1], "glyph_offset": 0})
+        with self.assertRaisesRegex(TokenLineageError, "exactly once"):
+            verify(packet)
+
+    def test_multichar_glyph_cannot_emit_only_first_character(self):
+        packet = fixture()
+        packet["glyphs"][0]["char"] = "\ufb01"
+        packet["text"] = "f/2"
+        token = packet["tokens"][0]
+        token["text"] = "f/2"
+        token["characters"][0]["char"] = "f"
+        with self.assertRaisesRegex(TokenLineageError, "exactly once"):
+            verify(packet)
+
+    def test_ligature_requires_both_output_characters_in_order(self):
+        packet = fixture()
+        packet["glyphs"][0]["char"] = "\ufb01"
+        packet["text"] = "fi/2"
+        token = packet["tokens"][0]
+        token["range"] = [0, 4]
+        token["text"] = "fi/2"
+        token["characters"][0]["char"] = "f"
+        token["characters"].insert(1, {"char": "i", "kind": "glyph",
+                                          "glyph_ids": [1], "glyph_offset": 1})
+        self.assertEqual(verify(packet).token_count, 1)
+        token["characters"][0]["glyph_offset"] = 1
+        token["characters"][1]["glyph_offset"] = 0
+        with self.assertRaises(TokenLineageError):
             verify(packet)
 
 

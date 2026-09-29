@@ -23,7 +23,12 @@ numerator/denominator glyph IDs. The rule's horizontal and vertical geometry
 must cover those operands; this rejects an earlier same-looking symbol pulled
 into the fraction. `script` nodes require the subscript glyphs to sit below
 their base. `relation` and `quantity` nodes require explicit operator and unit
-children. Unrecognized output normalization is held.
+children. Each output-character record identifies one source glyph and its
+exact character offset. Every glyph must be consumed fully, once, and in
+order; only the five explicit Latin ligature code points `ﬀ`, `ﬁ`, `ﬂ`, `ﬃ`,
+and `ﬄ` can expand to multiple output characters. Other normalization is held.
+The script geometry and required relation/unit children are structural checks,
+not proof of a scientifically correct subscript, equation, or unit attachment.
 
 The private f081 complete-transcript candidate has 907 output characters and
 160 preliminary token records, plus a separate 41-tree typed AST draft. The

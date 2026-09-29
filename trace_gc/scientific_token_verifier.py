@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from hashlib import sha256
 from typing import Any
+import unicodedata
 
 
 class TokenLineageError(ValueError):
@@ -32,6 +33,14 @@ def _ids(value: Any, name: str) -> tuple[int, ...]:
     _require(all(type(item) is int and item >= 0 for item in value), f"{name}: invalid glyph ID")
     _require(len(set(value)) == len(value), f"{name}: repeated glyph ID")
     return tuple(value)
+
+
+def _glyph_output(source_character: str) -> str:
+    """Permit only exact characters or the five explicit Latin ligature forms."""
+    _require(len(source_character) == 1, "source glyph must be one code point")
+    if source_character in "\ufb00\ufb01\ufb02\ufb03\ufb04":
+        return unicodedata.normalize("NFKC", source_character)
+    return source_character
 
 
 def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
@@ -82,6 +91,7 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                  "duplicate or invalid glyph ID")
         _require(isinstance(glyph.get("char"), str) and glyph["char"],
                  "missing source glyph character")
+        _glyph_output(glyph["char"])
         box = glyph.get("box")
         _require(isinstance(box, list) and len(box) == 4
                  and all(type(v) in (int, float) for v in box)
@@ -184,6 +194,7 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                  "output character lineage incomplete")
         local_ids: set[int] = set()
         character_order: list[int] = []
+        consumed_offsets: dict[int, list[int]] = {}
         synthetic_rules: set[int] = set()
         for actual, record in zip(token_text, chars):
             _require(isinstance(record, dict) and record.get("char") == actual,
@@ -191,10 +202,16 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
             kind = record.get("kind")
             if kind == "glyph":
                 ids = _ids(record.get("glyph_ids"), "output character")
+                _require(len(ids) == 1, "output character must use one glyph")
                 _require(set(ids) <= glyph_map.keys(), "unknown output glyph")
-                # A ligature may produce two characters from one source glyph.
-                _require(all(actual in glyph_map[gid]["char"] for gid in ids),
-                         "output character lacks source character")
+                gid = ids[0]
+                offset = record.get("glyph_offset")
+                source_output = _glyph_output(glyph_map[gid]["char"])
+                _require(type(offset) is int and 0 <= offset < len(source_output),
+                         "missing or invalid glyph character offset")
+                _require(actual == source_output[offset],
+                         "output character lacks exact source character")
+                consumed_offsets.setdefault(gid, []).append(offset)
                 local_ids.update(ids)
                 character_order.extend(ids)
             elif kind == "fraction_slash":
@@ -203,6 +220,9 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                 synthetic_rules.add(rid)
             else:
                 raise TokenLineageError("unbound output character")
+        for gid, offsets in consumed_offsets.items():
+            _require(offsets == list(range(len(_glyph_output(glyph_map[gid]["char"])))),
+                     "source glyph not consumed exactly once in order")
         _require(not global_ids & local_ids, "glyph reused by another token")
         global_ids |= local_ids
         used_rules: set[int] = set()

@@ -60,6 +60,21 @@ def _trust(reviewers: list[dict]) -> TrustStore:
     return trust
 
 
+def _receipt_enrollment_match(reviewers: list[dict], receipts: list[dict]) -> None:
+    if len(receipts) != len(reviewers) or any(
+        receipt.get("issuer") != reviewer["issuer"] or
+        receipt.get("payload", {}).get("reviewer_kind") != reviewer["reviewer_kind"]
+        for reviewer, receipt in zip(reviewers, receipts)
+    ):
+        raise ValueError("review_receipt_enrollment_mismatch")
+
+
+def _reverify_receipts(trust: TrustStore, receipts: list[dict]) -> None:
+    """A receipt valid during application must still be live at publication."""
+    for receipt in receipts:
+        trust.verify(receipt, "OBSERVATION")
+
+
 def _bind_frozen_inputs(root: Path, gate: dict, labels_relative: str,
                         source_map: dict) -> None:
     """Tie externally supplied labels and every original path to the run gate."""
@@ -164,8 +179,7 @@ def _baseline(root: Path, repo: Path, baseline_relative: str, source_map: dict,
     return result, automatic, _hash(result_bytes), old_good
 
 
-def selected_replay(*, root: Path, repo: Path, review_map: str, output: str,
-                    at: str | None = None) -> dict:
+def selected_replay(*, root: Path, repo: Path, review_map: str, output: str) -> dict:
     """Verify full baseline and only configured reviews, then seal derived scores."""
     import fitz
 
@@ -192,6 +206,7 @@ def selected_replay(*, root: Path, repo: Path, review_map: str, output: str,
     reviewed = {}
     bindings = {}
     reviewed_file_hashes: dict[str, str] = {}
+    signed_receipts: list[dict] = []
     for sid, entry in sorted(cases.items()):
         if set(entry) != {"source_pdf", "page_pdf", "page_image", "notation", "tex", "manifest", "reviews", "converter_assets"}:
             raise ValueError("review_case_shape_invalid")
@@ -219,6 +234,8 @@ def selected_replay(*, root: Path, repo: Path, review_map: str, output: str,
         with fitz.open(stream=source, filetype="pdf") as pdf:
             native = source_lines(pdf[0])
         receipts = [_json(root, path) for path in entry["reviews"]]
+        _receipt_enrollment_match(config["reviewers"], receipts)
+        signed_receipts.extend(receipts)
         code_names = set(manifest["identity"]["code_sha256"]) - {"reviewed_abstract_overlay.py"}
         allowed = {"trace_gc/pdf_source_parallel_v4.py", "trace_gc/pdf_structure_parallel_v4.py",
                    "trace_gc/pdf_notation_parallel_v4.py", "src/parallel_source_v4/extraction.py",
@@ -233,7 +250,7 @@ def selected_replay(*, root: Path, repo: Path, review_map: str, output: str,
             page_image=_bytes(root, entry["page_image"]), native_lines=native,
             converter_assets={name: _bytes(root, path) for name, path in entry["converter_assets"].items()},
             code_assets=code, tex_source=_bytes(root, entry["tex"]),
-            notation_evidence=_bytes(root, entry["notation"]), at=at)
+            notation_evidence=_bytes(root, entry["notation"]))
         if (result["eligible_for_jev"] or result["field_candidate"] or result["graph_admission_enabled"]
                 or result["scientific_notation_qualified"] or result["visual_coverage_qualified"]
                 or result["coverage_scope"] != "native_text_only"):
@@ -287,6 +304,7 @@ def selected_replay(*, root: Path, repo: Path, review_map: str, output: str,
     _same(_hash(_bytes(root, preflight_relative)), _hash(preflight_bytes), "baseline_preflight_changed_during_run")
     _same(_hash(_bytes(root, config["source_map"])), _hash(source_map_bytes), "source_map_changed_during_run")
     _same(_hash(_bytes(root, review_map)), _hash(map_bytes), "review_map_changed_during_run")
+    _reverify_receipts(trust, signed_receipts)
     target.mkdir(parents=True)
     write_once(target / "selected-results.json", receipt)
     return receipt
@@ -297,10 +315,9 @@ def main() -> int:
     parser.add_argument("--data-root", required=True, type=Path)
     parser.add_argument("--review-map", required=True, help="Root-relative trusted private map")
     parser.add_argument("--output", required=True, help="New root-relative private output directory")
-    parser.add_argument("--at", help="Receipt verification instant, ISO 8601")
     args = parser.parse_args()
     result = selected_replay(root=args.data_root, repo=REPO, review_map=args.review_map,
-                             output=args.output, at=args.at)
+                             output=args.output)
     print(json.dumps({"status": result["status"], "metrics": result["metrics"],
                       "preserve_legacy_text_gate": result["preserve_legacy_text_gate"]}, sort_keys=True))
     return 0 if result["preserve_legacy_text_gate"]["status"] == "PASS" else 1

@@ -3,16 +3,20 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import inspect
+import io
 import json
 import tempfile
 import unittest
+from contextlib import redirect_stderr
 from pathlib import Path
 from unittest.mock import patch
 
 from trace_gc.trust import Signer
 from trace_gc.pdf_source_parallel_v4 import digest_value
 from tools.selected_reviewed_replay import (_baseline, _bind_frozen_inputs, _historical_correct,
-                                           _output_target, _trust, selected_replay)
+                                           _receipt_enrollment_match, _reverify_receipts,
+                                           _output_target, _trust, main, selected_replay)
 from src.parallel_source_v4.extraction import METHODS
 from src.parallel_source_v4.metrics import score_case, summary
 
@@ -91,6 +95,39 @@ class SelectedReviewedReplayTests(unittest.TestCase):
         receipt["signature"] = base64.b64encode(b"\0" * 64).decode("ascii")
         with self.assertRaises(Exception):
             trust.verify(receipt, "OBSERVATION", at="2026-06-01T00:00:00Z")
+
+    def test_expired_receipt_cannot_use_historical_runner_time(self):
+        self.assertNotIn("at", inspect.signature(selected_replay).parameters)
+        expired = self.signers[0].issue("OBSERVATION", {"test": True},
+                                        issued_at="2020-01-01T00:00:00Z",
+                                        expires_at="2020-01-02T00:00:00Z")
+        with self.assertRaises(Exception):
+            _trust(self.reviewers).verify(expired, "OBSERVATION")
+        with patch("sys.argv", ["selected_reviewed_replay", "--data-root", str(self.root),
+                                "--review-map", "map.json", "--output", "validation_v3_private/out",
+                                "--at", "2020-01-01T12:00:00Z"]), redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit) as caught:
+                main()
+        self.assertEqual(caught.exception.code, 2)
+
+    def test_enrollment_kind_must_match_signed_receipts(self):
+        receipts = [{"issuer": self.reviewers[0]["issuer"], "payload": {"reviewer_kind": "assistant"}},
+                    {"issuer": self.reviewers[1]["issuer"], "payload": {"reviewer_kind": "assistant"}}]
+        _receipt_enrollment_match(self.reviewers, receipts)
+        claimed_human = [{**self.reviewers[0], "reviewer_kind": "human"}, self.reviewers[1]]
+        with self.assertRaisesRegex(ValueError, "review_receipt_enrollment_mismatch"):
+            _receipt_enrollment_match(claimed_human, receipts)
+
+    def test_receipt_expiring_after_application_blocks_publication(self):
+        trust = _trust(self.reviewers)
+        receipt = self.signers[0].issue("OBSERVATION", {"test": True},
+                                        issued_at="2026-09-29T14:00:00Z",
+                                        expires_at="2026-09-29T14:01:00Z")
+        with patch("trace_gc.trust.now", return_value="2026-09-29T14:00:30Z"):
+            trust.verify(receipt, "OBSERVATION")
+        with patch("trace_gc.trust.now", return_value="2026-09-29T14:01:00Z"):
+            with self.assertRaises(Exception):
+                _reverify_receipts(trust, [receipt])
 
     def _frozen_gate(self):
         ids = [f"f{i:03d}" for i in range(1, 201)]

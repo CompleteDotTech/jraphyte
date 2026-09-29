@@ -1,6 +1,6 @@
 # Selected signed review replay
 
-`python -m tools.selected_reviewed_replay --data-root ROOT --review-map PRIVATE_MAP.json --output NEW_PRIVATE_DIRECTORY --at ISO_UTC_TIME`
+`python -m tools.selected_reviewed_replay --data-root ROOT --review-map PRIVATE_MAP.json --output NEW_PRIVATE_DIRECTORY`
 
 The map and output names are relative to the authorized external data root. The
 output must be a new direct child of `validation_v3_private`. The map is an
@@ -51,3 +51,7 @@ The selected receipt measures **reviewed native text proposals**. It explicitly
 does not qualify visual completeness, scientific notation, graph admission, or
 independent human review. The map's public keys must be enrolled only after
 the application owner verifies the reviewer identities and receipt provenance.
+Each enrolled reviewer kind must match that reviewer's signed receipt payload.
+Receipt expiry is checked against the current clock; the qualifying runner has
+no historical verification-time override. Every signed receipt is checked again
+immediately before the selected result is published.

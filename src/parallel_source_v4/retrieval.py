@@ -16,7 +16,8 @@ from typing import Callable, Sequence
 from trace_gc.pdf_source_parallel_v4 import (SourceGeometry, canonical, digest_value, locate, normalize,
     style, validate_lines, validate_source_spans, verify_source_geometry_policy)
 from trace_gc.pdf_structure_parallel_v4 import (METADATA_START, VERSION as ASSESSMENT_VERSION,
-    _author_like, _compose_section_spans, _header, verify_assessment, verify_interior_footnote_exclusion)
+    _author_like, _boundary_evidence, _compose_section_spans, _role_rejected, verify_assessment,
+    verify_interior_footnote_exclusion)
 from .adapters import conversion_state
 from .common import child, data_root, digest, read, write_once
 from .metrics import ranking_metrics
@@ -198,17 +199,43 @@ def _verify_source_owned_paragraph_groups(assessment: dict, native: list[dict],
     first_boundary_y = min(span["bbox"][1] for span in closure_spans)
     if first_boundary_y < last[3] - 2:
         raise ValueError("abstract_paragraph_group_closure_before_abstract")
-    if boundary["kind"] == "body_section":
-        label = boundary.get("label", "")
-        box = [min(span["bbox"][0] for span in closure_spans), first_boundary_y,
-               max(span["bbox"][2] for span in closure_spans),
-               max(span["bbox"][3] for span in closure_spans)]
-        width = min(box[2] - box[0], last[2] - last[0])
-        horizontal_overlap = max(0, min(box[2], last[2]) - max(box[0], last[0]))
-        if (not _header(label) or
-                normalize(" ".join(span["text"] for span in closure_spans)) != normalize(label) or
-                width <= 0 or horizontal_overlap < .8 * width):
-            raise ValueError("abstract_paragraph_group_body_closure_not_source_owned")
+    label = boundary.get("label", "")
+    box = [min(span["bbox"][0] for span in closure_spans), first_boundary_y,
+           max(span["bbox"][2] for span in closure_spans),
+           max(span["bbox"][3] for span in closure_spans)]
+    width = min(box[2] - box[0], last[2] - last[0])
+    horizontal_overlap = max(0, min(box[2], last[2]) - max(box[0], last[0]))
+    source_text = " ".join(span["text"] for span in closure_spans)
+    scope = boundary.get("source_text_scope", "whole_region")
+    if (not isinstance(label, str) or not label.strip() or
+            scope not in {"whole_region", "metadata_label", "legal_footer_statement"} or
+            (scope == "whole_region" and
+             normalize(source_text)[:120] != normalize(label)[:120]) or
+            (scope != "whole_region" and not normalize(label).startswith(normalize(source_text))) or
+            width <= 0 or horizontal_overlap < .8 * width):
+        raise ValueError("abstract_paragraph_group_closure_not_source_owned")
+    region_boxes = boundary.get("region_boxes") or [box]
+    region = {"text": source_text if scope == "whole_region" else label,
+              "boxes": region_boxes, "bbox": [min(b[0] for b in region_boxes),
+              min(b[1] for b in region_boxes), max(b[2] for b in region_boxes),
+              max(b[3] for b in region_boxes)], "ref": boundary["ref"],
+              "tree_order": boundary.get("tree_order", 0)}
+    replay = _boundary_evidence(region, native, boundary["kind"], source_geometry)
+    if (replay.get("source_location") != "located" or
+            [(str(s["line_id"]), s["start"], s["end"]) for s in replay["source_spans"]] !=
+            [(str(s["line_id"]), s["start"], s["end"]) for s in closure_spans] or
+            replay.get("source_text_scope") != scope):
+        raise ValueError("abstract_paragraph_group_closure_policy_changed")
+    closure_ids = {str(span["line_id"]) for span in closure_spans}
+    for line in native:
+        line_box = line["bbox"]
+        if (str(line["id"]) not in closure_ids and line["text"].strip() and
+                line_box[1] >= last[3] - 2 and line_box[3] <= first_boundary_y + 2 and
+                max(0, min(line_box[2], last[2]) - max(line_box[0], last[0])) >=
+                .8 * min(line_box[2] - line_box[0], last[2] - last[0])):
+            raise ValueError("abstract_paragraph_group_unowned_trailing_line")
+    if boundary["kind"] == "metadata_or_nonabstract_region" and not _role_rejected(label):
+        raise ValueError("abstract_paragraph_group_metadata_closure_not_role_bounded")
 
 
 def extract_fields(case_id: str, native: list[dict], *, page_size: list,

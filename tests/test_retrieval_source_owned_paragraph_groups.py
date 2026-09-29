@@ -16,7 +16,7 @@ from src.parallel_source_v4.retrieval import verify_source_bound_assessment
 
 @unittest.skipUnless(fitz, "optional PyMuPDF required for two-column source replay")
 class SourceOwnedParagraphGroupTests(unittest.TestCase):
-    def fixture(self):
+    def fixture(self, *, body_closure=False):
         left = [
             "The abstract opens with a complete scientific claim about the left lane.",
             "A second paragraph measures a stable response across repeated trials.",
@@ -31,19 +31,19 @@ class SourceOwnedParagraphGroupTests(unittest.TestCase):
             page.insert_text((40, 120), left[1], fontsize=8)
             page.insert_text((330, 140), "A second right-lane sentence is also unrelated.", fontsize=8)
             page.insert_text((40, 145), left[2], fontsize=8)
-            page.insert_text((40, 170), "Keywords", fontsize=12)
-            page.insert_text((40, 195), "2 Methods", fontsize=12)
+            page.insert_text((40, 170), "2 Methods" if body_closure else "Keywords", fontsize=12)
             payload = pdf.tobytes()
         with fitz.open(stream=payload, filetype="pdf") as pdf:
             native = source_lines(pdf[0])
         source_hash = hashlib.sha256(payload).hexdigest()
         geometry = SourceGeometry.from_pdf(payload, native, expected_source_sha256=source_hash)
         by_text = {line["text"]: line for line in native}
+        closing_text = "2 Methods" if body_closure else "Keywords"
         doc = document([
             item(0, "Abstract", "section_header", [by_text["Abstract"]["bbox"]]),
             *[item(i + 1, value, "text", [by_text[value]["bbox"]])
               for i, value in enumerate(left)],
-            item(4, "Keywords", "section_header", [by_text["Keywords"]["bbox"]]),
+            item(4, closing_text, "section_header", [by_text[closing_text]["bbox"]]),
             item(5, "1 Introduction", "section_header", [by_text["1 Introduction"]["bbox"]]),
             item(6, "This right lane contains unrelated body prose.", "text",
                  [by_text["This right lane contains unrelated body prose."]["bbox"]]),
@@ -60,10 +60,10 @@ class SourceOwnedParagraphGroupTests(unittest.TestCase):
         assessment["text"] = composed["text"]
         assessment["source_alignment"] = {key: value for key, value in composed.items()
                                           if key not in {"text", "spans"}}
-        assessment["closing_boundary"] = {"kind": "metadata_or_nonabstract_region",
-            "ref": "#/texts/4", "label": "Keywords", "source_location": "located", "source_spans": [{
-                "line_id": by_text["Keywords"]["id"], "start": 0, "end": len("Keywords"),
-                "text": "Keywords", "bbox": by_text["Keywords"]["bbox"],
+        assessment["closing_boundary"] = {"kind": "body_section" if body_closure else "metadata_or_nonabstract_region",
+            "ref": "#/texts/4", "label": closing_text, "source_location": "located", "source_spans": [{
+                "line_id": by_text[closing_text]["id"], "start": 0, "end": len(closing_text),
+                "text": closing_text, "bbox": by_text[closing_text]["bbox"],
                 "box_scope": "native_line_not_character_box", "page_no": 1}]}
         assessment["status"] = "complete"
         assessment["proposal"] = True
@@ -79,7 +79,7 @@ class SourceOwnedParagraphGroupTests(unittest.TestCase):
         verify_source_bound_assessment(assessment, native, **params)
 
     def test_same_lane_body_heading_closes_groups(self):
-        assessment, native, params = self.fixture()
+        assessment, native, params = self.fixture(body_closure=True)
         heading = next(x for x in native if x["text"] == "1 Introduction")
         left_heading = next(x for x in native if x["text"] == "2 Methods")
         changed = deepcopy(assessment)
@@ -89,18 +89,40 @@ class SourceOwnedParagraphGroupTests(unittest.TestCase):
                 "text": heading["text"], "bbox": heading["bbox"],
                 "box_scope": "native_line_not_character_box", "page_no": 1}]}
         seal(changed)
-        with self.assertRaisesRegex(ValueError, "body_closure_not_source_owned"):
+        with self.assertRaisesRegex(ValueError, "closure_not_source_owned"):
             verify_source_bound_assessment(changed, native, **params)
-        changed["closing_boundary"].update(ref="#/texts/6", label="2 Methods",
+        changed["closing_boundary"].update(ref="#/texts/4", label="2 Methods",
             source_spans=[{"line_id": left_heading["id"], "start": 0,
                 "end": len(left_heading["text"]), "text": left_heading["text"],
                 "bbox": left_heading["bbox"], "box_scope": "native_line_not_character_box",
                 "page_no": 1}])
         seal(changed)
         verify_source_bound_assessment(changed, native, **params)
+        changed["closing_boundary"]["kind"] = "metadata_or_nonabstract_region"
+        seal(changed)
+        with self.assertRaisesRegex(ValueError, "metadata_closure_not_role_bounded"):
+            verify_source_bound_assessment(changed, native, **params)
+        changed["closing_boundary"]["kind"] = "body_section"
         changed["closing_boundary"]["label"] = "1 Introduction"
         seal(changed)
-        with self.assertRaisesRegex(ValueError, "body_closure_not_source_owned"):
+        with self.assertRaisesRegex(ValueError, "closure_not_source_owned"):
+            verify_source_bound_assessment(changed, native, **params)
+
+    def test_resealed_metadata_boundary_cannot_point_to_other_column(self):
+        assessment, native, params = self.fixture()
+        right = next(x for x in native if x["text"] == "1 Introduction")
+        changed = deepcopy(assessment)
+        changed["closing_boundary"]["source_spans"] = [{"line_id": right["id"],
+            "start": 0, "end": len(right["text"]), "text": right["text"],
+            "bbox": right["bbox"], "box_scope": "native_line_not_character_box",
+            "page_no": 1}]
+        seal(changed)
+        with self.assertRaisesRegex(ValueError, "closure_not_source_owned"):
+            verify_source_bound_assessment(changed, native, **params)
+        # Even a matching forged label cannot turn a foreign body heading into metadata.
+        changed["closing_boundary"]["label"] = right["text"]
+        seal(changed)
+        with self.assertRaisesRegex(ValueError, "closure_not_source_owned"):
             verify_source_bound_assessment(changed, native, **params)
 
     def test_resealed_group_tampering_fails(self):

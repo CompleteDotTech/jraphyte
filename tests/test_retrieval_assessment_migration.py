@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 import tempfile
 import unittest
@@ -9,6 +10,12 @@ from unittest.mock import patch, Mock
 
 from src.parallel_source_v4.common import write_once, digest
 from src.parallel_source_v4 import assessment_migration as migration
+from src.parallel_source_v4 import assessment_producer as producer
+from trace_gc.pdf_source_parallel_v4 import source_lines
+try:
+    import fitz
+except ImportError:
+    fitz = None
 
 
 class MigrationTests(unittest.TestCase):
@@ -102,6 +109,106 @@ class MigrationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "migration_row_artifact_path_mismatch"):
             migration.verify_migrated_receipt(self.root, self.rows[0], receipt,
                 self.new, None, protocol, [], [100, 100])
+
+    @unittest.skipUnless(fitz, "optional PyMuPDF required for source replay")
+    def test_import_crash_resume_reuses_conversion_without_model_call(self):
+        with fitz.open() as pdf:
+            page = pdf.new_page(width=595, height=842)
+            page.insert_text((40, 60), "Abstract", fontsize=12)
+            payload = pdf.tobytes()
+        with fitz.open(stream=payload, filetype="pdf") as pdf:
+            native = source_lines(pdf[0])
+        source_hash = hashlib.sha256(payload).hexdigest()
+        (self.root / "source.pdf").write_bytes(payload)
+        row = {"sample_id": "a", "physical_page": 1, "source_relative": "source.pdf",
+            "source_root_id": "data_root", "source_sha256": source_hash,
+            **{key + "_sha256": "0" * 64 for key in ("page", "image", "native")}}
+        runtime = json.loads(self.profile.read_text())["runtime"]
+        converter_runtime = {key: runtime[key] for key in ("python", "executable_sha256", "packages")}
+        start_path = self.root / "old" / "sessions" / "one" / "start.json"
+        start_hash = write_once(start_path, {"protocol_sha256": self.old_protocol_hash,
+            "code_sha256": self.old_protocol["code_sha256"],
+            "converter_profile_sha256": self.profile_hash, "worker_pid": 42,
+            "runtime": converter_runtime, "network_guard": "nonlocal_connect_denied"})
+        attempt = self.old / "attempts" / "a"
+        (attempt / "intent.json").unlink()
+        (attempt / "conversion.json").unlink()
+        (attempt / "document.json").unlink()
+        write_once(attempt / "intent.json", {"sample_id": "a",
+            "protocol_sha256": self.old_protocol_hash,
+            **{key + "_sha256": row[key + "_sha256"]
+               for key in ("source", "page", "image", "native")}})
+        write_once(attempt / "conversion.json", {"status": "error",
+            "docling_status": "ConversionStatus.ERROR", "document_sha256": None,
+            "error_class": "ConversionError", "worker_pid": 42,
+            "runtime": converter_runtime, "model_called": True,
+            "session_start": {"relative": start_path.relative_to(self.root).as_posix(),
+                              "sha256": start_hash}, "wall_seconds": 0.2})
+        record = {
+            "sample_id": "a", "origin_receipt_sha256": None,
+            "origin_intent_sha256": digest(attempt / "intent.json"),
+            "origin_conversion_sha256": digest(attempt / "conversion.json"),
+            "origin_document_sha256": None}
+        plan = {"schema_version": migration.VERSION, "ids": ["a"],
+            "origin_run_relative": "old", "origin_protocol_sha256": self.old_protocol_hash,
+            "profile_relative": "profile.json", "profile_sha256": self.profile_hash,
+            "manifest_sha256": self.manifest_hash, "source_root": None,
+            "new_code_sha256": {"new": "code"},
+            "new_evaluator_runtime": {"new": "runtime"}, "imports": [record]}
+        plan_hash = write_once(self.root / "plan.json", plan)
+        self.new.mkdir()
+        protocol = {"ids": ["a"], "code_sha256": plan["new_code_sha256"],
+            "evaluator_runtime": plan["new_evaluator_runtime"],
+            "manifest_sha256": self.manifest_hash, "profile_sha256": self.profile_hash,
+            "source_root": None, "migration": {"relative": "plan.json", "sha256": plan_hash}}
+        write_once(self.new / "protocol.json", protocol)
+        manifest = {"pdfs": [row]}
+        real_write = migration.write_once
+        crashed = False
+        def crash_before_row(path, value):
+            nonlocal crashed
+            if path == self.new / "rows" / "a.json" and not crashed:
+                crashed = True
+                raise RuntimeError("simulated_crash_after_assessment")
+            return real_write(path, value)
+        with patch.object(producer, "_verified_row", return_value=(native, [595, 842], "eligible")), \
+                patch.object(producer, "_check_code"), \
+                patch.object(migration, "write_once", side_effect=crash_before_row):
+            with self.assertRaisesRegex(RuntimeError, "simulated_crash_after_assessment"):
+                migration._initialize_imports(self.root, self.new, manifest, protocol, None)
+        assessment_path = self.new / "assessments" / producer.METHOD / "a.json"
+        first_hash = digest(assessment_path)
+        self.assertFalse((self.new / "rows" / "a.json").exists())
+        with patch.object(producer, "_verified_row", return_value=(native, [595, 842], "eligible")), \
+                patch.object(producer, "_check_code"):
+            migration._initialize_imports(self.root, self.new, manifest, protocol, None)
+            migration._initialize_imports(self.root, self.new, manifest, protocol, None)
+        receipt = migration._read(self.new / "rows" / "a.json")
+        self.assertEqual(digest(assessment_path), first_hash)
+        self.assertFalse(receipt["new_model_call"])
+        self.assertEqual(receipt["conversion_sha256"], record["origin_conversion_sha256"])
+        self.assertFalse((self.new / "attempts").exists())
+        with self.assertRaisesRegex(ValueError, "migration_new_protocol_changed"):
+            migration._initialize_imports(self.root, self.new, manifest,
+                {**protocol, "evaluator_runtime": {"changed": True}}, None)
+        original_conversion = (attempt / "conversion.json").read_bytes()
+        (attempt / "conversion.json").write_bytes(b"{}")
+        with patch.object(producer, "_verified_row", return_value=(native, [595, 842], "eligible")):
+            with self.assertRaises(ValueError):
+                migration._initialize_imports(self.root, self.new, manifest, protocol, None)
+        (attempt / "conversion.json").write_bytes(original_conversion)
+        alternate = {**plan, "origin_run_relative": "different-origin"}
+        alternate_hash = write_once(self.root / "alternate-plan.json", alternate)
+        alternate_protocol = {**protocol,
+            "migration": {"relative": "alternate-plan.json", "sha256": alternate_hash}}
+        with patch.object(producer, "_verified_row", return_value=(native, [595, 842], "eligible")):
+            with self.assertRaises(ValueError):
+                migration._initialize_imports(self.root, self.new, manifest, alternate_protocol, None)
+        (self.root / "source.pdf").write_bytes(b"changed")
+        with patch.object(producer, "_verified_row", return_value=(native, [595, 842], "eligible")), \
+                patch.object(producer, "_check_code"):
+            with self.assertRaises(ValueError):
+                migration._initialize_imports(self.root, self.new, manifest, protocol, None)
 
 
 if __name__ == "__main__":

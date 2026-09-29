@@ -1212,6 +1212,36 @@ def _frontmatter_candidate(region: dict, ordered: list[dict], native: list[dict]
             "affiliation_ref": affiliation["ref"], "affiliation_source_spans": affiliation_proof["spans"]}
 
 
+def _frontmatter_intro_closure(result: dict, page_size: list[float]) -> dict | None:
+    """Bound a located full-width title-page paragraph by a source Introduction."""
+    scope, boundary, spans = result.get("candidate_scope"), result.get("closing_boundary"), result.get("spans")
+    if not scope or not boundary or not spans or not SENTENCE_END.search(result["text"]):
+        return None
+    if boundary.get("kind") not in {"body_section", "embedded_body_section"}:
+        return None
+    if not re.fullmatch(r"(?:\d+[.]?|[IVX]+[.]?)?\s*introduction[.:]?", normalize(boundary.get("label", "")), re.I):
+        return None
+    heading = boundary.get("source_spans") or []
+    if not heading or boundary.get("source_location") != "located":
+        return None
+    first_y = min(s["bbox"][1] for s in spans)
+    last_y = max(s["bbox"][3] for s in spans)
+    heading_y = min(s["bbox"][1] for s in heading)
+    affiliation = scope.get("affiliation_source_spans") or []
+    if not affiliation or max(s["bbox"][3] for s in affiliation) > first_y + 2:
+        return None
+    if heading_y <= last_y + 4:
+        return None
+    left, right = min(s["bbox"][0] for s in spans), max(s["bbox"][2] for s in spans)
+    if right - left < page_size[0] * .6:
+        return None
+    return {"kind": "source_frontmatter_intro_closure", "source_spans": heading,
+            "candidate_boundary": boundary,
+            "candidate_source_spans": spans, "title_source_spans": scope["title_source_spans"],
+            "author_source_spans": scope["author_source_spans"],
+            "affiliation_source_spans": affiliation}
+
+
 def _compose_section_spans(selected: dict, native: list[dict]) -> dict | None:
     """Compose located paragraphs when unrelated native lanes interleave them.
 
@@ -1561,8 +1591,13 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                         "reason": "source_prose_between_abstract_and_boundary", "source_spans": witness["spans"]})
                     break
         if basis == "source_frontmatter_paragraph_requires_review" and result["status"] == "complete":
-            result.update(status="uncertain", complete_candidate=False,
-                          reasons=["unlabelled_frontmatter_ownership_requires_source_review"])
+            closure = _frontmatter_intro_closure(result, page_size)
+            if closure:
+                result.update(closing_boundary=closure, proposal_basis="source_frontmatter_intro_bounded",
+                              reasons=["bounded_source_located_proposal"])
+            else:
+                result.update(status="uncertain", complete_candidate=False,
+                              reasons=["unlabelled_frontmatter_ownership_requires_source_review"])
         text = result["text"]
         within_budget = len(text) <= max_input_chars
         result["request_budget"] = {"limit_characters": max_input_chars, "characters": len(text),

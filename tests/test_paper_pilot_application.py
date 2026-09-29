@@ -14,12 +14,15 @@ except ImportError:
 
 from trace_gc.backend import CompilerService, SQLiteReferenceBackend
 from trace_gc.budget import RunBudget
-from trace_gc.canonical import bytes_digest
+from trace_gc.canonical import bytes_digest, digest
 from trace_gc.catalog import Catalog
 from trace_gc.demo import limits, relation
 from trace_gc.errors import ContractError
 from trace_gc.paper_pilot import PaperPilot
+from trace_gc.paper_ingestion import CHECKS
 from trace_gc.paper_pilot_application import LocalPaperPilotApplication, require_complete_native_anchor
+from trace_gc.paper_pilot_controller import PaperPilotController
+from trace_gc.pdf_image_evidence import CHECKS as IMAGE_CHECKS, candidate_hash, image_candidate, render_source
 from trace_gc.policy import create_policy
 from trace_gc.retrieval.security import access_policy, grant
 from trace_gc.trust import IssuerPolicy, Signer, TrustStore
@@ -112,6 +115,67 @@ class ApplicationTests(unittest.TestCase):
         self.assertEqual(result["graph_version"], 0)
         self.assertEqual(self.budget.snapshot()["used"]["model_calls"], 0)
         self.assertEqual(self.app.prepare_sources()["prepared"], result["prepared"])
+
+    def test_v2_controller_requires_all_native_and_image_inputs_before_prepare(self):
+        self.app.close()
+        (self.run / "application-journal.sqlite3").unlink()
+        native_row = {"id": "native", "source_id": "paper", "version": "v1",
+            "pdf_sha256": bytes_digest(self.original), "physical_page": 2,
+            "start": 0, "end": len("Authored native evidence on page two.")}
+        meta, _, _ = render_source(self.original, physical_page=1, dpi=144)
+        text = "Authored image cover"
+        candidate = image_candidate(self.original, source_id="paper", transcription=text,
+            raw_output=text.encode(), engine="manual-visual-transcription", revision="manual-v1",
+            configuration={"producer": "authored-fixture", "method": "visual-reading-of-original-full-page"},
+            physical_page=1, dpi=144, crop=meta["crop"]["bbox"],
+            input_crop_sha256=meta["crop"]["png_sha256"], fallback_reason="native_absent")
+        image_row = {"id": "cover", "source_id": "paper", "version": "v1",
+            "pdf_sha256": bytes_digest(self.original), "physical_page": 1,
+            "crop_bbox": meta["crop"]["bbox"], "candidate_sha256": candidate_hash(candidate),
+            "transcription": text, "producer": "authored-fixture",
+            "raw_output_sha256": bytes_digest(text.encode()),
+            "fallback_reason": "native_absent", "native_defect_note": None}
+        manifest = {"version": "real-paper-pilot-controller-v2", "pilot_config": self.config,
+            "pages": [native_row], "image_pages": [image_row], "questions": self.config["questions"],
+            "acceptance": {"phase": "source_preparation_only", "source_review_checks": sorted(CHECKS),
+                           "image_review_checks": sorted(IMAGE_CHECKS)}}
+        controller = PaperPilotController(self.pilot, manifest=manifest, private_dir=self.run)
+        try:
+            with self.assertRaises(ContractError):
+                controller.prepare_image("cover", self.original, text.encode())
+            with self.assertRaises(ContractError):
+                controller.preflight({"native": self.original})
+            with self.assertRaises(ContractError):
+                controller.preflight({"native": self.original, "cover": self.original + b"changed"})
+            self.assertEqual(self.pilot.status()["requests"], [])
+            controller.preflight({"native": self.original, "cover": self.original})
+            native_result = controller.prepare("native", self.original)
+            image_result = controller.prepare_image("cover", self.original, text.encode())
+            self.assertEqual(native_result["state"], "WAIT_SOURCE_REVIEW")
+            self.assertEqual(image_result["state"], "WAIT_IMAGE_SOURCE_REVIEW")
+            self.assertEqual(controller.prepare_image("cover", self.original, text.encode()), image_result)
+            controller.close()
+            controller = PaperPilotController(self.pilot, manifest=manifest, private_dir=self.run)
+            self.assertEqual(controller.prepare_image("cover", self.original, text.encode()), image_result)
+            self.assertEqual(self.backend.state()["graph_version"], 0)
+            self.assertEqual(self.budget.snapshot()["used"]["model_calls"], 0)
+            controller._append({"kind": "PREPARE_IMAGE", "request_id": image_result["request_id"],
+                                "result_sha256": digest(self.pilot.requests[image_result["request_id"]]["result"])})
+            with self.assertRaises(ContractError):
+                controller.status()
+            controller.db.execute("DELETE FROM events WHERE seq=(SELECT MAX(seq) FROM events)")
+            controller._append({"kind": "PREPARE_IMAGE", "request_id": "source-prepare-image:unfrozen",
+                                "result_sha256": digest(self.pilot.requests[image_result["request_id"]]["result"])})
+            with self.assertRaises(ContractError):
+                controller.status()
+            controller.db.execute("DELETE FROM events WHERE seq=(SELECT MAX(seq) FROM events)")
+            request = self.pilot.requests[image_result["request_id"]]
+            request["kind"] = "PREPARE_SOURCE"
+            with self.assertRaises(ContractError):
+                controller.status()
+            request["kind"] = "PREPARE_SOURCE_IMAGE"
+        finally:
+            controller.close()
 
     def test_changed_source_blocks_before_preflight(self):
         (self.root / "source.pdf").write_bytes(self.original + b"changed")

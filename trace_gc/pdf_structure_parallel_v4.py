@@ -1759,6 +1759,91 @@ def _source_shaded_synopsis_closure(result: dict, native: list[dict], ordered: l
             "scholarly_boundary_and_98_corroborated": True}
 
 
+def _source_two_column_keywords_closure(result: dict, native: list[dict],
+                                        page_size: list[float], scholarly_abstract: str,
+                                        source_geometry) -> dict | None:
+    """Close a bold left-lane abstract before an unlabelled keyword list.
+
+    Source geometry must show body prose already flowing in the right lane
+    while the selected abstract occupies the left, then left-lane body prose
+    after the compact keyword list. A style change or pipe character alone
+    cannot close an abstract.
+    """
+    boundary, spans = result.get("closing_boundary"), result.get("spans") or []
+    if (type(source_geometry) is not SourceGeometry
+            or result.get("proposal_basis") != "source_bold_narrative_region"
+            or not boundary or boundary.get("kind") != "unresolved_section_ownership"
+            or boundary.get("reason") != "unlabelled_group_typography_transition"
+            or len(spans) < 8 or len(canonical(result.get("text", ""))) < 400
+            or not SENTENCE_END.search(result["text"])
+            or scholarly_abstract and not compare(result["text"], scholarly_abstract)["boundary_and_98_match"]):
+        return None
+    keywords = boundary.get("source_spans") or []
+    if not 1 <= len(keywords) <= 3:
+        return None
+    try:
+        validate_source_spans(spans, native)
+        validate_source_spans(keywords, native)
+    except (KeyError, ValueError, TypeError, IndexError):
+        return None
+    width, height = page_size
+    mid = width / 2
+    top, bottom = min(s["bbox"][1] for s in spans), max(s["bbox"][3] for s in spans)
+    key_top, key_bottom = min(s["bbox"][1] for s in keywords), max(s["bbox"][3] for s in keywords)
+    if (top < height * .12 or key_bottom > height * .65
+            or not 5 <= key_top - bottom <= 25
+            or any(s["bbox"][0] < width*.05 or s["bbox"][2] > mid-5 for s in spans+keywords)):
+        return None
+    by_id = {str(line["id"]): line for line in native}
+    selected_lines = [by_id[str(s["line_id"])] for s in spans]
+    keyword_lines = [by_id[str(s["line_id"])] for s in keywords]
+    selected_styles = [style(line) for line in selected_lines]
+    keyword_styles = [style(line) for line in keyword_lines]
+    if (any(not s.get("bold") or s.get("fraction", 0) < .8 for s in selected_styles)
+            or any(s.get("bold") or s.get("fraction", 0) < .8 for s in keyword_styles)):
+        return None
+    main_size = min(s.get("size", 0) for s in selected_styles)
+    key_size = max(s.get("size", 0) for s in keyword_styles)
+    if main_size <= 0 or not 0 < key_size <= main_size * .95:
+        return None
+    key_text = " ".join(s["text"] for s in keywords)
+    terms = [term.strip() for term in key_text.split("|")]
+    if (key_text.count("|") < 3 or any(not 2 <= len(canonical(term)) <= 45 for term in terms)
+            or re.search(r"[.!?]", key_text)):
+        return None
+    right = sorted((line for line in native if line["bbox"][0] >= mid+3
+                    and line["bbox"][2] <= width*.95 and line["bbox"][2]-line["bbox"][0] >= width*.27
+                    and top-3 <= line["bbox"][1] <= key_bottom
+                    and len(canonical(line["text"])) >= 30), key=lambda line: line["bbox"][1])
+    if (len(right) < 5 or right[0]["bbox"][1] > top+15
+            or right[-1]["bbox"][1] < top+55):
+        return None
+    left_body = sorted((line for line in native if width*.05 <= line["bbox"][0] < mid-50
+                        and line["bbox"][2] <= mid-5
+                        and 5 <= line["bbox"][1]-key_bottom <= 75
+                        and len(canonical(line["text"])) >= 30
+                        and not style(line).get("bold")
+                        and style(line).get("size", 0) >= key_size*1.15),
+                       key=lambda line: line["bbox"][1])
+    if len(left_body) < 3 or left_body[2]["bbox"][1] - left_body[0]["bbox"][1] > 35:
+        return None
+    known = {str(s["line_id"]) for s in spans+keywords}
+    if any(str(line["id"]) not in known and canonical(line["text"])
+           and line["bbox"][2]-line["bbox"][0] > (line["bbox"][3]-line["bbox"][1])*2
+           and line["bbox"][0] < mid-5 and line["bbox"][2] <= mid+3
+           and bottom+1 < line["bbox"][1] < left_body[0]["bbox"][1]-1
+           for line in native):
+        return None
+    return {"kind": "source_two_column_unlabelled_keywords_closure",
+            "source": "verified_original_pdf", "source_spans": keywords,
+            "keyword_ref": boundary["ref"], "keyword_terms": len(terms),
+            "right_body_line_ids": [line["id"] for line in right],
+            "left_body_line_ids": [line["id"] for line in left_body[:3]],
+            "abstract_terminal_line_id": spans[-1]["line_id"],
+            "before_style": boundary.get("before_style"), "after_style": boundary.get("after_style"),
+            "scholarly_field_corroborated": bool(scholarly_abstract)}
+
+
 def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                     native_lines=None, scholarly_abstract="", max_input_chars=4000,
                     conversion_status="success", source_geometry=None) -> dict:
@@ -1913,7 +1998,9 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                     or _source_figure_then_intro_closure(
                         result, native, page_size, source_geometry)
                     or _source_shaded_synopsis_closure(
-                        result, native, ordered, page_size, scholarly_abstract, source_geometry))
+                        result, native, ordered, page_size, scholarly_abstract, source_geometry)
+                    or _source_two_column_keywords_closure(
+                        result, native, page_size, scholarly_abstract, source_geometry))
                 if closure:
                     result.update(status="complete", complete_candidate=True, closing_boundary=closure,
                                   proposal_basis=("source_page_two_bibliographic_intro_bounded" if
@@ -1922,7 +2009,9 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                                                   closure["kind"] == "source_two_column_body_onset_closure" else
                                                   "source_vector_figure_intro_bounded" if
                                                   closure["kind"] == "source_vector_figure_page_two_intro_closure" else
-                                                  "source_shaded_synopsis_outer_heading_bounded"),
+                                                  "source_shaded_synopsis_outer_heading_bounded" if
+                                                  closure["kind"] == "source_shaded_synopsis_outer_heading_closure" else
+                                                  "source_two_column_unlabelled_keywords_bounded"),
                                   reasons=["bounded_source_located_proposal"])
                 else:
                     result.update(status="uncertain", reasons=["section_ownership_requires_source_review"])

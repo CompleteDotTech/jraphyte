@@ -165,6 +165,21 @@ class SourceGeometry:
                 lines.sort(key=lambda row: (row[0][1], row[0][0]))
                 if lines and lines[0][0][1] < following.rect.height * .2:
                     first_box, first_text = lines[0]
+                    preceding_header = None
+                    # A title-page PDF may repeat its title above a contents
+                    # page. Keep that header as evidence; the selector must
+                    # match it to the located first-page title before using
+                    # Contents as a closing witness.
+                    if (len(lines) > 1 and re.fullmatch(r"contents", lines[1][1], re.I)
+                            and lines[1][0][1] < following.rect.height * .2
+                            and .04 * following.rect.height <= first_box[1] < lines[1][0][1] - 8
+                            and 20 <= len(first_text) <= 180
+                            and abs((first_box[0] + first_box[2])/2 - following.rect.width/2)
+                            <= following.rect.width * .12):
+                        preceding_header = {"text": first_text,
+                                            "text_sha256": hashlib.sha256(first_text.encode()).hexdigest(),
+                                            "box": first_box}
+                        first_box, first_text = lines[1]
                     opening = first_text
                     boxes = [first_box]
                     if (re.fullmatch(r"(?:[IVX]+|\d+)[.)]?", first_text, re.I)
@@ -179,6 +194,8 @@ class SourceGeometry:
                                              "physical_page": 2, "text": opening,
                                              "text_sha256": hashlib.sha256(opening.encode()).hexdigest(),
                                              "boxes": boxes, "page_size": [following.rect.width, following.rect.height]}
+                        if preceding_header is not None:
+                            next_page_opening["preceding_header"] = preceding_header
             # Vector extraction is not a visibility guarantee. Unsupported
             # clipping/group compositing and annotation overlays stay held.
             unsupported_compositing = (any(path.get("type") in {"clip", "group"} for path in drawings)

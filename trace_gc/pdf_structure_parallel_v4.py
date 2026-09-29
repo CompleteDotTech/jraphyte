@@ -1242,6 +1242,46 @@ def _frontmatter_intro_closure(result: dict, page_size: list[float]) -> dict | N
             "affiliation_source_spans": affiliation}
 
 
+def _frontmatter_contents_closure(result: dict, page_size: list[float], source_geometry) -> dict | None:
+    """Close an unlabeled title-page candidate before a verified contents page.
+
+    The following page must repeat the exact located first-page title above
+    Contents. Correspondence is a first-page boundary, never closure alone.
+    """
+    if type(source_geometry) is not SourceGeometry:
+        return None
+    scope, boundary, spans = result.get("candidate_scope"), result.get("closing_boundary"), result.get("spans")
+    if (not scope or scope.get("kind") != "unlabelled_frontmatter_candidate_requires_source_review"
+            or not boundary or boundary.get("kind") != "metadata_or_nonabstract_region"
+            or not re.match(r"^\s*correspondence\s*:", boundary.get("label", ""), re.I)
+            or boundary.get("source_location") != "located" or not boundary.get("source_spans")
+            or not spans or len(canonical(result.get("text", ""))) < 100
+            or not SENTENCE_END.search(result["text"])):
+        return None
+    opening = source_geometry.descriptor().get("next_page_opening")
+    if not opening or opening.get("kind") != "contents" or opening.get("physical_page") != 2:
+        return None
+    header = opening.get("preceding_header") or {}
+    title_spans = scope.get("title_source_spans") or []
+    if (not header.get("text") or not title_spans
+            or canonical(header["text"]) != canonical(" ".join(s["text"] for s in title_spans))):
+        return None
+    first_y, last_y = min(s["bbox"][1] for s in spans), max(s["bbox"][3] for s in spans)
+    affiliation = scope.get("affiliation_source_spans") or []
+    if (not affiliation or max(s["bbox"][3] for s in affiliation) > first_y + 2
+            or last_y > page_size[1] * .8
+            or min(s["bbox"][1] for s in boundary["source_spans"]) <= last_y + 2):
+        return None
+    left, right = min(s["bbox"][0] for s in spans), max(s["bbox"][2] for s in spans)
+    if right - left < page_size[0] * .6:
+        return None
+    return {"kind": "source_frontmatter_contents_closure", "source": "verified_original_pdf",
+            "physical_page": 2, "opening": opening, "candidate_boundary": boundary,
+            "candidate_source_spans": spans, "title_source_spans": title_spans,
+            "author_source_spans": scope["author_source_spans"],
+            "affiliation_source_spans": affiliation}
+
+
 def _compose_section_spans(selected: dict, native: list[dict]) -> dict | None:
     """Compose located paragraphs when unrelated native lanes interleave them.
 
@@ -1591,9 +1631,13 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                         "reason": "source_prose_between_abstract_and_boundary", "source_spans": witness["spans"]})
                     break
         if basis == "source_frontmatter_paragraph_requires_review" and result["status"] == "complete":
-            closure = _frontmatter_intro_closure(result, page_size)
+            closure = (_frontmatter_intro_closure(result, page_size)
+                       or _frontmatter_contents_closure(result, page_size, source_geometry))
             if closure:
-                result.update(closing_boundary=closure, proposal_basis="source_frontmatter_intro_bounded",
+                result.update(closing_boundary=closure,
+                              proposal_basis=("source_frontmatter_intro_bounded" if
+                                              closure["kind"] == "source_frontmatter_intro_closure" else
+                                              "source_frontmatter_contents_bounded"),
                               reasons=["bounded_source_located_proposal"])
             else:
                 result.update(status="uncertain", complete_candidate=False,

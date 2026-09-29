@@ -1,0 +1,38 @@
+{
+  "schema": "source-frontmatter-contents-experiment-v1",
+  "scope": "200 previously examined first-page papers, four frozen converter methods, verified original PDFs",
+  "source_geometry_policy": "source_fraction_v1",
+  "private_evidence": {
+    "preflight": "validation_v3_private/issue17-frontmatter-contents-full200-20260929-02/preflight.json",
+    "preflight_sha256": "6d0917255bce240cbe6a2c331ee2077ce1616e560adfe6e874110d643e8425cc",
+    "result": "validation_v3_private/issue17-frontmatter-contents-full200-20260929-02/results.json",
+    "result_sha256": "615da795f3f0fd893044614fcb1ab7784a084808c745e22d8b2d2f2b850d1bea",
+    "native_manifest_sha256": "364b0d7005ff2b5110f793304e4ba3153771deb1c01ba2642cf398d43705a2cd",
+    "prior_result_sha256": "98a65fe0662d1b0e19e78b906fffeca80bde47d6acde50bd4bcec131e3a1890f",
+    "f045_assessment_sha256": "df053a8bb50705fb66eb33b6409ec8e9741542521899186653ecac648f67a8cb",
+    "source_review_sha256": "5221064bcde20c9dba15f10847ca1e8e9f9a4fdc7c16aab4bb58c88e5d7db5ce"
+  },
+  "regression": {
+    "status": "FAILED_REGRESSION_PRESERVATION_GATE",
+    "preflight": "PASS",
+    "saved_v2_replay": "PASS",
+    "assessments": 800,
+    "primary_changed_case_ids": ["f045"],
+    "primary_selected_text_and_spans_changed": false,
+    "primary_correct_before_after": [86, 87],
+    "grobid_correct_before_after": [77, 77],
+    "mineru_correct_before_after": [70, 70],
+    "olmocr_correct_before_after": [65, 65],
+    "false_proposals_all_methods": 0,
+    "historical_91_preservation_lost_ids": ["f012", "f032", "f059", "f079", "f081", "f122", "f153", "f171"],
+    "new_paid_api_calls": 0,
+    "production_graph_writes": 0,
+    "runtime_seconds": 1254.6794212999812
+  },
+  "review": {
+    "attribution": "internal assistant source-image diagnostic after predictions; no blinded or independent human review claimed",
+    "boundary": "A source-located title, author and affiliation chain precedes the unlabelled candidate; correspondence metadata follows it. Physical page two repeats the exact title above Contents, which lists the later Introduction.",
+    "admission": "source_review_required"
+  },
+  "limitations": "The 91-case historical preservation gate remains failed with eight held IDs. This exposed development corpus does not qualify unseen-paper precision or automatic graph admission. Default source geometry remains disabled."
+}

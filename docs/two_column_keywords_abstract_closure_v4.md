@@ -13,9 +13,10 @@ left-lane body lines after the list. It rejects any unowned horizontal text
 between the selected abstract and later left body. A conflicting scholarly
 abstract field also retains HOLD. The keyword list and both body lanes are
 excluded from the selected text. Missing or ambiguous evidence remains held.
-Every substantial right-lane line in the concurrent region must have regular
-body typography at a size distinct from the smaller keywords. A bold right
-lane could be abstract continuation and therefore retains HOLD.
+The first five substantial right-lane lines must have regular body typography;
+all later lines must remain mostly regular at a size distinct from the smaller
+keywords. This allows an inline body lead-in while a bold right-lane paragraph
+still retains HOLD as possible abstract continuation.
 
 The [redacted receipt](../review/two_column_keywords_abstract_closure_v1/receipt.json)
 binds a fresh 200-paper, four-method run to the measured source files and

@@ -14,7 +14,8 @@ from trace_gc.pdf_structure_parallel_v4 import _source_two_column_keywords_closu
 @unittest.skipUnless(fitz, "optional PyMuPDF required")
 class TwoColumnKeywordsTests(unittest.TestCase):
     def fixture(self, *, right=True, body=True, pipes=True, continuation=False,
-                all_bold=True, right_bold=False):
+                all_bold=True, right_bold=False, right_late_bold=False,
+                right_inline_bold=False):
         abstract = [
             "We establish a complete scientific finding using source observations.",
             "The independent method measures the result under controlled conditions.",
@@ -52,8 +53,14 @@ class TwoColumnKeywordsTests(unittest.TestCase):
                                  fontname="hebo" if all_bold or i else "helv")
             if right:
                 for i, value in enumerate(right_lines):
-                    page.insert_text((315, 175 + 12*i), value, fontsize=9,
-                                     fontname="hebo" if right_bold else "helv")
+                    if right_inline_bold and i == 5:
+                        lead = "The same column"
+                        page.insert_text((315, 175 + 12*i), lead, fontsize=9, fontname="hebo")
+                        page.insert_text((315 + fitz.get_text_length(lead, fontname="hebo", fontsize=9),
+                                          175 + 12*i), value[len(lead):], fontsize=9)
+                    else:
+                        page.insert_text((315, 175 + 12*i), value, fontsize=9,
+                                         fontname="hebo" if right_bold or (right_late_bold and i == 5) else "helv")
             if continuation:
                 page.insert_text((52, 268), "Continued.", fontsize=8)
             for i, value in enumerate(keywords):
@@ -90,11 +97,13 @@ class TwoColumnKeywordsTests(unittest.TestCase):
         self.assertGreaterEqual(len(proof["right_body_line_ids"]), 5)
         self.assertEqual(len(proof["left_body_line_ids"]), 3)
         self.assertEqual(proof["keyword_terms"], 4)
+        self.assertEqual(self.proof(self.fixture(right_inline_bold=True))["kind"],
+                         "source_two_column_unlabelled_keywords_closure")
 
     def test_missing_role_or_column_evidence_remains_held(self):
         for options in ({"right": False}, {"body": False}, {"pipes": False},
                         {"continuation": True}, {"all_bold": False},
-                        {"right_bold": True}):
+                        {"right_bold": True}, {"right_late_bold": True}):
             with self.subTest(options=options):
                 self.assertIsNone(self.proof(self.fixture(**options)))
 

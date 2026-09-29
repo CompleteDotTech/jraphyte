@@ -13,8 +13,9 @@
   "focused_retrieval_tests_passed": 39,
   "field_io_tests_passed": 33,
   "field_io_tests_skipped": 2,
-  "full_corpus_rebuild": "pending",
-  "frozen_query_rerun": "pending",
+  "full_corpus_rebuild": "verified_10000_documents",
+  "frozen_query_rerun": "complete_60_queries_five_target_label_permutations_pass",
+  "successor_public_receipt": "../retrieval_title_role_10k_v1/receipt.json",
   "source_or_image_published": false,
   "graph_admission": false
 }

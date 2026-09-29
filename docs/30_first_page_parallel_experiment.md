@@ -36,3 +36,18 @@ The [reproduction notes](31_first_page_parallel_reproduction.md) describe the of
 A later, frozen 10,000-document/60-query trial completed with the available native title and body fields plus two unreviewed OCR cover bodies. The [redacted interim receipt](../review/retrieval_native_10k_interim_v1/receipt.json) binds the source, model, code, runtime, ranking and integrity records. Current fields placed 59/60 known targets at rank 1 and 60/60 in the top 10; archived native-only fields placed 58/60 at rank 1 and 59/60 in the top 10. The image-only-cover target f076 moved from absent to rank 1. Five target-label rotation pairs passed. Twelve source errors remained in the 10,000-document denominator.
 
 All 10,000 abstract assessments are absent from this trial. The frozen title-role defect tracked in #52 and the missing full V4 assessment map tracked in #53 prevent a repaired-field or full issue #22 qualification claim. No broader relevance judgment, graph admission, paid inference or production graph write occurred. This interim run supersedes the historical statement above only for the measured native-field baseline; the earlier parallel-selector experiment and its first-page quality claims are separate.
+
+## 2026-09-29 repaired-title native-field rerun
+
+The `native-title-runs-v2` field policy was rebuilt over the same 10,000 source-bound documents and rerun against the frozen 60 known-item queries. The [redacted successor receipt](../review/retrieval_title_role_10k_v1/receipt.json) records the immutable input, runtime, model, output and final readback hashes. Fourteen title text records changed; the body fields did not. The source image for the previously defective mixed-metadata title was reviewed against its selected native lines. All five measured conditions passed target-label permutation checks.
+
+| Condition | Candidate coverage | Top 1 | Top 10 | MRR |
+| --- | ---: | ---: | ---: | ---: |
+| Repaired titles, page + field + SPECTER2 | 60/60 | 59/60 | 60/60 | 0.9917 |
+| Archived titles, same channels and runtime | 60/60 | 59/60 | 60/60 | 0.9917 |
+| Repaired titles, without page channel | 57/60 | 56/60 | 57/60 | 0.9417 |
+| Repaired titles, without SPECTER2 | 60/60 | 59/60 | 60/60 | 0.9917 |
+
+At candidate depth 50, page BM25 found 60/60 known targets, field-weighted BM25 57/60, and SPECTER2 56/60. The repaired title fields caused some rankings to move but did not change these aggregate known-item scores. Removing the page channel loses three targets; removing SPECTER2 leaves the measured aggregate unchanged. These are known-item scores, not relevance judgments for competing papers.
+
+This remains a **partial native-field retrieval baseline**. All 10,000 abstract assessments are missing, twelve documents have native extraction errors, and two OCR cover bodies are unreviewed. The run has no independent relevance judgments, full V4 abstract fields, graph admission, or paper-to-cited-answer result. The earlier interim receipt remains the baseline for its own frozen field hash.

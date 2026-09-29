@@ -295,10 +295,12 @@ def validate_selection(value):
         work_id(sid)
     excluded = set(exposed)
     for exclusion in value["identity_exclusions"]:
-        exact(exclusion, {"work_id", "reason", "evidence_sha256"}, "identity_exclusion_contract_required")
+        exact(exclusion, {"work_id", "reason", "evidence"}, "identity_exclusion_contract_required")
         work_id(exclusion["work_id"])
-        require(exclusion["reason"] in {"same_work", "same_doi", "same_source", "same_page", "previous_exposure"}
-            and isinstance(exclusion["evidence_sha256"], str) and SHA.fullmatch(exclusion["evidence_sha256"]),
+        require(exclusion["reason"] in {"same_doi", "same_source", "same_page"}
+            and isinstance(exclusion["evidence"], dict)
+            and set(exclusion["evidence"]) == {"relative", "sha256"}
+            and isinstance(exclusion["evidence"]["sha256"], str) and SHA.fullmatch(exclusion["evidence"]["sha256"]),
             "unavailable_or_error_case_cannot_be_replaced")
         require(exclusion["work_id"] not in excluded, "duplicate_identity_exclusion")
         excluded.add(exclusion["work_id"])
@@ -347,8 +349,35 @@ def reconcile_exposure(snapshot, prior, selection):
         sid = normalize_work_id(item["work_id"])
         require(sid in entries and all(set(item[key]) <= set(entries[sid][key])
             for key in ("source_sha256", "page_sha256")), "prior_exposure_registry_not_preserved")
-    return {key: {value for item in entries.values() for value in item[key]}
-        for key in ("source_sha256", "page_sha256", "dois")}
+    return {**{key: {value for item in entries.values() for value in item[key]}
+        for key in ("source_sha256", "page_sha256", "dois")}, "entries": entries}
+
+
+def verify_identity_exclusions(store, exclusions, *, known, frame_dois, frame_versions, cohort_frozen):
+    """Replay each preselection alias against an exposed work and pinned source bytes."""
+    for item in exclusions:
+        proof = store.json(item["evidence"])
+        exact(proof, {"version", "work_id", "exposed_work_id", "reason", "observed_at", "assets"},
+              "typed_identity_alias_proof_required")
+        sid, exposed = item["work_id"], proof["exposed_work_id"]
+        require(proof["version"] == "paper-identity-alias-proof-v1" and proof["work_id"] == sid
+            and proof["reason"] == item["reason"] and exposed in known["entries"]
+            and instant(proof["observed_at"]) < cohort_frozen, "identity_alias_proof_identity_or_time_mismatch")
+        target = known["entries"][exposed]
+        if item["reason"] == "same_doi":
+            require(proof["assets"] is None and sid in frame_dois
+                and frame_dois[sid] in target["dois"], "doi_alias_not_in_pinned_projection_and_exposure")
+            continue
+        exact(proof["assets"], {"version_id", "source", "page", "image", "native", "doi"},
+              "source_alias_requires_complete_source_readback")
+        assets = {"available": True, "unavailable_reason": None, **proof["assets"]}
+        require(proof["assets"]["version_id"] == frame_versions[sid]
+            and proof["assets"]["doi"] == frame_dois.get(sid), "source_alias_version_or_doi_drift")
+        # _source replays original PDF, first-page extraction, image and native data.
+        _, identity = _source(store, {k: v for k, v in assets.items() if k != "version_id"})
+        key = "source" if item["reason"] == "same_source" else "page"
+        registry_key = "source_sha256" if key == "source" else "page_sha256"
+        require(identity[key] in target[registry_key], "source_alias_not_in_exposed_work")
 
 
 def verify_review_order(records, *, evaluated_ids, roles, source_hashes, times):
@@ -457,12 +486,32 @@ def _source(store, value):
     return native, {key: value[key]["sha256"] for key in ("source", "page", "image", "native")}
 
 
-def image_transition(closure, *, png, crop):
+def image_transition(closure, *, png, crop, store=None, source_pdf=None):
     """Verify a nonblank, disjoint following source witness in original pixels."""
     from io import BytesIO
     from PIL import Image
-    exact(closure, {"kind", "excluded_regions"}, "prospective_image_transition_witness_required")
-    require(closure["kind"] == "reviewed_section_transition", "prospective_image_title_page_adapter_required")
+    title_page = isinstance(closure, dict) and closure.get("kind") == "reviewed_title_page_end"
+    exact(closure, {"kind", "excluded_regions"} | ({"next_page"} if title_page else set()),
+          "prospective_image_transition_witness_required")
+    require(closure["kind"] in {"reviewed_section_transition", "reviewed_title_page_end"},
+            "prospective_image_closure_kind_invalid")
+    if title_page:
+        require(store is not None and source_pdf is not None, "title_page_source_readback_required")
+        import fitz
+        from src.parallel_source_v4.promotion_review import _image_asset, _native_page_asset
+        with fitz.open(stream=source_pdf, filetype="pdf") as pdf:
+            if len(pdf) == 1:
+                require(closure["next_page"] == {"document_end": True},
+                        "title_page_document_end_mismatch")
+            else:
+                next_page = closure["next_page"]
+                exact(next_page, {"image", "native"}, "title_page_two_source_witness_required")
+                def load(relative):
+                    descriptor = next_page["image"] if relative == next_page["image"]["relative"] else next_page["native"]
+                    require(relative == descriptor["relative"], "title_page_asset_path_mismatch")
+                    return store.bytes({"relative": relative, "sha256": descriptor["sha256"]})
+                _image_asset(next_page["image"], pdf[1], load, expected_page=2)
+                _native_page_asset(next_page["native"], pdf[1], load)
     require(isinstance(closure["excluded_regions"], list) and closure["excluded_regions"], "image_transition_regions_required")
     following = False
     with Image.open(BytesIO(png)) as image:
@@ -476,7 +525,8 @@ def image_transition(closure, *, png, crop):
             require(maximum-minimum >= 8, "image_transition_region_is_blank")
             following = following or (box[1] >= crop[3]-2 and
                 min(box[2], crop[2])-max(box[0], crop[0]) > .1*min(box[2]-box[0], crop[2]-crop[0]))
-    require(following, "following_source_transition_required")
+    if not title_page:
+        require(following, "following_source_transition_required")
 
 
 def native_failure(store, descriptor, *, original, source, roles, times):
@@ -581,7 +631,8 @@ def _image_candidate(store, value, *, source, selected, original, reference, cod
         and instant(review["reviewed_at"]) <= instant(scope["reviewed_at"]) <= times["predictions_frozen"]
         and scope["native_image_disagreement_examined"] is True and scope["no_page_continuation"] is True,
         "image_scope_identity_or_review_mismatch")
-    image_transition(scope["closure"], png=store.bytes(source["image"]), crop=candidate["crop"]["bbox"])
+    image_transition(scope["closure"], png=store.bytes(source["image"]), crop=candidate["crop"]["bbox"],
+        store=store, source_pdf=store.bytes(source["source"]))
     require(selected.get("closing_boundary") == {"kind": scope["closure"]["kind"], "review_sha256": digest_value(scope)},
         "image_selected_closure_not_bound_to_scope")
     recorded, receipt = store.json(value["catalog"]), store.json(value["handoff"])
@@ -606,7 +657,10 @@ def _image_candidate(store, value, *, source, selected, original, reference, cod
     exact(proof, {"version", "image_sha256", "closure"}, "source_first_image_extent_proof_required")
     require(proof["version"] == "paper-image-reference-extent-v1"
         and proof["image_sha256"] == source["image"]["sha256"], "image_reference_extent_source_mismatch")
-    image_transition(proof["closure"], png=store.bytes(source["image"]), crop=candidate["crop"]["bbox"])
+    image_transition(proof["closure"], png=store.bytes(source["image"]), crop=candidate["crop"]["bbox"],
+        store=store, source_pdf=store.bytes(source["source"]))
+    if scope["closure"]["kind"] == "reviewed_title_page_end":
+        require(proof["closure"] == scope["closure"], "title_page_reference_scope_witness_diverged")
     transcription = reference.get("typed_transcription")
     exact(transcription, {"version", "text_sha256", "image_sha256", "spans"}, "typed_image_reference_transcription_required")
     require(transcription["version"] == "source-first-image-reference-v1"
@@ -786,7 +840,6 @@ def _evaluate(root, bundle_descriptor, *, expected_preregistration_sha256, trust
     exact(screening, {"screen", "challenge"}, "separate_source_screen_artifact_required")
     selection = {**sampling, **screening}
     evaluated_ids, screened_ids, strata = validate_selection(selection)
-    require(not selection["identity_exclusions"], "verified_alias_replacement_adapter_required")
     require(times["configuration_frozen"] <= instant(selection["reconciled_at"]) < times["cohort_frozen"],
             "exposure_reconciliation_before_cohort_freeze_required")
     frame_versions, frame_dois = {}, {}
@@ -800,6 +853,8 @@ def _evaluate(root, bundle_descriptor, *, expected_preregistration_sha256, trust
                 frame_dois[sid] = item["doi"].strip().lower()
     exposure = [store.parse(line) for line in documents["metadata-inventory/exposure-registry.jsonl"].splitlines() if line]
     known = reconcile_exposure(store.json(selection["exposure_snapshot"]), exposure, selection)
+    verify_identity_exclusions(store, selection["identity_exclusions"], known=known,
+        frame_dois=frame_dois, frame_versions=frame_versions, cohort_frozen=times["cohort_frozen"])
     known_source, known_page = known["source_sha256"], known["page_sha256"]
     require(not {frame_dois[sid] for sid in set(selection["primary"]) | screened_ids if sid in frame_dois} & known["dois"],
         "selected_work_doi_was_previously_exposed")

@@ -17,7 +17,7 @@ from src.paper_qualification_v1 import (Artifacts, EvidenceError, PHASES, QUOTAS
     validate_protocol, validate_selection, verify_phases, verify_review_order)
 from src.paper_qualification_v1 import (_image_candidate, replay_converters, CACHE_OUTPUTS, evaluator_identity,
     publish, verify_published, reconcile_exposure, native_failure)
-from src.paper_qualification_v1 import CLARIFICATION, normalize_work_id, _source
+from src.paper_qualification_v1 import CLARIFICATION, normalize_work_id, _source, verify_identity_exclusions, image_transition
 from trace_gc.canonical import digest
 from trace_gc.trust import Signer, TrustStore, IssuerPolicy
 
@@ -185,7 +185,8 @@ class ProtocolTests(unittest.TestCase):
 
     def test_unavailable_is_not_replacement_eligibility(self):
         selection=self.selection()
-        selection["identity_exclusions"]=[{"work_id":sid(1999),"reason":"corrupt","evidence_sha256":"a"*64}]
+        selection["identity_exclusions"]=[{"work_id":sid(1999),"reason":"corrupt",
+            "evidence":{"relative":"proof.json","sha256":"a"*64}}]
         with self.assertRaisesRegex(EvidenceError,"cannot_be_replaced"):validate_selection(selection)
 
     def test_no_prediction_screen_and_no_versioned_alias(self):
@@ -933,5 +934,52 @@ class ComposedContractTests(unittest.TestCase):
             descriptor=self.write(d,"forged-v2-bundle.json",bundle)
             self.assertEqual(evaluate(d,descriptor,**kwargs)["status"], "BLOCKED")
 
+
+class ProspectiveAdapterTests(unittest.TestCase):
+    def test_pinned_doi_alias_requires_named_exposure_and_time(self):
+        with tempfile.TemporaryDirectory() as d:
+            proof={"version":"paper-identity-alias-proof-v1","work_id":sid(1),
+                "exposed_work_id":sid(2),"reason":"same_doi","observed_at":"2026-09-28T08:00:00Z","assets":None}
+            raw=json.dumps(proof).encode();(Path(d)/"proof.json").write_bytes(raw)
+            item={"work_id":sid(1),"reason":"same_doi",
+                "evidence":{"relative":"proof.json","sha256":hashlib.sha256(raw).hexdigest()}}
+            known={"entries":{sid(2):{"dois":["10.1234/exposed"]}}}
+            args=dict(known=known,frame_dois={sid(1):"10.1234/exposed"},
+                frame_versions={},cohort_frozen=datetime(2026,9,28,9,tzinfo=timezone.utc))
+            verify_identity_exclusions(Artifacts(d),[item],**args)
+            with self.assertRaisesRegex(EvidenceError,"doi_alias_not"):
+                verify_identity_exclusions(Artifacts(d),[item],**{**args,"frame_dois":{sid(1):"10.1234/other"}})
+            with self.assertRaisesRegex(EvidenceError,"identity_or_time"):
+                verify_identity_exclusions(Artifacts(d),[item],**{**args,"cohort_frozen":datetime(2026,9,28,7,tzinfo=timezone.utc)})
+
+    @unittest.skipUnless(PDF_STACK_AVAILABLE,"PDF stack required")
+    def test_title_page_requires_replayed_page_two_image_and_native(self):
+        import fitz
+        from io import BytesIO
+        from PIL import Image
+        document=fitz.open();page=document.new_page();page.insert_text((72,72),"Abstract text")
+        page=document.new_page();page.insert_text((72,72),"Introduction")
+        pdf=document.tobytes();document.close()
+        with tempfile.TemporaryDirectory() as d,fitz.open(stream=pdf,filetype="pdf") as source:
+            one=source[0].get_pixmap(dpi=120,alpha=False);two=source[1].get_pixmap(dpi=120,alpha=False)
+            buf=BytesIO();Image.frombytes("RGB",(two.width,two.height),two.samples).save(buf,format="PNG")
+            raw_image=buf.getvalue();raw_native=json.dumps(source[1].get_text("dict",flags=fitz.TEXTFLAGS_DICT & ~fitz.TEXT_PRESERVE_IMAGES)).encode()
+            for name,raw in (("two.png",raw_image),("two.json",raw_native)):(Path(d)/name).write_bytes(raw)
+            image={"relative":"two.png","sha256":hashlib.sha256(raw_image).hexdigest(),"physical_page":2,"dpi":120}
+            native={"relative":"two.json","sha256":hashlib.sha256(raw_native).hexdigest(),
+                "physical_page":2,"representation":"pymupdf-page-dict-v1"}
+            first=BytesIO();Image.frombytes("RGB",(one.width,one.height),one.samples).save(first,format="PNG")
+            closure={"kind":"reviewed_title_page_end","excluded_regions":[[110,100,300,140]],
+                "next_page":{"image":image,"native":native}}
+            # The excluded box is outside the abstract and contains actual page-one pixels.
+            image_transition(closure,png=first.getvalue(),crop=[0,0,100,90],store=Artifacts(d),source_pdf=pdf)
+            with self.assertRaisesRegex(EvidenceError,"document_end_mismatch|two_source_witness"):
+                image_transition({**closure,"next_page":{"document_end":True}},png=first.getvalue(),
+                    crop=[0,0,100,90],store=Artifacts(d),source_pdf=pdf)
+            bad=bytearray(raw_image);bad[-20]^=1
+            (Path(d)/"two.png").write_bytes(bad)
+            with self.assertRaisesRegex(EvidenceError,"artifact_bytes_changed"):
+                image_transition(closure,png=first.getvalue(),crop=[0,0,100,90],
+                    store=Artifacts(d),source_pdf=pdf)
 
 if __name__=="__main__":unittest.main()

@@ -1,0 +1,40 @@
+{
+  "schema": "source-body-column-wrap-experiment-v1",
+  "scope": "200 previously examined first-page papers; four cached converter methods; original PDFs for source geometry",
+  "implementation": "Opt-in original-source geometry only; the default policy remains disabled; no automatic graph admission",
+  "base_commit": "732ea142eee9e1cc5ebb841c3944e32ec202ddb4",
+  "implementation_commit": "dce3fc921a3a970d45cdbcb7bebe8ab2c2b80ea2",
+  "private_evidence": {
+    "data_root_relative_preflight": "validation_v3_private/issue16-bodybridge-preflight-20260929-01/preflight.json",
+    "preflight_sha256": "61f53c75c372dd34c796b207cb432121d389af1a0e8a40e5f3693bc526b78cae",
+    "data_root_relative_result": "validation_v3_private/issue16-bodybridge-full200-20260929-01/results.json",
+    "result_sha256": "d585675ffbb6f4bb331172047bd93ae5f9e7226ecaac21f43648ffd4899fd03d",
+    "native_manifest_sha256": "221990d5eb9423bbaf69e2a138f8ccd4f83b6dd4c770f28288e8ad1c4cb248e9",
+    "previous_result_sha256": "93a1674991aa0dd6a530d84c87e9def4b2451355c7d3f8f8bbfcecdb680b3c6f"
+  },
+  "preflight": "PASS; 200 verified original PDFs, frozen caches and labels, pinned runtime",
+  "saved_v2_replay_gate": "PASS",
+  "result": {
+    "status": "FAILED_REGRESSION_PRESERVATION_GATE",
+    "assessments": 800,
+    "changed_case_ids": ["f188"],
+    "primary_correct_before_after": [79, 80],
+    "grobid_correct_before_after": [73, 74],
+    "mineru_correct_before_after": [67, 68],
+    "olmocr_correct_before_after": [64, 64],
+    "false_proposals_all_methods": 0,
+    "automatic_admissions": 0,
+    "new_paid_api_calls": 0,
+    "production_graph_writes": 0,
+    "runtime_seconds": 1336.2154191000154
+  },
+  "change_review": {
+    "attribution": "internal assistant source-image and native-span review; no independent human review claimed",
+    "cause": "A right-column body paragraph starts above the left-column Introduction heading in physical page coordinates. Its appearance between the abstract and heading made the source-prose guard hold the abstract.",
+    "evidence": "The original PDF shows a located body heading below the left-column abstract and a word hyphenated at the end of the left body column that continues at the top of the right body column. The bridge records exact native line IDs and offsets, style agreement, distinct lanes and a hash of the joined word.",
+    "f188_primary_and_mineru": "Unchanged selected text became a complete review-only proposal after the extraneous right-column prose was excluded.",
+    "f188_grobid": "The selected text also changed; the frozen label comparison counts the new proposal correct, but source fidelity remains separately unreviewed.",
+    "f188_olmocr": "Still held by a different unlocated paragraph; no automatic fallback claim."
+  },
+  "limitations": "The integrated 91-paper preservation target remains unmet. The opt-in diagnostic is not unseen-paper precision, notation certification, converter performance or permission for automatic admission. The f149 footnote-marker and f059 section/notation holds remain separate."
+}

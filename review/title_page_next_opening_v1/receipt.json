@@ -1,0 +1,41 @@
+{
+  "schema": "source-title-page-next-opening-experiment-v1",
+  "scope": "200 previously examined first-page papers, four frozen converter methods, verified original PDFs",
+  "implementation_commit": "9bf8b0d890a0dae914836a86db44de443c58edd9",
+  "source_geometry_policy": "source_fraction_v1",
+  "private_evidence": {
+    "preflight": "validation_v3_private/issue17-next-page-full200-20260929-01/preflight.json",
+    "preflight_sha256": "5bc73525ee73247ce0c1340ae72a7494a8b2698fc76be488524971b1aec772d8",
+    "result": "validation_v3_private/issue17-next-page-full200-20260929-01/results.json",
+    "result_sha256": "1d1850600e6a70f7b57f91f7182f94e65cadd6d9ea106fae2d5f965113185d42",
+    "native_manifest_sha256": "d6fec9fd504c5e275e3aa01f1472c4a23fce246dc4a077de6dde8879b6be1bb9",
+    "prior_result_sha256": "d585675ffbb6f4bb331172047bd93ae5f9e7226ecaac21f43648ffd4899fd03d",
+    "source_review_f007_f085_f131_sha256": "c56c23b6b78db8b0c2cb11f1161b2d3a90fff9bd5eea765c44c56cb877306e58",
+    "source_review_f026_sha256": "22d82e9c00e7d39bb55973b08956618d6756858f8ec831984b96de10455607d9"
+  },
+  "regression": {
+    "status": "FAILED_REGRESSION_PRESERVATION_GATE",
+    "preflight": "PASS",
+    "saved_v2_replay": "PASS",
+    "assessments": 800,
+    "primary_changed_case_ids": ["f007", "f026", "f085", "f131"],
+    "primary_selected_text_changed": false,
+    "primary_correct_before_after": [80, 84],
+    "grobid_correct_before_after": [74, 77],
+    "mineru_correct_before_after": [68, 70],
+    "olmocr_correct_before_after": [64, 65],
+    "false_proposals_all_methods": 0,
+    "historical_91_preservation_lost_ids": ["f012", "f032", "f045", "f059", "f079", "f081", "f096", "f122", "f153", "f158", "f171"],
+    "new_paid_api_calls": 0,
+    "production_graph_writes": 0,
+    "runtime_seconds": 1199.4154649999982
+  },
+  "review": {
+    "attribution": "internal assistant source-image and native-span diagnostic; no independent human or blinded held-out review claimed",
+    "positive_boundary": "Page one contains a source-located explicit abstract; the verified physical page two begins with visible Introduction or Contents after the page-one abstract. Page-two text does not enter the selected first-page text.",
+    "negative_continuations": ["f015", "f043", "f050", "f051", "f057", "f162", "f198"],
+    "notation_review_outstanding": ["f026", "f131"],
+    "grobid_text_fidelity_outstanding": ["f007", "f026", "f131"]
+  },
+  "limitations": "The 91-case historical preservation gate remains failed; this development regression is not held-out qualification, notation certification, or graph-admission authority. Default source geometry remains disabled."
+}

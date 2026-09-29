@@ -543,6 +543,32 @@ def image_transition(closure, *, png, crop, store=None, source_pdf=None):
         require(following, "following_source_transition_required")
 
 
+def verify_title_page_source_extent(store, reference, source):
+    """Replay frozen title-page extent for every route, including native selection."""
+    proof = reference.get("source_extent_proof")
+    if not isinstance(proof, dict) or not isinstance(proof.get("closure"), dict) or proof["closure"].get("kind") != "reviewed_title_page_end":
+        return
+    import fitz
+    from src.parallel_source_v4.promotion_review import _image_asset, _native_page_asset
+    closure = proof["closure"]
+    exact(closure, {"kind", "excluded_regions", "next_page"}, "title_page_source_extent_contract_required")
+    require(proof.get("image_sha256") == source["image"]["sha256"], "title_page_reference_image_mismatch")
+    with fitz.open(stream=store.bytes(source["source"]), filetype="pdf") as pdf:
+        if len(pdf) == 1:
+            require(closure["next_page"] == {"document_end": True}, "title_page_document_end_mismatch")
+            return
+        following = closure["next_page"]
+        exact(following, {"image", "native"}, "title_page_two_source_witness_required")
+        require(following["image"]["relative"] != following["native"]["relative"],
+                "title_page_distinct_image_and_native_assets_required")
+        by_path = {asset["relative"]: asset for asset in following.values()}
+        def load(relative):
+            require(relative in by_path, "title_page_asset_path_mismatch")
+            return store.bytes({"relative": relative, "sha256": by_path[relative]["sha256"]})
+        _image_asset(following["image"], pdf[1], load, expected_page=2)
+        _native_page_asset(following["native"], pdf[1], load)
+
+
 def native_failure(store, descriptor, *, original, source, roles, times):
     """A durable negative observation never certifies a replacement by itself."""
     failure = store.json(descriptor)
@@ -894,6 +920,8 @@ def _evaluate(root, bundle_descriptor, *, expected_preregistration_sha256, trust
         if doi:
             require(doi not in seen_doi, "duplicate_doi_work_alias")
             seen_doi.add(doi)
+    for sid in evaluated_ids:
+        verify_title_page_source_extent(store, references[sid]["reference"], sources[sid]["assets"])
     audit_ids = verify_review_order(references, evaluated_ids=evaluated_ids, roles=bundle["roles"],
         source_hashes=source_hashes, times=times)
     execution = store.json(bundle["execution"])

@@ -17,7 +17,7 @@ from src.paper_qualification_v1 import (Artifacts, EvidenceError, PHASES, QUOTAS
     validate_protocol, validate_selection, verify_phases, verify_review_order)
 from src.paper_qualification_v1 import (_image_candidate, replay_converters, CACHE_OUTPUTS, evaluator_identity,
     publish, verify_published, reconcile_exposure, native_failure)
-from src.paper_qualification_v1 import CLARIFICATION, normalize_work_id, _source, verify_identity_exclusions, image_transition
+from src.paper_qualification_v1 import CLARIFICATION, normalize_work_id, _source, verify_identity_exclusions, image_transition, verify_title_page_source_extent
 from trace_gc.canonical import digest
 from trace_gc.trust import Signer, TrustStore, IssuerPolicy
 
@@ -1008,6 +1008,40 @@ class ComposedContractTests(unittest.TestCase):
                 result=evaluate(d,descriptor,**kwargs)
             self.assertEqual(result["status"],"AUTHORED_CONTRACT_PASS_NOT_QUALIFICATION",result)
 
+    def test_composed_native_route_cannot_skip_title_page_source_replay(self):
+        import fitz
+        real_open=fitz.open
+        with tempfile.TemporaryDirectory() as d:
+            _,bundle,kwargs=self.fixture(d)
+            sources=json.loads((Path(d)/"sources.json").read_text())
+            references=json.loads((Path(d)/"references.json").read_text())
+            sid_selected=next(work for work in sources if work in references and
+                references[work]["reference"]["status"]=="complete")
+            document=real_open();document.new_page().insert_text((72,72),"Title page abstract")
+            document.new_page().insert_text((72,72),"Body")
+            raw=document.tobytes();document.close()
+            sources[sid_selected]["assets"]["source"]=self.write(d,"title-source.pdf",{})
+            (Path(d)/"title-source.pdf").write_bytes(raw)
+            sources[sid_selected]["assets"]["source"]["sha256"]=hashlib.sha256(raw).hexdigest()
+            references[sid_selected]["reference"]["source_extent_proof"]={"image_sha256":sources[sid_selected]["assets"]["image"]["sha256"],
+                "closure":{"kind":"reviewed_title_page_end","excluded_regions":[],"next_page":{
+                    "image":{"relative":"missing-two.png","sha256":"a"*64,"physical_page":2,"dpi":120},
+                    "native":{"relative":"missing-two.json","sha256":"b"*64,"physical_page":2,
+                        "representation":"pymupdf-page-dict-v1"}}}}
+            bundle["sources"]=self.write(d,"sources-title.json",sources)
+            bundle["references"]=self.write(d,"references-title.json",references)
+            descriptor=self.write(d,"bundle-title.json",bundle)
+            times={phase:datetime(2026,1,1,h,tzinfo=timezone.utc) for phase,h in
+                (("configuration_frozen",0),("cohort_frozen",1),("references_frozen",2),("predictions_frozen",3))}
+            original_guard=verify_title_page_source_extent
+            def actual_guard(store,reference,source):
+                with patch("fitz.open",real_open):return original_guard(store,reference,source)
+            with patch("src.paper_qualification_v1.verify_phases",return_value=times),\
+                 patch("src.paper_qualification_v1.verify_title_page_source_extent",side_effect=actual_guard):
+                result=evaluate(d,descriptor,**kwargs)
+            self.assertEqual(result["status"],"BLOCKED")
+            self.assertIn("missing",result["reason"])
+
 
 class ProspectiveAdapterTests(unittest.TestCase):
     @unittest.skipUnless(PDF_STACK_AVAILABLE,"PDF stack required")
@@ -1082,6 +1116,11 @@ class ProspectiveAdapterTests(unittest.TestCase):
             first=BytesIO();Image.frombytes("RGB",(one.width,one.height),one.samples).save(first,format="PNG")
             closure={"kind":"reviewed_title_page_end","excluded_regions":[[110,100,300,140]],
                 "next_page":{"image":image,"native":native}}
+            (Path(d)/"source.pdf").write_bytes(pdf)
+            source_assets={"source":{"relative":"source.pdf","sha256":hashlib.sha256(pdf).hexdigest()},
+                "image":{"relative":"first.png","sha256":"b"*64}}
+            verify_title_page_source_extent(Artifacts(d),{"source_extent_proof":{"closure":closure,
+                "image_sha256":"b"*64}},source_assets)
             # The excluded box is outside the abstract and contains actual page-one pixels.
             image_transition(closure,png=first.getvalue(),crop=[0,0,100,90],store=Artifacts(d),source_pdf=pdf)
             with self.assertRaisesRegex(ValueError,"page_two_native_asset_required"):

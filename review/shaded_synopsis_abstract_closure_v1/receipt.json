@@ -4,27 +4,28 @@
   "source_geometry_policy": "source_fraction_v1",
   "measured_base_commit": "b8ea25de5f2150476d6c23492b0f11c6317d8c50",
   "private_evidence": {
-    "preflight": "validation_v3_private/issue17-shaded-f119-full200-20260929-03/preflight.json",
-    "preflight_sha256": "2c067b741dba88e182ac4842a84a7473d217b8189c0026ee72ba4fe0a122ef97",
-    "result": "validation_v3_private/issue17-shaded-f119-full200-20260929-03/results.json",
-    "result_sha256": "d62d0c7cc9e6a565a527047b7e1e8293d3032ae08c059d40c5b3d5bc9dfd3314",
-    "native_manifest_sha256": "0da27ae31d1fbaccf94947c6c3caa6fcc5c0072d68beab14931887b1c73397f2",
+    "preflight": "validation_v3_private/issue17-shaded-f119-reviewfix-full200-20260929-01/preflight.json",
+    "preflight_sha256": "edbf2804e44eb8da1e5eabea244495d77bc8dc307980b4177174dce1ec521ad3",
+    "result": "validation_v3_private/issue17-shaded-f119-reviewfix-full200-20260929-01/results.json",
+    "result_sha256": "d7dfe88606bac16ac2c09d008dc926cb6008ca7fda349c6a231f544e62fd827c",
+    "native_manifest_sha256": "3486a62fcd7bac29dcb04f414f25747426bc252680efe4d421e74026ec875e11",
     "prior_result_sha256": "e8ba81c08bc510f1b821783aab5629ae6b91a05ec6dad3f95fbe11f79d350ed3",
     "source_review_sha256": "2a8c92fd624d1c51390aa66f24c9d35ad2983160924cc3b3dfb3cd808016c8f5",
     "f119_assessment_sha256": {
-      "parallel_structure_v4": "2be71c8773eccc489ab53f76f37606c3a959d49ed1929e23355d5ec73a0345c3",
-      "parallel_grobid_v4": "d33ef645d35fb7c3c0e0dc10071af4f33f8dc5205a65d0b14be5e77e4fcd0118",
-      "parallel_mineru_v4": "b4942d564df36c3862c00f964745b1f9614bbb6418702a373f3cf312d60bea33",
-      "parallel_olmocr_v4": "d3ac8f2fcb6590deb56c342287083963b002eb4417fde60bbea29aeed5ad8b42"
-    }
+      "parallel_structure_v4": "bb66a1c6c16c6c86b3c4245becac16063779220a17012598325e28d4f2f44d90",
+      "parallel_grobid_v4": "58901d142a08ce4dcc687033863e54690fef164a9ed1842ac38b36e22ee22b0e",
+      "parallel_mineru_v4": "8413d98a25d8e590b1a4e483027ba8f77b9889fb00f27a77502e9e1c70684d3b",
+      "parallel_olmocr_v4": "2ff17fbea2d23148d296356642d1171c33cce902d7cf8d72a12ae1eae29877b2"
+    },
+    "review_fix_parent_result_sha256": "d62d0c7cc9e6a565a527047b7e1e8293d3032ae08c059d40c5b3d5bc9dfd3314"
   },
   "measured_code_sha256": {
-    "trace_gc/pdf_source_parallel_v4.py": "2ece824467dc8242c2806848fc41bd0910170df64c566fffd546ba5107177ace",
+    "trace_gc/pdf_source_parallel_v4.py": "89b67a53b3e98f6415efc5dd54e22babbf16aba88d1b3e87e19cb61fd6bb2821",
     "trace_gc/pdf_structure_parallel_v4.py": "c746aeb23d45bc991a7c848b25206b1ba44587c07dea1bbfbe467c4e22a4ed65"
   },
   "runtime_sha256": "f091b827709308eb9f30695b100a798c67355ad1e6e506e393b49e7021026a67",
   "local_validation": {
-    "unittest_discover": "1227 tests passed, 6 skipped",
+    "unittest_discover": "1227 tests passed, 8 skipped",
     "package_validation": "PASS",
     "authored_shaded_region_tests": "3 passed"
   },
@@ -33,25 +34,45 @@
     "saved_v2_replay": "PASS",
     "assessments": 800,
     "assessment_file_hash_readback": "PASS",
-    "changed_case_ids": ["f119"],
+    "changed_case_ids": [
+      "f119"
+    ],
     "changed_assessment_files": 4,
     "source_and_native_identities_changed": false,
     "correct_before_after": {
-      "parallel_structure_v4": [91, 92],
-      "parallel_grobid_v4": [80, 81],
-      "parallel_mineru_v4": [72, 73],
-      "parallel_olmocr_v4": [66, 67]
+      "parallel_structure_v4": [
+        91,
+        92
+      ],
+      "parallel_grobid_v4": [
+        80,
+        81
+      ],
+      "parallel_mineru_v4": [
+        72,
+        73
+      ],
+      "parallel_olmocr_v4": [
+        66,
+        67
+      ]
     },
     "false_proposals_all_methods": 0,
-    "historical_91_preservation_lost_ids": ["f079", "f081", "f122", "f153"],
+    "historical_91_preservation_lost_ids": [
+      "f079",
+      "f081",
+      "f122",
+      "f153"
+    ],
     "new_paid_api_calls": 0,
     "production_graph_writes": 0,
-    "runtime_seconds": 908.2156262000208
+    "runtime_seconds": 1289.1608904000022
   },
   "review": {
     "attribution": "assistant original-PDF visual and source-geometry review; no independent-human claim",
     "boundary": "A separately filled synopsis inset lies below the native-located bold abstract; a numbered outer heading and body prose follow it.",
-    "admission": "source_review_required"
+    "admission": "source_review_required",
+    "code_review": "Separate assistant reviewer found and reproduced same-color overpaint; final paint-order fix re-reviewed with no further blocking finding. This is not a GitHub approval or independent-human source review."
   },
   "limitations": "Four historical successes remain held; scientific notation, visual completeness, unseen-paper precision, automatic promotion and graph admission are not qualified. The optional source geometry route remains disabled by default."
 }

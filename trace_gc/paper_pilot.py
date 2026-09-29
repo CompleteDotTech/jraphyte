@@ -21,7 +21,8 @@ from .canonical import bytes_digest, digest, dumps, loads, text_digest
 from .compiler import compile_pack, now, timestamp, validate_pack
 from .errors import boundary, require
 from .paper_ingestion import CHECKS, _native_text, reviewed_page_source, verify_page_source
-from .pdf_image_evidence import render_source
+from .pdf_image_evidence import (render_source, image_candidate, candidate_hash,
+    review_image, handoff, verify_artifacts, verify_image_source, CHECKS as IMAGE_CHECKS)
 from .plans import add_operation, create_plan
 from .programs import question
 from .qualification import evaluate_policy
@@ -306,6 +307,115 @@ class PaperPilot:
                 bytes_digest(png) == packet["render"]["page_png_sha256"], "PILOT_SOURCE_CHANGED", "review material differs")
         return {"packet": loads(dumps(packet)), "pdf_bytes": pdf, "page_png_bytes": png, "native_text": native}
 
+    @boundary
+    def prepare_image_page(self, id_, *, pdf_bytes, source_id, version, physical_page,
+                           crop_bbox, transcription, producer, raw_output,
+                           fallback_reason="native_absent", native_defect_note=None):
+        """Freeze a manually produced image transcription and its exact observed crop."""
+        require(isinstance(pdf_bytes, (bytes, bytearray, memoryview)) and
+                isinstance(raw_output, (bytes, bytearray, memoryview)),
+                "PILOT_IMAGE_PRODUCER", "original PDF and raw manual transcription must be bytes")
+        pdf_bytes, raw_output = bytes(pdf_bytes), bytes(raw_output)
+        allowed = {r["source_id"]: r for r in self.config["documents"]}.get(source_id)
+        require(allowed is not None and allowed["version"] == version and
+                allowed["document_sha256"] == bytes_digest(pdf_bytes) and
+                physical_page in allowed["physical_pages"], "PILOT_COHORT", "image page outside frozen frame")
+        require(type(producer) is str and producer.strip() and type(transcription) is str and
+                transcription.strip() and raw_output == transcription.encode("utf-8"),
+                "PILOT_IMAGE_PRODUCER", "manual transcription and raw output required")
+        require(fallback_reason in {"native_absent", "native_corrupt"} and
+                ((fallback_reason == "native_absent" and native_defect_note is None) or
+                 (fallback_reason == "native_corrupt" and type(native_defect_note) is str and
+                  native_defect_note.strip())), "PILOT_IMAGE_ROUTE", "explicit native defect required")
+        pdf_hash, raw_hash = self._blob(pdf_bytes), self._blob(raw_output)
+        args = dict(pdf_sha256=pdf_hash, raw_output_sha256=raw_hash, source_id=source_id,
+                    version=version, physical_page=physical_page, crop_bbox=crop_bbox,
+                    transcription=transcription, producer=producer,
+                    fallback_reason=fallback_reason, native_defect_note=native_defect_note)
+        def prepare(_):
+            metadata, page_png, crop_png = render_source(pdf_bytes, physical_page=physical_page,
+                                                        dpi=144, crop=crop_bbox)
+            require(fallback_reason != "native_absent" or metadata["native_observation"]["state"] == "absent",
+                    "PILOT_IMAGE_ROUTE", "native text is present on purported image-only page")
+            full_page = crop_bbox == [0, 0, *metadata["render"]["dimensions"]]
+            configuration = {"producer": producer,
+                "method": "visual-reading-of-original-full-page" if full_page else "visual-reading-of-original-crop"}
+            if native_defect_note is not None:
+                configuration["native_defect_note"] = native_defect_note
+            candidate = image_candidate(pdf_bytes, source_id=source_id, transcription=transcription,
+                raw_output=raw_output, engine="manual-visual-transcription", revision="manual-v1",
+                configuration=configuration,
+                physical_page=physical_page, dpi=144, crop=crop_bbox,
+                input_crop_sha256=metadata["crop"]["png_sha256"], fallback_reason=fallback_reason)
+            verify_artifacts(candidate, pdf_bytes=pdf_bytes, raw_output=raw_output,
+                             page_png=page_png, crop_png=crop_png)
+            return {"state": "WAIT_IMAGE_SOURCE_REVIEW", "candidate": candidate,
+                    "candidate_sha256": candidate_hash(candidate),
+                    "page_png_blob": self._blob(page_png), "crop_png_blob": self._blob(crop_png)}
+        return self._step(id_, "PREPARE_SOURCE_IMAGE", args, prepare)
+
+    @boundary
+    def image_review_material(self, prepared_id):
+        prepared = self._result(prepared_id, "PREPARE_SOURCE_IMAGE")
+        candidate = prepared["candidate"]
+        pdf = self._read_blob(candidate["source_sha256"])
+        raw = self._read_blob(candidate["ocr"]["raw_output_sha256"])
+        page_png = self._read_blob(prepared["page_png_blob"])
+        crop_png = self._read_blob(prepared["crop_png_blob"])
+        verify_artifacts(candidate, pdf_bytes=pdf, raw_output=raw,
+                         page_png=page_png, crop_png=crop_png)
+        require(candidate_hash(candidate) == prepared["candidate_sha256"],
+                "PILOT_SOURCE_CHANGED", "image candidate changed")
+        return {"candidate": loads(dumps(candidate)), "pdf_bytes": pdf,
+                "raw_output_bytes": raw, "page_png_bytes": page_png, "crop_png_bytes": crop_png}
+
+    def image_review_payload(self, prepared_id, *, reviewer, reviewer_kind, reviewed_at, checks):
+        prepared = self._result(prepared_id, "PREPARE_SOURCE_IMAGE")
+        return self._payload("REVIEW_IMAGE_PAGE", candidate_sha256=prepared["candidate_sha256"],
+            reviewer=reviewer, reviewer_kind=reviewer_kind, reviewed_at=reviewed_at, checks=checks)
+
+    @boundary
+    def accept_image_review(self, id_, *, prepared_id, receipt):
+        prepared = self._result(prepared_id, "PREPARE_SOURCE_IMAGE")
+        p = receipt["payload"]
+        expected = self.image_review_payload(prepared_id, **{k: p[k] for k in
+            ("reviewer", "reviewer_kind", "reviewed_at", "checks")})
+        self._trusted(receipt, "SOURCE_STATUS", "PAPER_SOURCE_REVIEW", expected, review=True)
+        require(set(p["checks"]) == set(IMAGE_CHECKS) and all(v is True for v in p["checks"].values()),
+                "PILOT_REVIEW", "all image review checks must pass")
+        def accept(_):
+            material = self.image_review_material(prepared_id)
+            candidate = material["candidate"]
+            reviewed = review_image(candidate, pdf_bytes=material["pdf_bytes"],
+                raw_output=material["raw_output_bytes"], reviewer=p["reviewer"],
+                reviewer_kind=p["reviewer_kind"], reviewed_at=p["reviewed_at"],
+                disposition="complete", checks=p["checks"])
+            result = handoff(self.catalog, reviewed, pdf_bytes=material["pdf_bytes"],
+                raw_output=material["raw_output_bytes"], scope=self.config["security_scope"])
+            require(result["status"] == "REVIEWED_TEXT_EVIDENCE" and not result["admitted"],
+                    "PILOT_REVIEW", "image transcription remains held")
+            self.budget.consume("review_actions")
+            self.catalog.put("receipt", receipt)
+            return {"state": "WAIT_SOURCE_ADMISSION", "source_id": result["source_snapshot_id"],
+                    "evidence_id": result["evidence_id"], "prepared_id": prepared_id,
+                    "reviewed_candidate": reviewed}
+        result = self._step(id_, "REVIEW_SOURCE_IMAGE", {"prepared_id": prepared_id,
+                                                          "receipt": receipt}, accept)
+        self._verify_image_review_result(result, prepared_id)
+        return result
+
+    def _verify_image_review_result(self, result, prepared_id):
+        material = self.image_review_material(prepared_id)
+        reviewed = result["reviewed_candidate"]
+        verify_artifacts(reviewed, pdf_bytes=material["pdf_bytes"],
+                         raw_output=material["raw_output_bytes"],
+                         page_png=material["page_png_bytes"], crop_png=material["crop_png_bytes"])
+        require(candidate_hash(reviewed) == candidate_hash(material["candidate"]) and
+                self.catalog.get(self.catalog.get(result["source_id"], "source")["image_evidence_id"],
+                                 "image-evidence-v1") == reviewed,
+                "PILOT_SOURCE_CHANGED", "reviewed image source changed")
+        verify_image_source(self.catalog, self.catalog.get(result["source_id"], "source"))
+
     def _reviewed_source(self, prepared, p):
         packet = prepared["packet"]
         source = reviewed_page_source(self.catalog, pdf_bytes=self._read_blob(packet["pdf_sha256"]),
@@ -344,12 +454,16 @@ class PaperPilot:
         return result
 
     def _source(self, ref, *, admitted=True):
-        matches = [r for r in self.requests.values() if r["kind"] == "REVIEW_SOURCE" and r.get("result", {}).get("source_id") == ref]
+        matches = [r for r in self.requests.values() if r["kind"] in {"REVIEW_SOURCE", "REVIEW_SOURCE_IMAGE"}
+                   and r.get("result", {}).get("source_id") == ref]
         require(len(matches) == 1, "PILOT_SOURCE_REVIEW", "source lacks exactly one pilot review")
         row = matches[0]
-        self.accept_source_review(row["id"], **row["args"])
-        prepared = self._result(row["args"]["prepared_id"], "PREPARE_SOURCE")
-        verify_page_source(self.catalog.get(ref, "source"), pdf_bytes=self._read_blob(prepared["packet"]["pdf_sha256"]))
+        if row["kind"] == "REVIEW_SOURCE":
+            self.accept_source_review(row["id"], **row["args"])
+            prepared = self._result(row["args"]["prepared_id"], "PREPARE_SOURCE")
+            verify_page_source(self.catalog.get(ref, "source"), pdf_bytes=self._read_blob(prepared["packet"]["pdf_sha256"]))
+        else:
+            self.accept_image_review(row["id"], **row["args"])
         if admitted:
             from .retrieval.security import AccessFilter
             statuses = self.backend.statuses()
@@ -358,11 +472,39 @@ class PaperPilot:
                     "PILOT_SOURCE_ACCESS", "source is withdrawn, denied or unauthorized")
 
     def admission_payload(self, review_ids, *, expected_version):
-        refs = sorted(self._result(r, "REVIEW_SOURCE")["source_id"] for r in review_ids)
+        require(type(review_ids) is list and review_ids, "PILOT_SOURCE", "review IDs required")
+        rows = [self.requests.get(r) for r in review_ids]
+        require(all(row is not None and row["kind"] in {"REVIEW_SOURCE", "REVIEW_SOURCE_IMAGE"} and
+                    "result" in row for row in rows), "PILOT_SOURCE_REVIEW", "review missing")
+        refs = sorted(row["result"]["source_id"] for row in rows)
         require(refs and len(refs) == len(set(refs)), "PILOT_SOURCE", "unique reviewed sources required")
+        for index, ref in enumerate(refs):
+            for other in refs[index + 1:]:
+                require(not self._source_overlap(ref, other), "PILOT_SOURCE", "overlapping reviewed source")
         return {"action": "ADMIT", "source_hashes": {r: self.catalog.hash(r) for r in refs},
                 "security_scope": self.config["security_scope"], "execution_mode": self.config["execution_mode"],
                 "expected_version": expected_version}
+
+    def _source_overlap(self, left_ref, right_ref):
+        left, right = [self.catalog.get(ref, "source") for ref in (left_ref, right_ref)]
+        if left["source_id"] != right["source_id"] or left["raw_document_hash"] != right["raw_document_hash"]:
+            return False
+        def region(source):
+            if source["representation"] == "reviewed-native-pdf-page-v1":
+                item = source["page_lineage"]
+                return item["physical_page"], "native", (item["start"], item["end"])
+            image = self.catalog.get(source["image_evidence_id"], "image-evidence-v1")
+            return image["physical_page"], "image", image["crop"]["bbox"]
+        left_page, left_kind, left_region = region(left)
+        right_page, right_kind, right_region = region(right)
+        if left_page != right_page:
+            return False
+        if left_kind != right_kind:
+            return True  # No native-to-pixel alignment was reviewed.
+        if left_kind == "native":
+            return max(left_region[0], right_region[0]) < min(left_region[1], right_region[1])
+        a, b = left_region, right_region
+        return max(a[0], b[0]) < min(a[2], b[2]) and max(a[1], b[1]) < min(a[3], b[3])
 
     def _committed(self, key, *, authorization, operation_hash=None, plan_hash=None, preflight_hash=None):
         self.backend.audit()
@@ -387,6 +529,11 @@ class PaperPilot:
             recovered = self._committed(key, authorization=authorization, operation_hash=digest(payload))
             if recovered:
                 return recovered
+            for new_ref in payload["source_hashes"]:
+                for old_ref, status in self.backend.statuses().items():
+                    if new_ref != old_ref and status["active"] and not status["tombstone"]:
+                        require(not self._source_overlap(new_ref, old_ref),
+                                "PILOT_SOURCE", "new source overlaps already admitted source")
             for ref in payload["source_hashes"]:
                 self._source(ref, admitted=False)
             result = self.backend.admit_sources(self.catalog, list(payload["source_hashes"]), trust=self.trust,

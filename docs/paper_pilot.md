@@ -1,6 +1,7 @@
 # Durable paper pilot service
 
-`trace_gc.paper_pilot.PaperPilot` supports a bounded native-page workflow for
+`trace_gc.paper_pilot.PaperPilot` supports bounded native-page and separately
+reviewed image-page source workflows for
 [issue #23](https://github.com/Jev-Engineering/jraphyte/issues/23). It is an
 application service, with no provider client, credential loader, automatic
 reviewer, or production graph connection. **This implementation does not close
@@ -13,6 +14,8 @@ use authored synthetic PDFs and responses, explicitly marked `SYNTHETIC`.
 |---|---|---|
 | `prepare_native_page` | Original PDF hash, physical page, render and exact native span | `WAIT_SOURCE_REVIEW` |
 | `accept_source_review` | Enrolled reviewer attests all source checks; creates native source/evidence | `WAIT_SOURCE_ADMISSION` |
+| `prepare_image_page` | Original PDF, physical page, exact observed rendered-pixel crop, manual producer and raw UTF-8 transcription | `WAIT_IMAGE_SOURCE_REVIEW` |
+| `accept_image_review` | Enrolled reviewer signs four image checks on that frozen candidate; creates derived-text source/evidence | `WAIT_SOURCE_ADMISSION` |
 | `admit_sources` | Existing trusted source-admission transaction | `TRANSACTION_RECORDED` |
 | `compile_candidates` | Explicit application proposals → candidate → question → compiled pack | `WAIT_SEMANTIC_RESPONSE` |
 | `record_semantic_response` | Authenticated actual execution receipt → existing response parser | `WAIT_OBSERVATION_ATTESTATION` |
@@ -29,6 +32,24 @@ issue passed. `status()` is historical progress plus the current backend audit;
 it does not authorize reusing an old answer. Use the review/answer methods again
 to recheck current permissions. A recorded graph receipt is explicitly marked
 `historical_receipt_only=True` and cannot authorize a new transaction.
+
+The image route requires either an image-only page or an explicit `native_corrupt`
+reason with a recorded native defect note. A corrupt-native image source is a
+separate source representation and cannot silently replace a held native span
+or change a frozen cohort protocol. Manual producer metadata is not review
+authority; a separate signed review act is required and no independence is
+claimed. The page and crop PNGs
+are regenerated from the original PDF on review and replay. Image evidence has
+Unicode offsets in reviewed derived text only; no native PDF offsets are made.
+Admission rejects concurrently active overlapping reviewed spans or crops on
+the same original physical page. A withdrawn historical source can be replaced
+after a new signed review and admission transaction. Current source status and
+application ACL still control use.
+
+The pilot freezes its entire implementation identity at run creation. A run
+created before this image route cannot be reopened with the changed code. Any
+real-paper run combining native and image sources needs a fresh run ID and new
+private checkpoint; historical admission receipts stay with their original run.
 
 ## Application prerequisites
 

@@ -1818,6 +1818,12 @@ def _source_two_column_keywords_closure(result: dict, native: list[dict],
     if (len(right) < 5 or right[0]["bbox"][1] > top+15
             or right[-1]["bbox"][1] < top+55):
         return None
+    # The concurrent lane must be regular prose, not a bold continuation
+    # of the selected abstract. Check every substantial line in the lane;
+    # filtering bold lines out would hide an interleaved continuation.
+    if any(style(line).get("bold") or style(line).get("fraction", 0) < .8
+           or style(line).get("size", 0) < key_size*1.15 for line in right):
+        return None
     left_body = sorted((line for line in native if width*.05 <= line["bbox"][0] < mid-50
                         and line["bbox"][2] <= mid-5
                         and 5 <= line["bbox"][1]-key_bottom <= 75

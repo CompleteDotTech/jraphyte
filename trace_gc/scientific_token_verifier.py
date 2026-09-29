@@ -81,9 +81,26 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
              and isinstance(tokens, list) and tokens, "missing evidence inventory")
     source_lines = packet.get("source_lines", [])
     _require(isinstance(source_lines, list), "invalid source line inventory")
+    omissions = packet.get("reviewed_omissions", [])
+    _require(isinstance(omissions, list), "invalid reviewed omission inventory")
+    ink_evidence = packet.get("accurate_bbox_evidence")
+    if ink_evidence is not None:
+        _require(isinstance(ink_evidence, dict)
+                 and ink_evidence.get("source_pdf_sha256") == source_sha256
+                 and ink_evidence.get("notation_sha256") == notation_sha256
+                 and isinstance(ink_evidence.get("pymupdf_version"), str)
+                 and ink_evidence["pymupdf_version"].strip()
+                 and ink_evidence.get("text_accurate_bboxes_flag") == 512
+                 and ink_evidence.get("quad_corrections_disabled") is True
+                 and ink_evidence.get("source_mode") == "original_pdf_fresh_rawdict",
+                 "accurate glyph bounds lack pinned source method")
     evidence_body = {"glyphs": glyphs, "rules": rules}
     if source_lines:
         evidence_body["source_lines"] = source_lines
+    if omissions:
+        evidence_body["reviewed_omissions"] = omissions
+    if ink_evidence is not None:
+        evidence_body["accurate_bbox_evidence"] = ink_evidence
     evidence = json.dumps(evidence_body, ensure_ascii=False,
                           sort_keys=True, separators=(",", ":")).encode("utf-8")
     _require(sha256(evidence).hexdigest() == evidence_sha256,
@@ -101,6 +118,15 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
         _require(isinstance(box, list) and len(box) == 4
                  and all(type(v) in (int, float) for v in box)
                  and box[0] < box[2] and box[1] < box[3], "invalid glyph box")
+        ink = glyph.get("ink_box")
+        if ink is not None:
+            _require(ink_evidence is not None
+                     and isinstance(ink, list) and len(ink) == 4
+                     and all(type(v) in (int, float) for v in ink)
+                     and ink[0] < ink[2] and ink[1] < ink[3]
+                     and box[0] - .001 <= ink[0] < ink[2] <= box[2] + .001
+                     and box[1] - .001 <= ink[1] < ink[3] <= box[3] + .001,
+                     "accurate glyph bounds outside native box")
         glyph_map[gid] = glyph
     line_map = {}
     for line in source_lines:
@@ -178,22 +204,79 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
             gbox = glyph_map[gid]["box"]
             center_x = (gbox[0] + gbox[2]) / 2
             _require(box[0] <= center_x <= box[2], "rule operand outside horizontal scope")
-        _require(all(glyph_map[gid]["box"][3] <= box[1] for gid in numerator),
+        # A font-metric box can overlap a painted rule while the actual glyph
+        # ink is clear. Tight bounds are allowed only with a separately pinned
+        # fresh-original extraction witness, never by padding the rule.
+        def vertical_box(gid):
+            glyph = glyph_map[gid]
+            if glyph["box"][3] <= box[1] or glyph["box"][1] >= box[3]:
+                return glyph["box"]
+            _require(ink_evidence is not None and glyph.get("ink_box") is not None,
+                     "overlapping glyph lacks accurate ink witness")
+            return glyph["ink_box"]
+
+        _require(all(vertical_box(gid)[3] <= box[1] for gid in numerator),
                  "numerator not above rule")
-        _require(all(glyph_map[gid]["box"][1] >= box[3] for gid in denominator),
+        _require(all(vertical_box(gid)[1] >= box[3] for gid in denominator),
                  "denominator not below rule")
         rule_map[rid] = rule
 
     def verify_node(node: dict, output_ids: set[int], used_rules: set[int]) -> set[int]:
         _require(isinstance(node, dict), "invalid typed node")
         kind = node.get("kind")
-        _require(kind in {"literal", "script", "fraction", "relation", "quantity", "line_join"},
+        _require(isinstance(kind, str) and kind in {
+            "literal", "sequence", "relation_chain", "script", "superscript", "fraction",
+            "relation", "quantity", "line_join", "line_join_gap"},
                  "unknown typed node")
         if kind == "literal":
             ids = _ids(node.get("glyph_ids"), "literal")
             _require(set(ids) <= glyph_map.keys(), "literal references unknown glyph")
             _require(set(ids) <= output_ids, "literal is absent from output")
             return set(ids)
+        if kind == "line_join_gap":
+            checked_join(node)
+            return set()
+        if kind in {"sequence", "relation_chain"}:
+            parts = node.get("parts")
+            _require(isinstance(parts, list) and len(parts) >= 2,
+                     "sequence needs at least two parts")
+            if kind == "relation_chain":
+                operands = node.get("operand_indices")
+                operators = node.get("operator_indices")
+                _require(isinstance(operands, list) and isinstance(operators, list)
+                         and len(operators) >= 2 and len(operands) == len(operators) + 1
+                         and all(type(i) is int and 0 <= i < len(parts)
+                                 for i in operands + operators)
+                         and len(set(operands + operators)) == len(operands + operators)
+                         and all(operands[j] < operators[j] < operands[j + 1]
+                                 for j in range(len(operators))),
+                         "relation chain roles are incomplete or unordered")
+                for i, part in enumerate(parts):
+                    if i in operators:
+                        _require(isinstance(part, dict) and part.get("kind") == "literal",
+                                 "relation chain has unsupported operator")
+                        ids = _ids(part.get("glyph_ids"), "operator")
+                        _require(set(ids) <= glyph_map.keys()
+                                 and "".join(glyph_map[gid]["char"] for gid in ids)
+                                 in {"≤", "≥", "<", ">", "=", "≈"},
+                                 "relation chain has unsupported operator")
+                    elif i not in operands:
+                        _require(isinstance(part, dict),
+                                 "relation chain has nonseparator between roles")
+                        if part.get("kind") != "line_join_gap":
+                            _require(part.get("kind") == "literal",
+                                     "relation chain has nonseparator between roles")
+                            ids = _ids(part.get("glyph_ids"), "separator")
+                            _require(set(ids) <= glyph_map.keys()
+                                     and all(glyph_map[gid]["char"].isspace() for gid in ids),
+                                     "relation chain has nonseparator between roles")
+            union = set()
+            for part in parts:
+                ids = verify_node(part, output_ids, used_rules)
+                _require(not union & ids, "sequence reuses glyphs")
+                union |= ids
+            _require(union, "sequence lacks glyphs")
+            return union
         if kind == "line_join":
             left, right = checked_join(node)
             children = node.get("children")
@@ -206,6 +289,7 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
             return a | b
         children = node.get("children")
         expected = {"script": ("base", "subscript"),
+                    "superscript": ("base", "exponent"),
                     "fraction": ("numerator", "denominator"),
                     "relation": ("left", "operator", "right"),
                     "quantity": ("value", "unit")}[kind]
@@ -229,14 +313,26 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
             base_y = min(glyph_map[gid]["box"][1] for gid in child_sets[0])
             sub_y = min(glyph_map[gid]["box"][1] for gid in child_sets[1])
             _require(sub_y > base_y, "subscript lacks source vertical scope")
+        if kind == "superscript":
+            base_center = min((glyph_map[gid]["box"][1] + glyph_map[gid]["box"][3]) / 2
+                              for gid in child_sets[0])
+            exponent_center = max((glyph_map[gid]["box"][1] + glyph_map[gid]["box"][3]) / 2
+                                  for gid in child_sets[1])
+            _require(exponent_center < base_center,
+                     "superscript lacks source vertical scope")
         return union
 
     def tree_order(node: dict) -> list[int]:
         if node["kind"] == "literal":
             return node["glyph_ids"]
+        if node["kind"] == "line_join_gap":
+            return []
+        if node["kind"] in {"sequence", "relation_chain"}:
+            return [gid for part in node["parts"] for gid in tree_order(part)]
         if node["kind"] == "line_join":
             return tree_order(node["children"]["left"]) + tree_order(node["children"]["right"])
         order = {"script": ("base", "subscript"),
+                 "superscript": ("base", "exponent"),
                  "fraction": ("numerator", "denominator"),
                  "relation": ("left", "operator", "right"),
                  "quantity": ("value", "unit")}[node["kind"]]
@@ -250,6 +346,11 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                     for gid in node["glyph_ids"]
                     for offset in range(len(_glyph_output(glyph_map[gid]["char"])))
                    ]
+        if kind == "line_join_gap":
+            left, right = checked_join(node)
+            return [("line_join_space", left, right)]
+        if kind in {"sequence", "relation_chain"}:
+            return [event for part in node["parts"] for event in tree_events(part)]
         children = node["children"]
         if kind == "line_join":
             left, right = checked_join(node)
@@ -261,12 +362,14 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                     + [("fraction_slash", node["rule_id"], 0)]
                     + tree_events(children["denominator"]))
         order = {"script": ("base", "subscript"),
+                 "superscript": ("base", "exponent"),
                  "relation": ("left", "operator", "right"),
                  "quantity": ("value", "unit")}[kind]
         return [event for key in order for event in tree_events(children[key])]
 
     position = 0
     global_ids: set[int] = set()
+    all_events: list[tuple[str, int, int]] = []
     for token in tokens:
         _require(isinstance(token, dict), "invalid token")
         span = token.get("range")
@@ -369,7 +472,50 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                  "fraction rule must emit exactly one output slash")
         _require(actual_events == tree_events(token["tree"]),
                  "output events disagree with typed serialization")
+        all_events.extend(actual_events)
     _require(position == len(text), "output text is not fully tokenized")
+    omitted_ids: set[int] = set()
+    for omission in omissions:
+        _require(isinstance(omission, dict) and omission.get("kind") == "line_wrap_hyphen",
+                 "invalid reviewed omission")
+        gid = omission.get("glyph_id")
+        _require(type(gid) is int and gid in glyph_map and gid not in omitted_ids,
+                 "unknown or repeated omitted glyph")
+        left, right = omission.get("left_line_id"), omission.get("right_line_id")
+        _require(type(left) is int and type(right) is int
+                 and left in line_map and right in line_map and left < right,
+                 "omission lacks source line pair")
+        _require(all(i in line_map for i in range(left + 1, right)),
+                 "omission skips unrecorded source line")
+        _require(line_map[left]["role"] == line_map[right]["role"] == "abstract_body"
+                 and all(line_map[i]["role"].startswith("excluded_")
+                         for i in range(left + 1, right)),
+                 "omission crosses unowned source line")
+        left_ids, right_ids = line_map[left]["glyph_ids"], line_map[right]["glyph_ids"]
+        _require(len(left_ids) >= 2 and left_ids[-1] == gid,
+                 "omitted hyphen is not source line ending")
+        predecessor, successor = left_ids[-2], right_ids[0]
+        glyph = glyph_map[gid]
+        _require(glyph["char"] == "-" and glyph.get("line_id") == left
+                 and glyph.get("line_offset") == len(left_ids) - 1
+                 and glyph.get("role") == "abstract_body"
+                 and omission.get("source_box") == glyph["box"]
+                 and omission.get("left_neighbor_id") == predecessor
+                 and omission.get("right_neighbor_id") == successor,
+                 "omitted hyphen source witness mismatch")
+        junction = omission.get("output_junction")
+        _require(type(junction) is int and 0 < junction < len(all_events)
+                 and all_events[junction - 1] ==
+                 ("glyph", predecessor, len(_glyph_output(glyph_map[predecessor]["char"])) - 1)
+                 and all_events[junction] == ("glyph", successor, 0),
+                 "omitted hyphen output junction mismatch")
+        omitted_ids.add(gid)
+    _require(not global_ids & omitted_ids, "omitted glyph also emitted")
+    if source_lines:
+        body_ids = {gid for line in source_lines if line["role"] == "abstract_body"
+                    for gid in line["glyph_ids"]}
+        _require(global_ids | omitted_ids == body_ids,
+                 "abstract body glyph coverage incomplete")
     canonical = json.dumps(packet, ensure_ascii=False, sort_keys=True,
                            separators=(",", ":")).encode("utf-8")
     return TokenLineageResult("MECHANICALLY_VERIFIED_REVIEW_REQUIRED", len(tokens),

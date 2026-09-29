@@ -56,6 +56,41 @@ The typed tree is recursively serialized to exact glyph-offset and synthetic
 slash events, so a fraction rule emits one slash precisely between its full
 numerator and denominator, including inside nested fractions. Ligature output
 must remain contiguous.
+`sequence` composes two or more typed or literal parts in exact output order;
+the parts must use disjoint glyphs. Literal prose can therefore surround
+scientific expressions without claiming that prose is an untyped gap.
+`line_join_gap` is a zero-glyph separator within a `sequence` or relation
+chain. It uses the same exact source-line endpoint witness as `line_join`;
+the output event must still be adjacent to those two glyphs. A
+`relation_chain` orders at least three operand parts and two comparison
+operator parts. Intermediate parts may only be source whitespace or a
+line-join gap. Each operator must be a literal source glyph from the bounded
+comparison set, and operand/operator indices must strictly alternate. This
+records chain structure without duplicating the middle operand.
+`superscript` gives a base and exponent explicit source glyphs; every exponent
+glyph center must be above every base glyph center. Like subscript geometry,
+this is a structural check and still needs source-first semantic review.
+
+When a source-line inventory is supplied, every `abstract_body` glyph must
+either be emitted exactly once or listed in `reviewed_omissions`. The currently
+permitted omission is a line-ending `-` dropped when the following included
+body line continues a word. Its record binds the original glyph, box, two
+source lines, neighboring glyph IDs and exact output junction. All intervening
+source lines must be recorded with excluded roles. An omission cannot also be
+emitted, and it joins the externally pinned evidence hash. The verifier checks
+the mechanics of this omission; it does not establish that the visible hyphen
+was only a line-wrap artifact. Actual PDF paint and matching TeX review remain
+necessary before accepting the output.
+Font-metric glyph boxes may overlap a fraction stroke even when the actual
+ink does not. Optional `ink_box` values can resolve that geometric hold only
+when `accurate_bbox_evidence` pins the original PDF and notation hashes,
+PyMuPDF version, `TEXT_ACCURATE_BBOXES` flag 512, disabled quad corrections,
+and fresh-original RAWDICT mode. The ink box must remain inside the nominal
+box (0.001 pt coordinate tolerance) and entirely clear the original painted
+stroke band. The source-bound ink inventory joins the externally trusted
+evidence hash. Without it the original conservative box check still applies.
+The verifier cannot regenerate the ink hull or decide paint order, occlusion,
+or scientific scope; callers must independently capture and review them.
 The script geometry and required relation/unit children are structural checks,
 not proof of a scientifically correct subscript, equation, or unit attachment.
 

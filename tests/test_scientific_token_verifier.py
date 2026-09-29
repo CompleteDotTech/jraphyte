@@ -17,6 +17,10 @@ def evidence_digest(packet):
     value = {"glyphs": packet["glyphs"], "rules": packet["rules"]}
     if packet.get("source_lines"):
         value["source_lines"] = packet["source_lines"]
+    if packet.get("reviewed_omissions"):
+        value["reviewed_omissions"] = packet["reviewed_omissions"]
+    if packet.get("accurate_bbox_evidence") is not None:
+        value["accurate_bbox_evidence"] = packet["accurate_bbox_evidence"]
     raw = json.dumps(value, ensure_ascii=False, sort_keys=True,
                      separators=(",", ":")).encode()
     return digest(raw)
@@ -122,7 +126,172 @@ def delta_fixture():
     return packet
 
 
+def omission_fixture():
+    packet = fixture()
+    packet["tex"] = "abcd"
+    packet["source"]["tex_sha256"] = digest(packet["tex"].encode())
+    packet["text"] = "abcd"
+    packet["rules"] = []
+    packet["glyphs"] = [
+        {"id": i, "char": c, "box": box, "line_id": line,
+         "line_offset": offset, "role": "abstract_body"}
+        for i, c, box, line, offset in (
+            (1, "a", [1, 1, 2, 2], 20, 0),
+            (2, "b", [2, 1, 3, 2], 20, 1),
+            (3, "-", [3, 1, 4, 2], 20, 2),
+            (4, "c", [1, 3, 2, 4], 21, 0),
+            (5, "d", [2, 3, 3, 4], 21, 1),
+        )
+    ]
+    packet["source_lines"] = [
+        {"id": 20, "role": "abstract_body", "glyph_ids": [1, 2, 3],
+         "box": [1, 1, 4, 2]},
+        {"id": 21, "role": "abstract_body", "glyph_ids": [4, 5],
+         "box": [1, 3, 3, 4]},
+    ]
+    packet["reviewed_omissions"] = [{
+        "kind": "line_wrap_hyphen", "glyph_id": 3,
+        "left_line_id": 20, "right_line_id": 21,
+        "source_box": [3, 1, 4, 2],
+        "left_neighbor_id": 2, "right_neighbor_id": 4,
+        "output_junction": 2,
+    }]
+    packet["tokens"] = [{
+        "range": [0, 4], "text": "abcd", "tex_anchor": "abcd",
+        "alternate_scopes": [{"decision": "rejected", "reason": "source line wrap"}],
+        "characters": [{"char": c, "kind": "glyph", "glyph_ids": [gid],
+                        "glyph_offset": 0} for c, gid in zip("abcd", (1, 2, 4, 5))],
+        "tree": {"kind": "literal", "glyph_ids": [1, 2, 4, 5]},
+    }]
+    return packet
+
+
 class ScientificTokenVerifierTest(unittest.TestCase):
+    def test_relation_chain_requires_ordered_operators_and_separator_only_gaps(self):
+        packet = fixture()
+        packet["tex"] = r"1 \le x \le 2"
+        packet["source"]["tex_sha256"] = digest(packet["tex"].encode())
+        packet["text"] = "1≤x≤2"
+        packet["glyphs"] = [{"id": i, "char": c, "box": [i, 1, i + 1, 2]}
+                            for i, c in enumerate("1≤x≤2", start=1)]
+        packet["rules"] = []
+        token = packet["tokens"][0]
+        token.update({"range": [0, 5], "text": "1≤x≤2", "tex_anchor": r"1 \le x \le 2",
+                      "characters": [{"char": c, "kind": "glyph", "glyph_ids": [i],
+                                      "glyph_offset": 0} for i, c in enumerate("1≤x≤2", start=1)],
+                      "tree": {"kind": "relation_chain", "parts": [lit for lit in
+                               ({"kind": "literal", "glyph_ids": [i]} for i in range(1, 6))],
+                               "operand_indices": [0, 2, 4], "operator_indices": [1, 3]}})
+        self.assertEqual(verify(packet).status, "MECHANICALLY_VERIFIED_REVIEW_REQUIRED")
+        token["tree"]["operator_indices"] = [1, 2]
+        with self.assertRaisesRegex(TokenLineageError, "roles are incomplete"):
+            verify(packet)
+        token["tree"]["operator_indices"] = [1, 3]
+        packet["glyphs"][3]["char"] = "+"
+        packet["text"] = "1≤x+2"
+        token["text"] = "1≤x+2"
+        token["characters"][3]["char"] = "+"
+        with self.assertRaisesRegex(TokenLineageError, "unsupported operator"):
+            verify(packet)
+
+    def test_overlapping_nominal_fraction_needs_pinned_accurate_ink(self):
+        packet = fixture()
+        packet["glyphs"][0]["box"] = [1, 1, 2, 2.55]
+        with self.assertRaisesRegex(TokenLineageError, "accurate ink witness"):
+            verify(packet)
+        packet["accurate_bbox_evidence"] = {
+            "source_pdf_sha256": packet["source"]["pdf_sha256"],
+            "notation_sha256": packet["source"]["notation_sha256"],
+            "pymupdf_version": "1.28.0", "text_accurate_bboxes_flag": 512,
+            "quad_corrections_disabled": True,
+            "source_mode": "original_pdf_fresh_rawdict",
+        }
+        packet["glyphs"][0]["ink_box"] = [1, 1, 2, 2.4]
+        self.assertEqual(verify(packet).status, "MECHANICALLY_VERIFIED_REVIEW_REQUIRED")
+        original = evidence_digest(packet)
+        packet["glyphs"][0]["ink_box"] = [1, 1, 2, 2.6]
+        with self.assertRaisesRegex(TokenLineageError, "evidence mismatch"):
+            verify(packet, trusted_evidence=original)
+        with self.assertRaisesRegex(TokenLineageError, "outside native box"):
+            verify(packet)
+        packet["glyphs"][0]["ink_box"] = [1, 1, 2, 2.52]
+        with self.assertRaisesRegex(TokenLineageError, "numerator not above"):
+            verify(packet)
+        packet["accurate_bbox_evidence"]["quad_corrections_disabled"] = False
+        with self.assertRaisesRegex(TokenLineageError, "pinned source method"):
+            verify(packet)
+
+    def test_line_join_gap_composes_between_typed_sequence_parts(self):
+        packet = join_fixture()
+        tree = packet["tokens"][0]["tree"]
+        packet["tokens"][0]["tree"] = {"kind": "sequence", "parts": [
+            tree["children"]["left"],
+            {"kind": "line_join_gap", **{key: value for key, value in tree.items()
+                                         if key not in {"kind", "children"}}},
+            tree["children"]["right"],
+        ]}
+        self.assertEqual(verify(packet).status, "MECHANICALLY_VERIFIED_REVIEW_REQUIRED")
+        packet["tokens"][0]["tree"]["parts"][1]["right_glyph_id"] = 1
+        with self.assertRaises(TokenLineageError):
+            verify(packet)
+
+    def test_sequence_composes_fraction_and_literal_without_losing_order(self):
+        packet = fixture()
+        packet["text"] = "1/2x"
+        packet["tex"] = r"\frac{1}{2}x"
+        packet["source"]["tex_sha256"] = digest(packet["tex"].encode())
+        packet["glyphs"].append({"id": 3, "char": "x", "box": [3, 4, 4, 5]})
+        token = packet["tokens"][0]
+        token["range"] = [0, 4]
+        token["text"] = "1/2x"
+        token["characters"].append({"char": "x", "kind": "glyph",
+                                    "glyph_ids": [3], "glyph_offset": 0})
+        token["tree"] = {"kind": "sequence", "parts": [token["tree"],
+                          {"kind": "literal", "glyph_ids": [3]}]}
+        self.assertEqual(verify(packet).status, "MECHANICALLY_VERIFIED_REVIEW_REQUIRED")
+        token["tree"]["parts"].reverse()
+        with self.assertRaisesRegex(TokenLineageError, "order mismatch"):
+            verify(packet)
+
+    def test_superscript_requires_upper_source_geometry(self):
+        packet = fixture()
+        packet["tex"] = r"\AA^{-1}"
+        packet["source"]["tex_sha256"] = digest(packet["tex"].encode())
+        packet["text"] = "Å−1"
+        packet["glyphs"] = [
+            {"id": 1, "char": "Å", "box": [1, 3, 2, 5]},
+            {"id": 2, "char": "−", "box": [2, 1, 3, 3]},
+            {"id": 3, "char": "1", "box": [3, 1, 4, 3]},
+        ]
+        packet["rules"] = []
+        token = packet["tokens"][0]
+        token.update({"range": [0, 3], "text": "Å−1", "tex_anchor": r"\AA^{-1}",
+                      "characters": [{"char": c, "kind": "glyph", "glyph_ids": [gid],
+                                      "glyph_offset": 0} for c, gid in zip("Å−1", (1, 2, 3))],
+                      "tree": {"kind": "superscript", "children": {
+                          "base": {"kind": "literal", "glyph_ids": [1]},
+                          "exponent": {"kind": "literal", "glyph_ids": [2, 3]},
+                      }}})
+        self.assertEqual(verify(packet).status, "MECHANICALLY_VERIFIED_REVIEW_REQUIRED")
+        packet["glyphs"][1]["box"] = [2, 4, 3, 6]
+        with self.assertRaisesRegex(TokenLineageError, "superscript lacks"):
+            verify(packet)
+
+    def test_complete_body_accounting_requires_reviewed_wrap_omission(self):
+        packet = omission_fixture()
+        self.assertEqual(verify(packet).status, "MECHANICALLY_VERIFIED_REVIEW_REQUIRED")
+        for change in (
+            lambda p: p.update(reviewed_omissions=[]),
+            lambda p: p["reviewed_omissions"][0].update(source_box=[0, 0, 1, 1]),
+            lambda p: p["reviewed_omissions"][0].update(output_junction=1),
+            lambda p: p["reviewed_omissions"][0].update(glyph_id=2),
+            lambda p: p["glyphs"][2].update(char="+"),
+        ):
+            held = omission_fixture()
+            change(held)
+            with self.assertRaises(TokenLineageError):
+                verify(held)
+
     def test_source_line_join_and_delta_alias_stay_review_required(self):
         for packet in (join_fixture(), delta_fixture()):
             with self.subTest(packet=packet["text"]):

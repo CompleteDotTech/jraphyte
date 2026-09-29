@@ -47,12 +47,15 @@ assert result["state"] == "WAIT_SOURCE_REVIEW"
 app.close()
 ```
 
-The frozen private v2 protocol includes f097's native abstract and page-two
+The corrected frozen private v3 protocol includes f097's native abstract and page-two
 study, f113's structured abstract and page-four quantitative text, and f076's
 image-only cover plus later native text. This application holds f076's cover
 until the reviewed image/crop transcription route can bind text to original
 page pixels. It does not mislabel image text as native offsets. The protocol's
 edition-label comparison must cite both the cover and inner page.
+The earlier v2 protocol is preserved as rejected before activation: several
+native anchors ended mid-word or mid-sentence. The application requires v3
+and checks complete-sentence native boundaries against the exact page text.
 PyMuPDF and Pillow are optional dependencies for the package; this real-page
 stage requires PyMuPDF at runtime, and its authored image tests skip when the
 optional image stack is absent.

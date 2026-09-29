@@ -19,7 +19,7 @@ from trace_gc.catalog import Catalog
 from trace_gc.demo import limits, relation
 from trace_gc.errors import ContractError
 from trace_gc.paper_pilot import PaperPilot
-from trace_gc.paper_pilot_application import LocalPaperPilotApplication
+from trace_gc.paper_pilot_application import LocalPaperPilotApplication, require_complete_native_anchor
 from trace_gc.policy import create_policy
 from trace_gc.retrieval.security import access_policy, grant
 from trace_gc.trust import IssuerPolicy, Signer, TrustStore
@@ -62,7 +62,7 @@ class ApplicationTests(unittest.TestCase):
                 frozenset({"LIVE"}), can_review=can_review))
         model = {"provider": "AUTHORED_NO_MODEL", "model_id": "jev-1.13.0",
                  "model_revision": "authored-v1", "tokenizer_id": "authored-counter-v1"}
-        self.protocol = {"version": "issue23-real-paper-source-first-protocol-v2",
+        self.protocol = {"version": "issue23-real-paper-source-first-protocol-v3",
             "status": "COHORT_AND_SOURCE_REFERENCE_FROZEN_PENDING_APPLICATION_AUTHORITY_AND_FINAL_PROFILE",
             "numeric_gates": {key: {"fixture_target": 1} for key in
                               ("extraction", "graph", "retrieval", "answers", "recovery")},
@@ -148,3 +148,14 @@ class ApplicationTests(unittest.TestCase):
         with self.assertRaises(ContractError):
             self.app.prepare_sources()
         self.assertEqual(self.pilot.status()["requests"], [])
+
+    def test_mid_word_and_mid_sentence_source_spans_rejected(self):
+        native = "Complete source sentence. Next sentence.\n"
+        require_complete_native_anchor(native, 0, len("Complete source sentence."),
+                                       "Complete source sentence.")
+        with self.assertRaises(ContractError):
+            require_complete_native_anchor(native, 0, len("Complete source sent"),
+                                           "Complete source sent")
+        with self.assertRaises(ContractError):
+            require_complete_native_anchor(native, 0, len("Complete source sentence. Next"),
+                                           "Complete source sentence. Next")

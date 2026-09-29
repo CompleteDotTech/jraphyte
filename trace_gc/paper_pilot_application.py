@@ -15,6 +15,14 @@ from .retrieval.security import AccessFilter
 from .trust import IssuerPolicy, Signer, TrustStore
 
 
+def require_complete_native_anchor(native: str, start: int, end: int, quote: str) -> None:
+    require(0 <= start < end <= len(native) and native[start:end] == quote and
+            (start == 0 or not native[start - 1].isalnum()) and
+            (end == len(native) or not native[end].isalnum()) and
+            quote.rstrip().endswith((".", "!", "?")),
+            "APPLICATION_BOUNDARY", "native anchor must cover complete source sentence")
+
+
 class LocalPaperPilotApplication:
     """Bind a frozen private protocol to one application-owned PaperPilot."""
 
@@ -45,7 +53,7 @@ class LocalPaperPilotApplication:
         raw = path.read_bytes()
         require(bytes_digest(raw) == protocol_sha256, "APPLICATION_PROTOCOL", "frozen protocol bytes changed")
         protocol = loads(raw.decode("utf-8"))
-        require(protocol["version"] == "issue23-real-paper-source-first-protocol-v2" and
+        require(protocol["version"] == "issue23-real-paper-source-first-protocol-v3" and
                 protocol["status"] == "COHORT_AND_SOURCE_REFERENCE_FROZEN_PENDING_APPLICATION_AUTHORITY_AND_FINAL_PROFILE",
                 "APPLICATION_PROTOCOL", "unsupported protocol or activation state")
         require([row["text"] for row in protocol["questions"]] == pilot.config["questions"] and
@@ -81,6 +89,7 @@ class LocalPaperPilotApplication:
                 start, end = anchor["start_codepoint"], anchor["end_codepoint"]
                 require(bytes_digest(native.encode()) == anchor["native_page_sha256"] and
                         native[start:end] == anchor["quote"], "APPLICATION_SOURCE", "native anchor differs")
+                require_complete_native_anchor(native, start, end, anchor["quote"])
                 pages.append({"id": anchor_id, "source_id": sid, "version": frame[sid]["version"],
                               "pdf_sha256": frame[sid]["document_sha256"], "physical_page": page,
                               "start": start, "end": end})

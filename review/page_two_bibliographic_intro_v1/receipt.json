@@ -1,0 +1,44 @@
+{
+  "schema": "page-two-bibliographic-intro-experiment-v1",
+  "scope": "200 previously examined first-page papers, four frozen converter methods, verified original PDFs",
+  "source_geometry_policy": "source_fraction_v1",
+  "private_evidence": {
+    "preflight": "validation_v3_private/issue17-bibliographic-intro-full200-20260929-01/preflight.json",
+    "preflight_sha256": "ffb4b2d2e0f25118f38af22d93452d51a66ccbb91ff83f42a7678186d0df2a84",
+    "result": "validation_v3_private/issue17-bibliographic-intro-full200-20260929-01/results.json",
+    "result_sha256": "1087632d062d278257aa32d6dbf7a24650c11e69dafab96fdcac639bc61feaea",
+    "native_manifest_sha256": "1ce5517824db8944592a802ee4e792e10dae31928e4e2d577a5a2b9faaf9017f",
+    "prior_result_sha256": "fe4ae68b5e90120ef74393b841d94743f525ed96ff11462de0c08ac052d70e81",
+    "f032_primary_assessment_sha256": "e9b90a8de58f293837b31a440724181b5e09c3b9de642808d8b4df6049e81c65",
+    "f032_grobid_assessment_sha256": "33af6a6729a420a0c77a8d9a709d9742b71a2e46c8c11751fad214e8f5de49d7",
+    "f032_mineru_assessment_sha256": "5a4398c8b1dbd28211d9532e5d87497d58cb95546bf92aa789906ef27064162d",
+    "f032_olmocr_assessment_sha256": "c64fced0bc73a0d6e12cbc50d4721826f703cc4f53c0570ec4b9ca18f43de120",
+    "source_review_sha256": "07e4a0a03939777880426a3b535e910efdd53a2bc4b94290e47fa51e44b8647c"
+  },
+  "regression": {
+    "status": "FAILED_REGRESSION_PRESERVATION_GATE",
+    "preflight": "PASS",
+    "saved_v2_replay": "PASS",
+    "assessments": 800,
+    "changed_case_ids": ["f032"],
+    "changed_assessment_files": 4,
+    "source_page_image_and_native_line_hashes_changed": false,
+    "primary_mineru_olmocr_selected_text_and_spans_changed": false,
+    "grobid_new_source_located_spans": 6,
+    "primary_correct_before_after": [88, 89],
+    "grobid_correct_before_after": [78, 79],
+    "mineru_correct_before_after": [71, 72],
+    "olmocr_correct_before_after": [65, 66],
+    "false_proposals_all_methods": 0,
+    "historical_91_preservation_lost_ids": ["f012", "f059", "f079", "f081", "f122", "f153"],
+    "new_paid_api_calls": 0,
+    "production_graph_writes": 0,
+    "runtime_seconds": 1130.4612157999945
+  },
+  "review": {
+    "attribution": "internal assistant two-page source-image diagnostic after predictions; no blinded or independent human review claimed",
+    "boundary": "The first-page paragraph ends above a distant proceedings footer; page two repeats the title and author above a numbered Introduction.",
+    "admission": "source_review_required"
+  },
+  "limitations": "The 91-case historical preservation gate remains failed with six held IDs. This exposed development corpus does not qualify unseen-paper precision, notation fidelity, or automatic graph admission. Default source geometry remains disabled."
+}

@@ -1479,6 +1479,65 @@ def _next_page_title_closure(text: str, spans: list[dict], native: list[dict],
             "scholarly_text_98_corroborated": field_match}
 
 
+def _next_page_bibliographic_intro_closure(result: dict, native: list[dict], ordered: list[dict],
+                                           page_size: list[float], scholarly_abstract: str,
+                                           source_geometry) -> dict | None:
+    """Close one unlabelled abstract before a source-verified page-two Introduction.
+
+    This path requires both a matching scholarly field and repeated title and
+    author text in the original PDF. A distant page-one footer alone is not a
+    boundary, and no page-two text is added to the first-page candidate.
+    """
+    boundary, spans = result.get("closing_boundary"), result.get("spans") or []
+    if (type(source_geometry) is not SourceGeometry or not scholarly_abstract
+            or result.get("proposal_basis") != "source_paragraph_group_corroborated_by_scholarly_field"
+            or not boundary or boundary.get("kind") != "unresolved_section_ownership"
+            or boundary.get("reason") != "large_source_gap" or boundary.get("peer_refs")
+            or not spans or len(canonical(result.get("text", ""))) < 100
+            or not SENTENCE_END.search(result["text"])
+            or not compare(result["text"], scholarly_abstract)["boundary_and_98_match"]):
+        return None
+    opening = source_geometry.descriptor().get("next_page_opening") or {}
+    bibliography = opening.get("preceding_bibliography") or {}
+    if (opening.get("kind") != "body_section" or opening.get("physical_page") != 2
+            or not re.fullmatch(r"(?:[IVX]+|\d+)[.)]?\s+introduction", opening.get("text", ""), re.I)
+            or not bibliography.get("running_title") or not bibliography.get("running_author")):
+        return None
+    top, bottom = min(s["bbox"][1] for s in spans), max(s["bbox"][3] for s in spans)
+    left, right = min(s["bbox"][0] for s in spans), max(s["bbox"][2] for s in spans)
+    if bottom > page_size[1] * .65 or right-left < page_size[0] * .6:
+        return None
+    title_key = canonical(bibliography["running_title"]["text"])
+    author_key = canonical(bibliography["running_author"]["text"])
+    titles = [line for line in native if canonical(line["text"]) == title_key
+              and line["bbox"][3] < top - 50 and line["bbox"][2]-line["bbox"][0] > line["bbox"][3]-line["bbox"][1]]
+    authors = [line for line in native if canonical(line["text"]).startswith(author_key)
+               and len(author_key) >= 12 and line["bbox"][3] < top - 20
+               and line["bbox"][2]-line["bbox"][0] > line["bbox"][3]-line["bbox"][1]]
+    if (len(titles) != 1 or len(authors) != 1
+            or titles[0]["bbox"][3] + 4 > authors[0]["bbox"][1]):
+        return None
+    region = next((r for r in ordered if r["ref"] == boundary.get("ref")), None)
+    if region is None:
+        return None
+    footer = locate(region["text"], native, region_boxes=region["boxes"], source_geometry=source_geometry)
+    if (footer["status"] != "located" or not footer["spans"]
+            or min(s["bbox"][1] for s in footer["spans"]) < page_size[1] * .7):
+        return None
+    # A side watermark may be taller than the selected paragraph. Any
+    # horizontal source prose between it and the located footer is a hold.
+    footer_top = min(s["bbox"][1] for s in footer["spans"])
+    selected_ids = {str(s["line_id"]) for s in spans}
+    if any(str(line["id"]) not in selected_ids and line["bbox"][2]-line["bbox"][0] > line["bbox"][3]-line["bbox"][1]
+           and bottom + 2 < line["bbox"][1] < footer_top - 2 for line in native):
+        return None
+    return {"kind": "source_page_two_bibliographic_intro_closure", "source": "verified_original_pdf",
+            "physical_page": 2, "opening": opening, "page_one_title_line_id": titles[0]["id"],
+            "page_one_author_line_id": authors[0]["id"], "page_one_terminal_line_id": spans[-1]["line_id"],
+            "footer_first_line_id": footer["spans"][0]["line_id"],
+            "scholarly_boundary_and_98_corroborated": True}
+
+
 def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                     native_lines=None, scholarly_abstract="", max_input_chars=4000,
                     conversion_status="success", source_geometry=None) -> dict:
@@ -1626,7 +1685,14 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
             elif selected["boundary"]["kind"] == "ambiguous_structured_or_body_section":
                 result.update(status="uncertain", reasons=["structured_abstract_boundary_requires_review"])
             elif selected["boundary"]["kind"] == "unresolved_section_ownership":
-                result.update(status="uncertain", reasons=["section_ownership_requires_source_review"])
+                closure = _next_page_bibliographic_intro_closure(
+                    result, native, ordered, page_size, scholarly_abstract, source_geometry)
+                if closure:
+                    result.update(status="complete", complete_candidate=True, closing_boundary=closure,
+                                  proposal_basis="source_page_two_bibliographic_intro_bounded",
+                                  reasons=["bounded_source_located_proposal"])
+                else:
+                    result.update(status="uncertain", reasons=["section_ownership_requires_source_review"])
             elif selected["boundary"]["kind"] == "unresolved_embedded_nonabstract_role":
                 result.update(status="uncertain", reasons=["embedded_nonabstract_role_requires_source_review"])
             elif (selected["boundary"]["kind"] == "embedded_body_section" and explicit and

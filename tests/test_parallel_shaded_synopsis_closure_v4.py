@@ -13,7 +13,8 @@ from trace_gc.pdf_structure_parallel_v4 import _source_shaded_synopsis_closure
 
 @unittest.skipUnless(fitz, "optional PyMuPDF required")
 class ShadedSynopsisClosureTests(unittest.TestCase):
-    def fixture(self, *, fill=True, heading=True, extra=False, overlay=False,
+    def fixture(self, *, fill=True, heading=True, extra=False, extra_short=False,
+                overlay=False,
                 color=(.98, .92, .94)):
         abstract = [
             "The first experiment establishes a reproducible scientific result with clear evidence.",
@@ -37,6 +38,8 @@ class ShadedSynopsisClosureTests(unittest.TestCase):
                 page.insert_text((75, y), value, fontsize=10)
             if extra:
                 page.insert_text((75, 290), "Another unowned source sentence appears inside the filled box.", fontsize=10)
+            if extra_short:
+                page.insert_text((75, 316), "Continued.", fontsize=10)
             if heading:
                 page.insert_text((75, 337), "1 Introduction", fontsize=12, fontname="hebo")
             page.insert_text((75, 369), body, fontsize=10)
@@ -80,6 +83,7 @@ class ShadedSynopsisClosureTests(unittest.TestCase):
 
     def test_missing_fill_heading_or_unowned_inset_text_remains_held(self):
         for options in ({"fill": False}, {"heading": False}, {"extra": True},
+                        {"extra_short": True},
                         {"overlay": True}, {"color": (1, 1, 1)}):
             with self.subTest(options=options):
                 self.assertIsNone(self.proof(self.fixture(**options)))

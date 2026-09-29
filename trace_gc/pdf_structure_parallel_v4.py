@@ -1741,7 +1741,7 @@ def _source_shaded_synopsis_closure(result: dict, native: list[dict], ordered: l
         # the abstract, inset, outer heading and first body paragraph.
         known = {str(s["line_id"]) for s in spans + inset_spans + heading["source_spans"]
                  + following["spans"]}
-        if any(str(line["id"]) not in known and len(canonical(line["text"])) >= 30
+        if any(str(line["id"]) not in known and canonical(line["text"])
                and line["bbox"][2]-line["bbox"][0] > line["bbox"][3]-line["bbox"][1]
                and bottom+1 < line["bbox"][1] < max(s["bbox"][3] for s in following["spans"])
                for line in native):

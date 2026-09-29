@@ -1,0 +1,42 @@
+{
+  "schema": "source-two-column-onset-experiment-v1",
+  "scope": "200 previously examined first-page papers, four frozen converter methods, verified original PDFs",
+  "source_geometry_policy": "source_fraction_v1",
+  "private_evidence": {
+    "preflight": "validation_v3_private/issue17-two-column-onset-full200-20260929-01/preflight.json",
+    "preflight_sha256": "9f24824534b3659ec1c532943b8704ee0b700659907b8b45f72e4af5ecc0b615",
+    "result": "validation_v3_private/issue17-two-column-onset-full200-20260929-01/results.json",
+    "result_sha256": "36b6289bc2c4a295f45fe7b3b93634b894d25c0878b6c3af206ca19886dde1af",
+    "native_manifest_sha256": "69d25e0affbad70420b0c8e45c2f9fd564366b27be1baa20efec5bbcaa39a154",
+    "prior_result_sha256": "1087632d062d278257aa32d6dbf7a24650c11e69dafab96fdcac639bc61feaea",
+    "f059_primary_assessment_sha256": "a8e87f1c93b288991a6f1268bb443ac24550ccb6ae2384e306650b9fb8d76255",
+    "f059_grobid_assessment_sha256": "24375ba7d47354da63982024b3c38907e2954276f6923c94ba595585070c18ab",
+    "source_review_sha256": "07e26dfe38e5aa8d400fa98295eb9702e19863c89e686061a1c3b5015d317e49"
+  },
+  "regression": {
+    "status": "FAILED_REGRESSION_PRESERVATION_GATE",
+    "preflight": "PASS",
+    "saved_v2_replay": "PASS",
+    "assessments": 800,
+    "changed_case_ids": ["f059"],
+    "changed_assessment_files": 2,
+    "source_page_image_and_native_line_hashes_changed": false,
+    "primary_selected_text_and_spans_changed": false,
+    "grobid_new_source_located_spans": 3,
+    "primary_correct_before_after": [89, 90],
+    "grobid_correct_before_after": [79, 80],
+    "mineru_correct_before_after": [72, 72],
+    "olmocr_correct_before_after": [66, 66],
+    "false_proposals_all_methods": 0,
+    "historical_91_preservation_lost_ids": ["f012", "f079", "f081", "f122", "f153"],
+    "new_paid_api_calls": 0,
+    "production_graph_writes": 0,
+    "runtime_seconds": 1133.5382215999998
+  },
+  "review": {
+    "attribution": "internal assistant original-PDF image and geometry diagnostic after predictions; no blinded or independent human review claimed",
+    "boundary": "A complete inset paragraph spans the future gutter; two independently continuing native body lanes begin below it on the same baseline.",
+    "admission": "source_review_required"
+  },
+  "limitations": "The 91-case historical preservation gate remains failed with five held IDs. This exposed development corpus does not qualify unseen-paper precision, notation fidelity, or automatic graph admission. Default source geometry remains disabled."
+}

@@ -135,8 +135,41 @@ cover fragmented rows, scripts, wrap continuation, full-width abstracts,
 neighboring columns, duplicate occurrences, narrow repeated gutters, rotated
 sidebars (including authored PDFs) and immutable native identity.
 
-The parent recovery gate still requires the integrated native replay, independent
-review, preservation accounting and source-reviewed unseen evaluation. Known
-case f026 must retain its separate missing-closure hold until
+At the time of this diagnostic, the parent recovery gate still required the
+integrated native replay, review, preservation accounting and source-reviewed
+unseen evaluation. Case f026 retained a separate missing-closure hold until
 [#16](https://github.com/CompleteDotTech/jraphyte/issues/16) supplies valid boundary
 evidence. Proposals remain review candidates with graph admission disabled.
+
+## Targeted delivery readback, 2026-09-29
+
+The [targeted delivery receipt](../review/first_page_geometry_v1/delivery_receipt_20260929.json)
+maps the measured extraction closure to merged commit
+`1e014f7a6ca9c416008d0d451e1ac0e761d04b30`. It verifies all 800 assessment
+artifacts and 200 native artifacts, with 15,212 returned spans in 2,575 groups
+round-tripping to unchanged source text and offsets. No span or artifact hash
+failure was found. The native extraction closure is unchanged by the later
+token verifier work.
+
+All 12 named geometry cases now have source-correct complete proposals with
+reviewed boundaries and notation. Nine use unchanged, source-bound native
+review evidence. The three cases f103, f111 and f166 use freshly rendered,
+attributed reviewed-image transcriptions through the supported image route.
+Their original native assessments remain intact; flattened native math and raw
+OCR are not the credited scientific readings. Original PDF, image, local OCR,
+correction, reviewer and derived assessment identities were checked by the
+actual route and fidelity APIs. Review was by attributed assistants on an
+examined development set, without a blind or independent-human claim.
+
+The receipt reports all 29 diagnosed cases individually: 25 native complete
+proposals and four native holds. It does not claim 29 scientifically qualified
+recoveries. Native cases f079, f081, f122 and f153 remain held in the measured
+run; their separately reviewed image routes are being integrated under
+[#19](https://github.com/Jev-Engineering/jraphyte/issues/19). Cases f026, f070
+and f154 also retain explicit notation qualification work. f026's closure is
+now complete, so the historical closure hold above no longer applies.
+
+The native full-200 preservation gate still fails. Its final reviewed-image
+configuration, unseen qualification, retrieval trial and paper-to-answer pilot
+remain separate acceptance work. All proposals remain candidates, with graph
+admission disabled.

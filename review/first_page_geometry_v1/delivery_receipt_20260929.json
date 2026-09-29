@@ -1,0 +1,386 @@
+{
+  "version": "issue15-targeted-delivery-receipt-v1",
+  "issue": "https://github.com/Jev-Engineering/jraphyte/issues/15",
+  "status": "PASS_TARGETED_GEOMETRY",
+  "delivery_commit": "1e014f7a6ca9c416008d0d451e1ac0e761d04b30",
+  "tested_head": "fa5ab40733dd77f9c9e3f1160de833c128285fae",
+  "identical_delivery_tree": "ea53c2a709200e5e2df175413124fc31613758b7",
+  "scope": "Targeted geometry acceptance; combined native and attributed reviewed-image evidence; not unseen qualification or full selector promotion.",
+  "counts": {
+    "assessment_files": 800,
+    "native_files": 200,
+    "span_groups": 2575,
+    "spans": 15212
+  },
+  "source_offset_roundtrip": "PASS",
+  "artifact_hash_readback": "PASS",
+  "native_method_identity_mapping": "PASS_UNCHANGED_EXTRACTION_CLOSURE",
+  "twelve_named_cases": {
+    "f011": {
+      "representation": "native_spans",
+      "notation": "pass",
+      "boundary": "pass",
+      "verified_correct_proposal": true,
+      "graph_admission_enabled": false
+    },
+    "f037": {
+      "representation": "native_spans",
+      "notation": "pass",
+      "boundary": "pass",
+      "verified_correct_proposal": true,
+      "graph_admission_enabled": false
+    },
+    "f087": {
+      "representation": "native_spans",
+      "notation": "pass",
+      "boundary": "pass",
+      "verified_correct_proposal": true,
+      "graph_admission_enabled": false
+    },
+    "f089": {
+      "representation": "native_spans",
+      "notation": "pass",
+      "boundary": "pass",
+      "verified_correct_proposal": true,
+      "graph_admission_enabled": false
+    },
+    "f092": {
+      "representation": "native_spans",
+      "notation": "pass",
+      "boundary": "pass",
+      "verified_correct_proposal": true,
+      "graph_admission_enabled": false
+    },
+    "f103": {
+      "representation": "reviewed-image-transcription-v1",
+      "notation": "pass",
+      "boundary": "pass",
+      "verified_correct_proposal": true,
+      "graph_admission_enabled": false
+    },
+    "f111": {
+      "representation": "reviewed-image-transcription-v1",
+      "notation": "pass",
+      "boundary": "pass",
+      "verified_correct_proposal": true,
+      "graph_admission_enabled": false
+    },
+    "f129": {
+      "representation": "native_spans",
+      "notation": "pass",
+      "boundary": "pass",
+      "verified_correct_proposal": true,
+      "graph_admission_enabled": false
+    },
+    "f139": {
+      "representation": "native_spans",
+      "notation": "pass",
+      "boundary": "pass",
+      "verified_correct_proposal": true,
+      "graph_admission_enabled": false
+    },
+    "f157": {
+      "representation": "native_spans",
+      "notation": "pass",
+      "boundary": "pass",
+      "verified_correct_proposal": true,
+      "graph_admission_enabled": false
+    },
+    "f166": {
+      "representation": "reviewed-image-transcription-v1",
+      "notation": "pass",
+      "boundary": "pass",
+      "verified_correct_proposal": true,
+      "graph_admission_enabled": false
+    },
+    "f173": {
+      "representation": "native_spans",
+      "notation": "pass",
+      "boundary": "pass",
+      "verified_correct_proposal": true,
+      "graph_admission_enabled": false
+    }
+  },
+  "individual_29_native_outcomes": [
+    {
+      "id": "f011",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f026",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": true
+    },
+    {
+      "id": "f028",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f037",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f058",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f070",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f079",
+      "status": "uncertain",
+      "proposal": false,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": true
+    },
+    {
+      "id": "f081",
+      "status": "uncertain",
+      "proposal": false,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": true
+    },
+    {
+      "id": "f087",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f089",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f092",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f094",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f097",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f101",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f103",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": true
+    },
+    {
+      "id": "f111",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": true
+    },
+    {
+      "id": "f122",
+      "status": "uncertain",
+      "proposal": false,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": true
+    },
+    {
+      "id": "f129",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f138",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f139",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f153",
+      "status": "uncertain",
+      "proposal": false,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": true
+    },
+    {
+      "id": "f154",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": true
+    },
+    {
+      "id": "f155",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f157",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f161",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f166",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": true
+    },
+    {
+      "id": "f171",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f173",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    },
+    {
+      "id": "f188",
+      "status": "complete",
+      "proposal": true,
+      "legacy_text98": true,
+      "boundary_match": true,
+      "math_review_required": false
+    }
+  ],
+  "native_29_complete_proposals": 25,
+  "native_29_withheld": [
+    "f079",
+    "f081",
+    "f122",
+    "f153"
+  ],
+  "other_unqualified_notation_cases_among_29": [
+    "f026",
+    "f070",
+    "f154"
+  ],
+  "f026": "Native closure now complete; scientific notation qualification remains issue19 work.",
+  "scientific_review": "Attributed assistant review of previously examined development sources; not blind or independent human.",
+  "evidence": {
+    "source_audit": {
+      "id": "validation_v3_private/issue15-final-geometry-audit-20260929-01/AUDIT.json",
+      "sha256": "2af80b912dfe3f930b5b4c7f7edea7246b69ee663d8880b4d69c322d95f3e505"
+    },
+    "current_image_readback": {
+      "id": "validation_v3_private/issue15-current-notation-image-preparation-20260929-01/REVIEWED_ROUTE_READBACK.json",
+      "sha256": "00b409cbf6f7371b1e992cf1f126c1dbee1a85e768b52d6345673859e1744945"
+    },
+    "delivered_readback": {
+      "id": "validation_v3_private/issue15-delivered-acceptance-readback-20260929-01/READBACK.json",
+      "sha256": "a3cac4a15472b766fb43a4c3a51e996afcea2e1c3c2c0a65f6a9ee8d326148ab"
+    },
+    "native_results": {
+      "id": "validation_v3_private/issue17-keyword-f150-reviewfix-full200-20260929-02/results.json",
+      "sha256": "07411d68c69da18d10f6f7600c7dfc08572a94ea42d9b90858ffb97f7c1baf41"
+    }
+  },
+  "repository_validation": {
+    "tests": 1268,
+    "skipped": 8,
+    "failures": 0,
+    "errors": 0,
+    "postmerge_focused_tests": 38,
+    "pr": "https://github.com/Jev-Engineering/jraphyte/pull/80",
+    "pr_checks": 6,
+    "postmerge_checks": 3,
+    "postmerge_run": 36623307697
+  },
+  "full_200_preservation": "FAIL_NATIVE_BASELINE; selected reviewed-image configuration still being rebuilt under issue19.",
+  "remaining_acceptance_issue": "https://github.com/Jev-Engineering/jraphyte/issues/19",
+  "new_paid_api_calls": 0,
+  "production_graph_writes": 0,
+  "graph_admission_enabled": false
+}

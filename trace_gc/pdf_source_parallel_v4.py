@@ -12,12 +12,15 @@ import math
 import re
 import unicodedata
 from collections import defaultdict
+from dataclasses import dataclass
 from typing import Iterable, Mapping, Sequence
-from .pdf_geometry_parallel_v4 import logical_rows, transition_evidence, _horizontal
+from .pdf_geometry_parallel_v4 import (logical_rows, transition_evidence, _horizontal,
+                                     _exact_runs, _gutter, _same_row, _similar_extent)
 
 VERSION = "page-one-parallel-source-v4"
 SLICE_VERSION = "native-requested-leading-prefix-v1"
 CHAIN_VERSION = "native-terminal-wrap-chain-v1"
+FRACTION_VERSION = "source-vector-fraction-seam-v1"
 
 
 def canonical(text: str) -> str:
@@ -111,6 +114,294 @@ def source_lines(page) -> list[dict]:
             result.append({"id": len(result), "block_id": bi, "line_in_block": li, "page_no": 1,
                            "bbox": list(line["bbox"]), "text": "".join(chunks), "spans": spans})
     return validate_lines(result, (page.rect.width, page.rect.height))
+
+
+@dataclass(frozen=True, init=False)
+class SourceGeometry:
+    """Owned, PDF-derived geometry for an explicit source locator opt-in.
+
+    Construct through ``from_pdf``. A serialized dictionary is not a verified
+    context. Native JSON is unchanged; this object supplies no text correction,
+    section ownership, scientific-fidelity approval or graph authority.
+    """
+    _evidence: bytes
+
+    def __init__(self):
+        raise ValueError("source_geometry_use_verified_pdf_factory")
+
+    @classmethod
+    def from_pdf(cls, pdf_bytes: bytes, native_lines: list[dict], *, expected_source_sha256: str):
+        if not isinstance(pdf_bytes, (bytes, bytearray, memoryview)):
+            raise ValueError("source_geometry_requires_pdf_bytes")
+        owned = bytes(pdf_bytes)
+        source_sha = hashlib.sha256(owned).hexdigest()
+        if not isinstance(expected_source_sha256, str) or source_sha != expected_source_sha256:
+            raise ValueError("source_geometry_pdf_hash_mismatch")
+        native = json.loads(json_bytes(native_lines))
+        import fitz
+        with fitz.open(stream=owned, filetype="pdf") as document:
+            if not len(document):
+                raise ValueError("source_geometry_empty_pdf")
+            page = document[0]
+            if digest_value(source_lines(page)) != digest_value(native):
+                raise ValueError("source_geometry_native_mismatch")
+            directions = []
+            for block in page.get_text("dict", sort=True)["blocks"]:
+                if block.get("type") == 0:
+                    directions.extend(list(line.get("dir", ())) for line in block.get("lines", []))
+            drawings = page.get_drawings(extended=True)
+            paint = page.get_bboxlog()
+            trace = page.get_texttrace()
+            # Vector extraction is not a visibility guarantee. Unsupported
+            # clipping/group compositing and annotation overlays stay held.
+            unsupported_compositing = (any(path.get("type") in {"clip", "group"} for path in drawings)
+                                       or page.first_annot is not None or page.first_widget is not None)
+            rules = []
+            for index, drawing in enumerate(drawings):
+                items = drawing.get("items", [])
+                # A standalone visible stroke is the supported producer shape.
+                # Multi-segment paths and rectangle/table borders stay unresolved.
+                if (unsupported_compositing or drawing.get("layer") or len(items) != 1
+                        or items[0][0] != "l" or drawing.get("type") != "s"
+                        or drawing.get("stroke_opacity", 0) < .99 or not drawing.get("color")
+                        or min(drawing["color"]) >= .99):
+                    continue
+                _, a, b = items[0]
+                values = [a.x, a.y, b.x, b.y, drawing.get("width", 0)]
+                if any(type(value) not in (int, float) or not math.isfinite(value) for value in values):
+                    continue
+                x0, x1 = sorted((a.x, b.x))
+                if abs(a.y-b.y) > .01 or x0 >= x1 or drawing["width"] <= 0:
+                    continue
+                sequence = drawing.get("seqno")
+                if type(sequence) is not int or not 0 <= sequence < len(paint) or paint[sequence][0] != "stroke-path":
+                    continue
+                radius = drawing["width"]/2
+                stroke_box = fitz.Rect(x0-radius, min(a.y, b.y)-radius, x1+radius, max(a.y, b.y)+radius)
+                # Images, shading and path bounds conservatively cover their
+                # whole paint extent. Text batches can span a full page, so use
+                # individual painted glyph boxes rather than their union box.
+                if (any(index != sequence and kind == "stroke-path" and fitz.Rect(box).intersects(stroke_box)
+                        for index, (kind, box) in enumerate(paint))
+                        or any(kind not in {"fill-text", "stroke-text", "ignore-text"}
+                        and fitz.Rect(box).intersects(stroke_box) for kind, box in paint[sequence+1:])
+                        or any(span.get("seqno", -1) > sequence and span.get("type") != 3
+                               and span.get("opacity", 1) > 0 and any(not chr(char[0]).isspace()
+                                   and fitz.Rect(char[3]).intersects(stroke_box) for char in span["chars"])
+                               for span in trace)):
+                    continue
+                rules.append({"drawing_index": index, "seqno": drawing.get("seqno"),
+                              "x0": x0, "x1": x1, "y": (a.y+b.y)/2,
+                              "stroke_width": drawing["width"], "opacity": drawing["stroke_opacity"],
+                              "color": list(drawing["color"]),
+                              "visibility_check": "no_later_overlapping_paint_v1"})
+            evidence = {"version": FRACTION_VERSION, "source_sha256": source_sha,
+                        "native_sha256": digest_value(native), "physical_page": 1,
+                        "rotation": page.rotation, "directions": directions, "rules": rules,
+                        "unsupported_compositing": unsupported_compositing,
+                        "painted_glyphs": _painted_glyphs(page, native, trace, paint) if rules else {}}
+        instance = object.__new__(cls)
+        object.__setattr__(instance, "_evidence", json_bytes(evidence))
+        return instance
+
+    def descriptor(self) -> dict:
+        """Return a detached inspectable receipt, never an importable authority."""
+        return json.loads(self._evidence)
+
+
+def _painted_glyphs(page, native: list[dict], trace: list[dict], paint: list) -> dict:
+    """Exact RAWDICT-to-trace visibility witnesses; uncertain mappings omitted.
+
+    In particular a ligature continuation with glyph_id=-1 is not invented as
+    an independently painted glyph. Later paint is retained for the seam to
+    reject, except its own independently checked fraction rule.
+    """
+    import fitz
+    key = lambda text, origin, font, size: (text, tuple(round(v, 4) for v in origin), font, round(size, 4))
+    index = defaultdict(list)
+    for span in trace:
+        for char in span["chars"]:
+            index[key(chr(char[0]), char[2], span["font"], span["size"])].append((span, char))
+    raw_lines = [line for block in page.get_text("rawdict", sort=True)["blocks"] if block.get("type") == 0
+                 for line in block.get("lines", [])]
+    if len(raw_lines) != len(native):
+        return {}
+    result = {}
+    for line, raw in zip(native, raw_lines):
+        if line["text"] != "".join(char["c"] for span in raw["spans"] for char in span["chars"]):
+            continue
+        glyphs, offset = {}, 0
+        for run in raw["spans"]:
+            for char in run["chars"]:
+                start = offset
+                offset += len(char["c"])
+                if len(char["c"]) != 1 or char["c"].isspace():
+                    continue
+                matches = index[key(char["c"], char["origin"], run["font"], run["size"])]
+                if len(matches) != 1:
+                    continue
+                span, traced = matches[0]
+                box = fitz.Rect(traced[3])
+                if (span.get("type") not in {0, 1} or span.get("opacity", 0) < .99 or span.get("layer")
+                        or not span.get("color") or min(span["color"]) >= .99 or traced[1] < 0
+                        or box.is_empty or not box.intersects(fitz.Rect(char["bbox"]))):
+                    continue
+                sequence = span["seqno"]
+                if any(other["seqno"] > sequence and other.get("type") != 3 and other.get("opacity", 1) > 0
+                       and fitz.Rect(other["bbox"]).intersects(box)
+                       and any(not chr(value[0]).isspace() and fitz.Rect(value[3]).intersects(box)
+                               for value in other["chars"]) for other in trace):
+                    continue
+                occluders = [i for i, (kind, bounds) in enumerate(paint) if i > sequence
+                             and kind not in {"fill-text", "stroke-text", "ignore-text"}
+                             and fitz.Rect(bounds).intersects(box)]
+                glyphs[str(start)] = {"offset": start, "character": char["c"], "origin": list(char["origin"]),
+                                     "source_bbox": list(char["bbox"]), "trace_bbox": list(traced[3]),
+                                     "font": span["font"], "size": span["size"], "seqno": sequence,
+                                     "glyph_id": traced[1], "paint_type": span["type"], "opacity": span["opacity"],
+                                     "later_paint_seqnos": occluders}
+        result[str(line["id"])] = glyphs
+    return result
+
+
+def _fraction_rows(native: list[dict], rows: list[dict], context: SourceGeometry) -> list[dict]:
+    if type(context) is not SourceGeometry:
+        raise ValueError("source_geometry_verified_context_required")
+    evidence = context.descriptor()
+    if digest_value(native) != evidence["native_sha256"]:
+        raise ValueError("source_geometry_native_changed")
+    if evidence["rotation"] != 0:
+        return rows
+    directions = {str(line["id"]): direction for line, direction in zip(native, evidence["directions"])}
+    horizontal = lambda line: directions.get(str(line["id"])) == [1.0, 0.0] and _horizontal(line)
+    by_block = defaultdict(list)
+    for line in native:
+        by_block[line.get("block_id")].append(line)
+    singletons = [row for row in rows if len(row["lines"]) == 1]
+    proposals = []
+    for left_row in singletons:
+        left = left_row["lines"][0]
+        if (not horizontal(left) or type(left.get("block_id")) is not int
+                or left.get("line_in_block") != 0 or len(by_block[left["block_id"]]) != 1):
+            continue
+        lr = _exact_runs(left)
+        visible = [run for run in lr if run["text"].strip()]
+        if len(visible) < 2:
+            continue
+        flank, upper = visible[-2:]
+        if (upper is not lr[-1] or not re.fullmatch(r"[0-9]", upper["text"])
+                or len(canonical(flank["text"])) < 3):
+            continue
+        for right_row in singletons:
+            right = right_row["lines"][0]
+            if (left is right or not horizontal(right) or not _same_row(left, right)
+                    or type(right.get("block_id")) is not int or right["block_id"] == left["block_id"]
+                    or right.get("line_in_block") != 0):
+                continue
+            owner = by_block[right["block_id"]]
+            # This bounded rule handles a two-line paragraph split at a fraction.
+            # Duplicate indices or hidden later owner lines invalidate the proof.
+            if len(owner) != 2 or sorted(line.get("line_in_block", -1) for line in owner) != [0, 1]:
+                continue
+            following = next(line for line in owner if line["line_in_block"] == 1)
+            if not horizontal(following) or not any(row["lines"][0] is following for row in singletons):
+                continue
+            rr = _exact_runs(right)
+            visible_right = [run for run in rr if run["text"].strip()]
+            if (len(visible_right) != 2 or visible_right[0] is not rr[0]
+                    or not re.fullmatch(r"[1-9]", visible_right[0]["text"])
+                    or not re.fullmatch(r"[A-Za-z]{3,}[.,;:]?", visible_right[1]["text"])):
+                continue
+            lower, tail = visible_right
+            em = flank["size"]
+            signature = lambda run: (run.get("font"), run["size"], run["flags"] & 18, run.get("color"))
+            if (not flank.get("font") or signature(flank) != signature(tail)
+                    or _paragraph_font(following) != signature(flank)
+                    or not .5*em <= upper["size"] <= .8*em or upper["size"] != lower["size"]
+                    or upper.get("font") != lower.get("font") or upper.get("color") != lower.get("color")):
+                continue
+            b, u, lo, t = (run["bbox"] for run in (flank, upper, lower, tail))
+            mid = lambda box: (box[1]+box[3])/2
+            if (left["bbox"][2]-left["bbox"][0] < 8*em
+                    or not 2*em <= right["bbox"][2]-right["bbox"][0] <= 8*em
+                    or abs(b[2]-u[0]) > .25*em or abs(u[0]-lo[0]) > .08*em
+                    or abs(u[2]-lo[2]) > .08*em or u[2]-u[0] > em
+                    or not 0 <= t[0]-max(u[2], lo[2]) <= .6*em
+                    or abs(mid(b)-mid(t)) > .08*em
+                    or not .2*em <= mid(b)-mid(u) <= .65*em
+                    or not .15*em <= mid(lo)-mid(b) <= .65*em):
+                continue
+            matches = [rule for rule in evidence["rules"] if abs(rule["x0"]-u[0]) <= .08*em
+                       and abs(rule["x1"]-u[2]) <= .08*em and u[3] <= rule["y"] <= lo[1]
+                       and rule["stroke_width"] <= .1*em]
+            if len(matches) != 1:
+                continue
+            extent = {"bbox": [left["bbox"][0], min(left["bbox"][1], right["bbox"][1]),
+                               right["bbox"][2], max(left["bbox"][3], right["bbox"][3])]}
+            step = mid(following["bbox"])-mid(b)
+            nearby = [line for line in native if line is not left and line is not right
+                      and abs(mid(line["bbox"])-mid(b)) <= 3.2*em]
+            if (not .8*em <= step <= 1.8*em or not _similar_extent(following, extent)
+                    or abs(following["bbox"][0]-left["bbox"][0]) > 1.25*em
+                    or _gutter(left, right, nearby, em)
+                    or any(line is not following and overlap(extent["bbox"], line["bbox"]) > .1
+                           and min(b[1], u[1]) <= mid(line["bbox"]) <= following["bbox"][3]
+                           for line in nearby)):
+                continue
+            rule_sequence = matches[0]["seqno"]
+
+            def painted(line, offsets):
+                values = evidence["painted_glyphs"].get(str(line["id"]), {})
+                selected = [values.get(str(offset)) for offset in offsets]
+                if not selected or any(value is None or any(seq != rule_sequence for seq in value["later_paint_seqnos"])
+                                       for value in selected):
+                    return None
+                return selected
+
+            run_proofs = []
+            for role, line, run in (("left_prose", left, flank), ("upper", left, upper),
+                                    ("lower", right, lower), ("right_prose", right, tail)):
+                glyphs = painted(line, [i for i in range(run["start"], run["end"]) if not line["text"][i].isspace()])
+                if glyphs is None:
+                    break
+                run_proofs.append({"role": role, "line_id": line["id"], "start": run["start"], "end": run["end"],
+                                   "bbox": list(run["bbox"]), "painted_glyphs": glyphs})
+            if len(run_proofs) != 4:
+                continue
+            # Endpoint witnesses establish geometry support only. They must be
+            # in one visible paint operation; an unpainted interior ligature is
+            # not asserted to have a one-to-one trace mapping or full fidelity.
+            following_runs = [run for run in _exact_runs(following) if run["text"].strip()]
+            if not following_runs or any(signature(run) != signature(flank) for run in following_runs):
+                continue
+            nonspace = [i for i, char in enumerate(following["text"]) if not char.isspace()]
+            endpoints = painted(following, [nonspace[0], nonspace[-1]]) if nonspace else None
+            if endpoints is None or endpoints[0]["seqno"] != endpoints[1]["seqno"]:
+                continue
+            proof = {"version": FRACTION_VERSION, "reason": "source_vector_fraction_seam",
+                     "scope": "raw_reading_order_only", "notation_review_required": True,
+                     "source_sha256": evidence["source_sha256"], "native_sha256": evidence["native_sha256"],
+                     "physical_page": 1, "native_line_ids": [left["id"], right["id"]],
+                     "support_native_line_id": following["id"], "rule": matches[0],
+                     "native_runs": run_proofs,
+                     "support_visibility": {"scope": "source_line_endpoints_geometry_only", "glyphs": endpoints}}
+            proposals.append((left_row, right_row, {**extent, "lines": [left, right], "joins": [proof]}))
+    # No greedy resolution of competing partners or reused vector strokes.
+    counts = defaultdict(int)
+    for a, b, merged in proposals:
+        for key in (("line", str(a["lines"][0]["id"])), ("line", str(b["lines"][0]["id"])),
+                    ("rule", merged["joins"][0]["rule"]["drawing_index"])):
+            counts[key] += 1
+    result = list(rows)
+    for a, b, merged in proposals:
+        if any(counts[key] != 1 for key in (("line", str(a["lines"][0]["id"])),
+               ("line", str(b["lines"][0]["id"])), ("rule", merged["joins"][0]["rule"]["drawing_index"]))):
+            continue
+        result.remove(a)
+        result.remove(b)
+        result.append(merged)
+    result.sort(key=lambda row: (round(row["bbox"][1], 1), row["bbox"][0], str(row["lines"][0]["id"])))
+    return [{**row, "id": index} for index, row in enumerate(result)]
 
 
 def style(line: Mapping) -> dict:
@@ -312,14 +603,20 @@ def _bind_leading_prefix(text: str, match: dict, native_lines: list[dict]) -> di
 
 
 def locate(text: str, native_lines: list[dict], *, region_boxes: list[list[float]] | None = None,
-           threshold: float = .98) -> dict:
+           threshold: float = .98, source_geometry: SourceGeometry | None = None) -> dict:
     """Find a unique contiguous source transcription; never relax the 98% gate.
 
     Geometry restricts a genuine layout region. OCR callers omit region_boxes:
     their estimated boxes must not be used as independent corroboration.
+    A SourceGeometry context is optional, PDF-derived geometry only. Its
+    fraction seam never inserts a slash or approves notation/section scope.
     """
     if threshold < .98 or threshold > 1:
         raise ValueError("alignment_threshold_must_not_weaken_frozen_gate")
+    if source_geometry is not None:
+        # Bind verification and all subsequent traversal to one owned snapshot,
+        # even if an application mutates its original native records meanwhile.
+        native_lines = json.loads(json_bytes(native_lines))
     target = canonical(text)
     if not target:
         return {"status": "unlocated", "reason": "empty_candidate", "spans": []}
@@ -331,6 +628,8 @@ def locate(text: str, native_lines: list[dict], *, region_boxes: list[list[float
     # Derive against the full native page: restricting to a model region first
     # would remove neighboring-row evidence and make geometry model-dependent.
     rows = logical_rows(native_lines)
+    if source_geometry is not None:
+        rows = _fraction_rows(native_lines, rows, source_geometry)
     eligible_ids = {str(line["id"]) for line in eligible}
     eligible_rows = [{**row, "lines": [line for line in row["lines"] if str(line["id"]) in eligible_ids]}
                      for row in rows if any(str(line["id"]) in eligible_ids for line in row["lines"])]

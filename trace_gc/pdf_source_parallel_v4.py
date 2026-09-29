@@ -152,6 +152,33 @@ class SourceGeometry:
             drawings = page.get_drawings(extended=True)
             paint = page.get_bboxlog()
             trace = page.get_texttrace()
+            next_page_opening = None
+            if len(document) > 1:
+                following = document[1]
+                lines = []
+                for block in following.get_text("dict", sort=True)["blocks"]:
+                    if block.get("type") == 0:
+                        for line in block.get("lines", []):
+                            value = "".join(span.get("text", "") for span in line.get("spans", [])).strip()
+                            if value:
+                                lines.append((list(line["bbox"]), value))
+                lines.sort(key=lambda row: (row[0][1], row[0][0]))
+                if lines and lines[0][0][1] < following.rect.height * .2:
+                    first_box, first_text = lines[0]
+                    opening = first_text
+                    boxes = [first_box]
+                    if (re.fullmatch(r"(?:[IVX]+|\d+)[.)]?", first_text, re.I)
+                            and len(lines) > 1 and abs(lines[1][0][1] - first_box[1]) < 3):
+                        opening += " " + lines[1][1]
+                        boxes.append(lines[1][0])
+                    kind = ("contents" if re.fullmatch(r"contents", opening, re.I) else
+                            "body_section" if re.fullmatch(r"(?:[IVX]+|\d+)[.)]?\s+introduction", opening, re.I)
+                            else None)
+                    if kind:
+                        next_page_opening = {"version": "source-next-page-opening-v1", "kind": kind,
+                                             "physical_page": 2, "text": opening,
+                                             "text_sha256": hashlib.sha256(opening.encode()).hexdigest(),
+                                             "boxes": boxes, "page_size": [following.rect.width, following.rect.height]}
             # Vector extraction is not a visibility guarantee. Unsupported
             # clipping/group compositing and annotation overlays stay held.
             unsupported_compositing = (any(path.get("type") in {"clip", "group"} for path in drawings)
@@ -198,6 +225,7 @@ class SourceGeometry:
             evidence = {"version": FRACTION_VERSION, "source_sha256": source_sha,
                         "native_sha256": digest_value(native), "physical_page": 1,
                         "rotation": page.rotation, "directions": directions, "rules": rules,
+                        "next_page_opening": next_page_opening,
                         "unsupported_compositing": unsupported_compositing,
                         "painted_glyphs": _painted_glyphs(page, native, trace, paint) if rules else {}}
         instance = object.__new__(cls)

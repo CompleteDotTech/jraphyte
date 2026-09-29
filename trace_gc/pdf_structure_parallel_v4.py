@@ -1318,6 +1318,55 @@ def _body_column_wrap_after_heading(witness: dict, boundary: dict, abstract_span
             "joined_word_sha256": hashlib.sha256((suffix.group(1)+prefix.group(1)).encode()).hexdigest()}
 
 
+def _next_page_title_closure(text: str, spans: list[dict], native: list[dict],
+                             page_size: list[float], scholarly_abstract: str,
+                             source_geometry, *, explicit: bool) -> dict | None:
+    """Bound a complete first-page abstract by the verified next-page opening.
+
+    Page two is only closing evidence. Its text never enters the selected first-
+    page abstract. A page-one continuation or an unverified source stays held.
+    """
+    if (type(source_geometry) is not SourceGeometry or not explicit or not spans
+            or len(canonical(text)) < 100 or not SENTENCE_END.search(text)):
+        return None
+    field_match = bool(scholarly_abstract and compare(text, scholarly_abstract).get("text_match_98"))
+    if scholarly_abstract and not field_match:
+        return None
+    opening = source_geometry.descriptor().get("next_page_opening")
+    if not opening or opening.get("kind") not in {"body_section", "contents"}:
+        return None
+    bottom = max(span["bbox"][3] for span in spans)
+    if bottom > page_size[1] * .8:
+        return None
+    selected = {str(span["line_id"]) for span in spans}
+    top = min(span["bbox"][1] for span in spans)
+    heading = next((line for line in native if ABSTRACT.match(line["text"])
+                    and top - 55 <= line["bbox"][1] <= top + 2), None)
+    if heading is None:
+        return None
+    if not scholarly_abstract:
+        lane = [min(span["bbox"][0] for span in spans), top,
+                max(span["bbox"][2] for span in spans), bottom]
+        if any(str(line["id"]) not in selected and line["bbox"][1] >= top
+               and line["bbox"][3] <= bottom and overlap(line["bbox"], lane) >= .7
+               for line in native):
+            return None
+    for line in native:
+        if str(line["id"]) in selected or line["bbox"][1] <= bottom + 2:
+            continue
+        value = line["text"].strip()
+        if (line["bbox"][1] >= page_size[1] * .82 and
+                (re.fullmatch(r"\d+", value) or
+                 re.match(r"^[0-9*†‡]+\s*Corresponding author\b", value, re.I))):
+            continue
+        if value:
+            return None
+    return {"kind": "next_page_opening_after_title_abstract", "source": "verified_original_pdf",
+            "physical_page": 2, "opening": opening, "page_one_terminal_line_id": spans[-1]["line_id"],
+            "source_abstract_heading_line_id": heading["id"],
+            "scholarly_text_98_corroborated": field_match}
+
+
 def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                     native_lines=None, scholarly_abstract="", max_input_chars=4000,
                     conversion_status="success", source_geometry=None) -> dict:
@@ -1454,8 +1503,14 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
             if alignment.get("column_change"):
                 result.update(status="uncertain", reasons=["unverified_multi_column_continuation"])
             elif not selected["boundary"]:
-                partial = bottom >= page_size[1]*.9 and not SENTENCE_END.search(result["text"])
-                result.update(status="partial" if partial else "uncertain", reasons=["page_one_continues_without_closure" if partial else "no_explainable_closing_boundary"])
+                closure = _next_page_title_closure(result["text"], result["spans"], native,
+                    page_size, scholarly_abstract, source_geometry, explicit=explicit)
+                if closure:
+                    result.update(status="complete", complete_candidate=True, closing_boundary=closure,
+                                  reasons=["bounded_source_located_proposal"])
+                else:
+                    partial = bottom >= page_size[1]*.9 and not SENTENCE_END.search(result["text"])
+                    result.update(status="partial" if partial else "uncertain", reasons=["page_one_continues_without_closure" if partial else "no_explainable_closing_boundary"])
             elif selected["boundary"]["kind"] == "ambiguous_structured_or_body_section":
                 result.update(status="uncertain", reasons=["structured_abstract_boundary_requires_review"])
             elif selected["boundary"]["kind"] == "unresolved_section_ownership":

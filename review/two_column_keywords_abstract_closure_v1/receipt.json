@@ -2,14 +2,13 @@
   "schema": "source-two-column-keywords-experiment-v1",
   "scope": "200 previously examined first-page papers; four frozen converter methods; verified original PDFs",
   "source_geometry_policy": "source_fraction_v1",
-  "measured_parent_commit": "9043935e72615a744ae2fb6872739085f216041f",
   "private_evidence": {
-    "preflight": "validation_v3_private/issue17-keyword-f150-full200-20260929-01/preflight.json",
-    "preflight_sha256": "605c3bda32639a17eccb630e5f54a1a82b9c727aeb13d059f23bdf7d3d87ad8a",
-    "result": "validation_v3_private/issue17-keyword-f150-full200-20260929-01/results.json",
-    "result_sha256": "279bef0656c6594fbc509ef9120850f949b193f2d2e815be4349f467bf8ca516",
-    "native_manifest_sha256": "be80bdc7e15036d2ea0bc1ea19bc736d1f14a198519035e2fc57828fb28e5283",
-    "prior_result_sha256": "d62d0c7cc9e6a565a527047b7e1e8293d3032ae08c059d40c5b3d5bc9dfd3314",
+    "preflight": "validation_v3_private/issue17-keyword-f150-reviewfix-full200-20260929-02/preflight.json",
+    "preflight_sha256": "e5d194ee992e60938e481875fcde0cae7323471654902cd89a9a8cbad1b71332",
+    "result": "validation_v3_private/issue17-keyword-f150-reviewfix-full200-20260929-02/results.json",
+    "result_sha256": "07411d68c69da18d10f6f7600c7dfc08572a94ea42d9b90858ffb97f7c1baf41",
+    "native_manifest_sha256": "5403da317b7f5f9d57eb78e50af2b02a35514f6e2420794229d5f740b2be4461",
+    "prior_result_sha256": "d7dfe88606bac16ac2c09d008dc926cb6008ca7fda349c6a231f544e62fd827c",
     "source_review_sha256": "096f31511e74a1ce1d9922968fc7fbf85a1e1fa5b39b4c05260f078aa3015362",
     "f150_assessment_sha256": {
       "parallel_structure_v4": "cddd01b7607d0fa56560b849ea84f2baf56d9da473c5e5b8f7cca504e5fee819",
@@ -18,10 +17,10 @@
       "parallel_olmocr_v4": "73ce1b2b46825615e4b32ba502b0c6e601814fdc2548cbae3daf6dd6dd5d029f"
     }
   },
-  "measured_structure_code_sha256": "96020dece69c93b6b2705ea909df1fdf431d56f5ca42aa96eef6450d2913f352",
+  "measured_structure_code_sha256": "e8193a8bb62d826774ab239cfe7ffa966d3cf42cafa431b3e40c50d358dbb5e4",
   "runtime_sha256": "f091b827709308eb9f30695b100a798c67355ad1e6e506e393b49e7021026a67",
   "local_validation": {
-    "unittest_discover": "1230 tests passed, 6 skipped",
+    "unittest_discover": "1247 tests passed, 8 skipped",
     "package_validation": "PASS",
     "authored_two_column_keywords_tests": "3 passed"
   },
@@ -30,27 +29,54 @@
     "saved_v2_replay": "PASS",
     "assessments": 800,
     "assessment_file_hash_readback": "PASS",
-    "changed_case_ids": ["f150"],
+    "changed_case_ids": [
+      "f150"
+    ],
     "changed_assessment_files": 4,
-    "changed_decision_methods": ["parallel_structure_v4", "parallel_mineru_v4"],
+    "changed_decision_methods": [
+      "parallel_structure_v4",
+      "parallel_mineru_v4"
+    ],
     "source_and_native_identities_changed": false,
     "correct_before_after": {
-      "parallel_structure_v4": [92, 93],
-      "parallel_grobid_v4": [81, 81],
-      "parallel_mineru_v4": [73, 74],
-      "parallel_olmocr_v4": [67, 67]
+      "parallel_structure_v4": [
+        92,
+        93
+      ],
+      "parallel_grobid_v4": [
+        81,
+        81
+      ],
+      "parallel_mineru_v4": [
+        73,
+        74
+      ],
+      "parallel_olmocr_v4": [
+        67,
+        67
+      ]
     },
     "f150_other_arms": "GROBID remains absent with an empty scholarly field; olmOCR remains uncertain because its OCR paragraph is unlocated inside the candidate boundary",
     "false_proposals_all_methods": 0,
-    "historical_91_preservation_lost_ids": ["f079", "f081", "f122", "f153"],
+    "historical_91_preservation_lost_ids": [
+      "f079",
+      "f081",
+      "f122",
+      "f153"
+    ],
     "new_paid_api_calls": 0,
     "production_graph_writes": 0,
-    "runtime_seconds": 1131.308200600004
+    "runtime_seconds": 1139.464256700012
   },
   "review": {
     "attribution": "assistant original-PDF visual and source-geometry review; no independent-human claim",
     "boundary": "Bold left-lane abstract precedes a compact unlabelled keyword list; ordinary right-lane body prose overlaps it vertically, and regular left-lane body prose begins below the list.",
-    "admission": "source_review_required"
+    "admission": "source_review_required",
+    "code_review": "Separate assistant reviewer found a bold-right-lane continuation gap; strict first fix held a real mixed inline body lead-in, then the final guard and fixtures were reviewed with no further code blocker. No independent-human source claim."
   },
-  "limitations": "Four historical successes remain held; scientific notation, visual completeness, unseen-paper precision, automatic promotion and graph admission are not qualified. The optional source geometry route remains disabled by default."
+  "limitations": "Four historical successes remain held; scientific notation, visual completeness, unseen-paper precision, automatic promotion and graph admission are not qualified. The optional source geometry route remains disabled by default.",
+  "measured_pre_rebase_commit": "d770bff34ad402dfb0a58ec087af4fa6e96f1e0a",
+  "delivery_base_commit": "ad25bab43fcf50fb2dfec0b23fd06ef7a18ee76a",
+  "prerequisite_merge_commit": "ae99b02beae0a0add46c752d7a484777c1a3783c",
+  "source_identity_mapping": "Measured pdf_source/pdf_structure bytes equal the rebased delivery branch. The newer base adds an unimported scientific-token verifier; this is a code-path identity mapping, not an exact whole-tree replay."
 }

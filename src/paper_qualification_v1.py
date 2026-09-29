@@ -399,6 +399,13 @@ def verify_review_order(records, *, evaluated_ids, roles, source_hashes, times):
             "initial_and_final_review_decisions_must_be_preserved")
         events = record["events"]
         require(isinstance(events, list) and events, "source_access_events_required")
+        proof = reference.get("source_extent_proof")
+        title_page = isinstance(proof, dict) and isinstance(proof.get("closure"), dict) and proof["closure"].get("kind") == "reviewed_title_page_end"
+        page_two = None
+        if title_page and isinstance(proof["closure"].get("next_page"), dict):
+            following = proof["closure"]["next_page"]
+            if set(following) == {"image", "native"}:
+                page_two = {key: following[key]["sha256"] for key in ("image", "native")}
         previous = times["cohort_frozen"]
         decisions = [digest(x) for x in record["history"]]
         require(len(decisions) == len(set(decisions)), "duplicate_reference_decision_history")
@@ -420,7 +427,7 @@ def verify_review_order(records, *, evaluated_ids, roles, source_hashes, times):
                 require(kind == "source_unavailable" and not inputs and reference["status"] == "uncertain"
                     or kind == "image_inspection" and inputs == [allowed["image"]], "original_image_must_precede_native_or_prediction")
             else:
-                require((set(inputs) <= set(allowed.values()) and bool(inputs)) or
+                require((set(inputs) <= set(allowed.values()) | (set(page_two.values()) if page_two else set()) and bool(inputs)) or
                     (not allowed and not inputs and kind == "adjudication" and reference["status"] == "uncertain"),
                     "reference_context_received_non_source_input")
             require(event["decision_sha256"] in decisions, "review_decision_not_in_preserved_history")
@@ -428,6 +435,10 @@ def verify_review_order(records, *, evaluated_ids, roles, source_hashes, times):
             require((index == 0 and current_index == 0) or (index > 0 and decision_index <= current_index <= decision_index+1),
                 "reference_decision_history_out_of_order")
             decision_index = current_index
+        if page_two:
+            require(any(event["kind"] == "image_inspection" and page_two["image"] in event["input_sha256"] for event in events)
+                and any(event["kind"] == "native_readback" and page_two["native"] in event["input_sha256"] for event in events),
+                "title_page_second_page_source_first_review_required")
         require(decision_index == len(decisions)-1, "review_decisions_lack_access_receipts")
         unresolved_history = any(h.get("status") == "uncertain" or h.get("status") == "complete" and
             any(h.get("fidelity_review", {}).get(d, {}).get("status") != "pass" for d in ("notation", "boundary"))
@@ -506,9 +517,12 @@ def image_transition(closure, *, png, crop, store=None, source_pdf=None):
             else:
                 next_page = closure["next_page"]
                 exact(next_page, {"image", "native"}, "title_page_two_source_witness_required")
+                require(next_page["image"]["relative"] != next_page["native"]["relative"],
+                        "title_page_distinct_image_and_native_assets_required")
+                by_path = {asset["relative"]: asset for asset in next_page.values()}
                 def load(relative):
-                    descriptor = next_page["image"] if relative == next_page["image"]["relative"] else next_page["native"]
-                    require(relative == descriptor["relative"], "title_page_asset_path_mismatch")
+                    require(relative in by_path, "title_page_asset_path_mismatch")
+                    descriptor = by_path[relative]
                     return store.bytes({"relative": relative, "sha256": descriptor["sha256"]})
                 _image_asset(next_page["image"], pdf[1], load, expected_page=2)
                 _native_page_asset(next_page["native"], pdf[1], load)

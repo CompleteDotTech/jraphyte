@@ -1668,6 +1668,97 @@ def _source_figure_then_intro_closure(result: dict, native: list[dict], page_siz
             "opening": opening}
 
 
+def _source_shaded_synopsis_closure(result: dict, native: list[dict], ordered: list[dict],
+                                    page_size: list[float], scholarly_abstract: str,
+                                    source_geometry) -> dict | None:
+    """Bound a front-matter abstract before a distinct filled synopsis inset.
+
+    The PDF fill, located inset text, numbered outer heading and following
+    source prose must agree. Typography or a matching field alone is not a
+    section boundary. Ambiguous/overpainted insets remain review holds.
+    """
+    boundary, spans = result.get("closing_boundary"), result.get("spans") or []
+    if (type(source_geometry) is not SourceGeometry or not scholarly_abstract
+            or not boundary or boundary.get("kind") != "unresolved_section_ownership"
+            or boundary.get("reason") != "unlabelled_group_typography_transition"
+            or not spans or len(canonical(result.get("text", ""))) < 100
+            or not SENTENCE_END.search(result["text"])
+            or not compare(result["text"], scholarly_abstract)["boundary_and_98_match"]):
+        return None
+    inset_spans = boundary.get("source_spans") or []
+    if len(inset_spans) < 3:
+        return None
+    try:
+        validate_source_spans(inset_spans, native)
+    except (KeyError, ValueError, TypeError, IndexError):
+        return None
+    bottom = max(span["bbox"][3] for span in spans)
+    width = page_size[0]
+    if (bottom > page_size[1] * .65
+            or max(s["bbox"][2] for s in spans) - min(s["bbox"][0] for s in spans) < width * .6):
+        return None
+    candidates = []
+    for fill in source_geometry.descriptor().get("shaded_regions", []):
+        box = fill["box"]
+        if (not 5 <= box[1] - bottom <= 30
+                or any(not (box[0] + 1 <= s["bbox"][0] < s["bbox"][2] <= box[2] - 1
+                            and box[1] + 1 <= s["bbox"][1] < s["bbox"][3] <= box[3] - 1)
+                       for s in inset_spans)):
+            continue
+        inset_ids = {str(s["line_id"]) for s in inset_spans}
+        # All horizontal source text inside the filled shape must be owned by
+        # the distinct inset region. A hidden/extra paragraph defeats closure.
+        if any(str(line["id"]) not in inset_ids
+               and line["bbox"][2]-line["bbox"][0] > line["bbox"][3]-line["bbox"][1]
+               and line["bbox"][0] >= box[0]-1 and line["bbox"][2] <= box[2]+1
+               and line["bbox"][1] >= box[1]-1 and line["bbox"][3] <= box[3]+1
+               for line in native):
+            continue
+        headings = []
+        for region in ordered:
+            if not re.fullmatch(r"\s*(?:\d+(?:\.\d+)*|[IVX]+)[.)]?\s+"+BODY_WORDS+r"\s*",
+                                region["text"], re.I):
+                continue
+            proof = _boundary_evidence(region, native, "body_section", source_geometry=source_geometry)
+            located = proof.get("source_spans") or []
+            if (proof.get("source_location") == "located" and located
+                    and 8 <= min(s["bbox"][1] for s in located) - box[3] <= 50):
+                headings.append(proof)
+        if len(headings) != 1:
+            continue
+        heading = headings[0]
+        heading_bottom = max(s["bbox"][3] for s in heading["source_spans"])
+        body = [r for r in ordered if r["bbox"] and r["bbox"][1] >= heading_bottom-2
+                and r["ref"] != heading["ref"] and r["label"] not in EXCLUDED
+                and not _role_rejected(r["text"]) and len(canonical(r["text"])) >= 50]
+        following = next((locate(r["text"], native, region_boxes=r["boxes"],
+                                 source_geometry=source_geometry) for r in body), None)
+        if (not following or following.get("status") != "located" or following.get("column_change")
+                or not following.get("spans")
+                or not 0 <= min(s["bbox"][1] for s in following["spans"]) - heading_bottom <= 50):
+            continue
+        # No intervening horizontal prose may be silently skipped between
+        # the abstract, inset, outer heading and first body paragraph.
+        known = {str(s["line_id"]) for s in spans + inset_spans + heading["source_spans"]
+                 + following["spans"]}
+        if any(str(line["id"]) not in known and canonical(line["text"])
+               and line["bbox"][2]-line["bbox"][0] > line["bbox"][3]-line["bbox"][1]
+               and bottom+1 < line["bbox"][1] < max(s["bbox"][3] for s in following["spans"])
+               for line in native):
+            continue
+        candidates.append((fill, heading, following))
+    if len(candidates) != 1:
+        return None
+    fill, heading, following = candidates[0]
+    return {"kind": "source_shaded_synopsis_outer_heading_closure",
+            "source": "verified_original_pdf", "shaded_region": fill,
+            "synopsis_ref": boundary["ref"], "synopsis_source_spans": inset_spans,
+            "outer_heading": heading, "source_spans": heading["source_spans"],
+            "body_first_line_id": following["spans"][0]["line_id"],
+            "abstract_terminal_line_id": spans[-1]["line_id"],
+            "scholarly_boundary_and_98_corroborated": True}
+
+
 def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                     native_lines=None, scholarly_abstract="", max_input_chars=4000,
                     conversion_status="success", source_geometry=None) -> dict:
@@ -1820,14 +1911,18 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                     or _source_two_column_onset_closure(
                         result, native, ordered, page_size, scholarly_abstract, source_geometry)
                     or _source_figure_then_intro_closure(
-                        result, native, page_size, source_geometry))
+                        result, native, page_size, source_geometry)
+                    or _source_shaded_synopsis_closure(
+                        result, native, ordered, page_size, scholarly_abstract, source_geometry))
                 if closure:
                     result.update(status="complete", complete_candidate=True, closing_boundary=closure,
                                   proposal_basis=("source_page_two_bibliographic_intro_bounded" if
                                                   closure["kind"] == "source_page_two_bibliographic_intro_closure" else
                                                   "source_two_column_onset_bounded" if
                                                   closure["kind"] == "source_two_column_body_onset_closure" else
-                                                  "source_vector_figure_intro_bounded"),
+                                                  "source_vector_figure_intro_bounded" if
+                                                  closure["kind"] == "source_vector_figure_page_two_intro_closure" else
+                                                  "source_shaded_synopsis_outer_heading_bounded"),
                                   reasons=["bounded_source_located_proposal"])
                 else:
                     result.update(status="uncertain", reasons=["section_ownership_requires_source_review"])

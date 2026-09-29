@@ -73,6 +73,8 @@ Copy the SHA-256 printed by `capture-native`; a missing or changed external pin 
 
 To measure fresh extraction drift, use `--native-mode fresh` **with** that same pinned native manifest. `native_comparison.changed_ids` records every changed case; differing native inputs define a different experiment. Without a comparison manifest the receipt says `NO_REFERENCE_SUPPLIED`, rather than claiming unchanged native evidence. A saved-native/source identity mismatch blocks both modes.
 
+For the optional source-geometry experiment, add `--source-geometry-policy source_fraction_v1` and retain the verified original-PDF source map. This mode extracts native lines from the original PDF's first physical page, then builds the vector/paint context from those exact bytes. It checks that the cached first-page copy has the same page size and records the original-source native digest and extraction origin in each native receipt. `--native-mode replay` is rejected for this mode because an archived page-copy extraction may differ from the original PDF even when its visible text and boxes agree. The default `disabled` mode keeps extracting from the cached first-page PDF. Use a new output directory for each mode and compare its native manifest to the pinned reference; a changed ID is a distinct input, not an extraction gain.
+
 Exit code 1 is expected while the preservation gate fails. Inspect `results.json`, including `saved_replay_gate`, `preserve_91_gate`, four method metrics, conversion states and per-case reasons. A blocked preflight exits 2 and must not count as a completed run. Automatic fallback stays disabled.
 
 ## Source-first new papers

@@ -117,6 +117,9 @@ def preflight(root: Path, source_map: dict | None = None, *, repo: Path = REPO,
             raise InputGateError('invalid_native_mode')
         if geometry_policy not in GEOMETRY_POLICIES:
             raise InputGateError('unsupported_source_geometry_policy')
+        if geometry_policy != 'disabled' and native_mode == 'replay':
+            raise InputGateError('source_geometry_requires_fresh_original_native',
+                                 action='extract_first_page_native_from_verified_original_pdf')
         if not methods or len(set(methods)) != len(methods) or set(methods)-set(METHODS):
             raise InputGateError('invalid_or_duplicate_methods')
         baseline = configure_baseline(root) if replay_saved else None
@@ -209,21 +212,25 @@ def preflight(root: Path, source_map: dict | None = None, *, repo: Path = REPO,
                 input_hashes[native_path.relative_to(root).as_posix()]=native_file_sha
             else:
                 import fitz
-                page_bytes=(page/'page.pdf').read_bytes()
-                if hashlib.sha256(page_bytes).hexdigest()!=hashes['page']:
-                    raise InputGateError('page_changed_after_verification',case_id=sid)
-                with fitz.open(stream=page_bytes,filetype='pdf') as pdf:
-                    if len(pdf)!=1:
-                        raise InputGateError('expected_single_first_page_extract',case_id=sid)
+                native_source=source if geometry_policy != 'disabled' else page/'page.pdf'
+                native_bytes=native_source.read_bytes()
+                expected_sha=hashes['source'] if geometry_policy != 'disabled' else hashes['page']
+                if hashlib.sha256(native_bytes).hexdigest()!=expected_sha:
+                    raise InputGateError('native_source_changed_after_verification',case_id=sid)
+                with fitz.open(stream=native_bytes,filetype='pdf') as pdf:
+                    if not len(pdf) or (geometry_policy == 'disabled' and len(pdf)!=1):
+                        raise InputGateError('expected_first_physical_page_extract',case_id=sid)
                     native=source_lines(pdf[0])
                     if [pdf[0].rect.width,pdf[0].rect.height]!=receipt['page_size']:
-                        raise InputGateError('cached_page_size_changed',case_id=sid)
+                        raise InputGateError('source_page_size_mismatch',case_id=sid)
             native_sha=digest_value(native)
             if native_mode=='replay' and native_sha!=references[sid]['native_sha256']:
                 raise InputGateError('native_representation_changed_after_verification',case_id=sid)
             native_identity={**identity,'page_size':receipt['page_size'],'native_sha256':native_sha,
                              'mode':native_mode,'reference_native_sha256':references.get(sid,{}).get('native_sha256'),
                              'changed_from_reference':native_sha!=references[sid]['native_sha256'] if references else None}
+            if geometry_policy != 'disabled':
+                native_identity['extraction_pdf']='verified_original_source' if native_mode=='fresh' else 'frozen_native_replay'
             native_receipts.append(native_identity)
             cases.append({**identity,'page_path':page/'page.pdf','source_path':source,
                           'page_size':receipt['page_size'],

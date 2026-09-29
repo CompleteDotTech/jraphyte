@@ -1,0 +1,219 @@
+"""Fail-closed mechanical checks for reviewed scientific output token lineage.
+
+This module checks a review packet, not the scientific truth of a reading. It
+never grants extraction, source-fidelity, or graph admission.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from hashlib import sha256
+from typing import Any
+
+
+class TokenLineageError(ValueError):
+    """A scientific token has incomplete or inconsistent source lineage."""
+
+
+@dataclass(frozen=True)
+class TokenLineageResult:
+    status: str
+    token_count: int
+    packet_sha256: str
+
+
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise TokenLineageError(message)
+
+
+def _ids(value: Any, name: str) -> tuple[int, ...]:
+    _require(isinstance(value, list) and bool(value), f"{name}: missing glyph IDs")
+    _require(all(type(item) is int and item >= 0 for item in value), f"{name}: invalid glyph ID")
+    _require(len(set(value)) == len(value), f"{name}: repeated glyph ID")
+    return tuple(value)
+
+
+def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
+                                   notation_sha256: str, tex_sha256: str,
+                                   evidence_sha256: str) -> TokenLineageResult:
+    """Check exact output spans, typed scopes, and source identities.
+
+    Packet keys are ``text``, ``source`` (three SHA-256 values), ``glyphs``
+    (ID, printed character and box), ``rules`` (ID, box and numerator and
+    denominator IDs), ``tex`` (matching-version exact source), and ``tokens``.
+    Each token supplies an output range, typed tree, ordered output-character
+    lineage, exact TeX anchor, and a review of alternate parses. A synthetic
+    fraction slash must cite the rule plus numerator and denominator IDs.
+    The caller must independently bind and regenerate all source assets and
+    obtain actual source-first review; this verifier cannot do either.
+    """
+    import json
+
+    _require(isinstance(packet, dict), "packet must be an object")
+    source = packet.get("source")
+    _require(isinstance(source, dict), "missing source bindings")
+    for field, expected in (("pdf_sha256", source_sha256),
+                            ("notation_sha256", notation_sha256),
+                            ("tex_sha256", tex_sha256)):
+        _require(isinstance(expected, str) and len(expected) == 64,
+                 f"invalid expected {field}")
+        _require(source.get(field) == expected, f"{field} mismatch")
+    text = packet.get("text")
+    tex = packet.get("tex")
+    _require(isinstance(text, str) and text, "missing output text")
+    _require(isinstance(tex, str) and tex, "missing TeX source")
+    _require(sha256(tex.encode("utf-8")).hexdigest() == tex_sha256,
+             "TeX source hash mismatch")
+    glyphs = packet.get("glyphs")
+    rules = packet.get("rules")
+    tokens = packet.get("tokens")
+    _require(isinstance(glyphs, list) and isinstance(rules, list)
+             and isinstance(tokens, list) and tokens, "missing evidence inventory")
+    evidence = json.dumps({"glyphs": glyphs, "rules": rules}, ensure_ascii=False,
+                          sort_keys=True, separators=(",", ":")).encode("utf-8")
+    _require(sha256(evidence).hexdigest() == evidence_sha256,
+             "source glyph/rule evidence mismatch")
+    glyph_map = {}
+    for glyph in glyphs:
+        _require(isinstance(glyph, dict), "invalid glyph")
+        gid = glyph.get("id")
+        _require(type(gid) is int and gid >= 0 and gid not in glyph_map,
+                 "duplicate or invalid glyph ID")
+        _require(isinstance(glyph.get("char"), str) and glyph["char"],
+                 "missing source glyph character")
+        box = glyph.get("box")
+        _require(isinstance(box, list) and len(box) == 4
+                 and all(type(v) in (int, float) for v in box)
+                 and box[0] < box[2] and box[1] < box[3], "invalid glyph box")
+        glyph_map[gid] = glyph
+    rule_map = {}
+    for rule in rules:
+        _require(isinstance(rule, dict), "invalid rule")
+        rid = rule.get("id")
+        _require(type(rid) is int and rid >= 0 and rid not in rule_map,
+                 "duplicate or invalid rule ID")
+        numerator = _ids(rule.get("numerator_ids"), "rule numerator")
+        denominator = _ids(rule.get("denominator_ids"), "rule denominator")
+        _require(not set(numerator) & set(denominator), "rule operand overlap")
+        _require(set(numerator + denominator) <= glyph_map.keys(),
+                 "rule references unknown glyph")
+        box = rule.get("box")
+        _require(isinstance(box, list) and len(box) == 4
+                 and all(type(v) in (int, float) for v in box)
+                 and box[0] < box[2] and box[1] < box[3], "invalid rule box")
+        # A rule cannot claim an unrelated earlier or neighboring occurrence.
+        for gid in numerator + denominator:
+            gbox = glyph_map[gid]["box"]
+            center_x = (gbox[0] + gbox[2]) / 2
+            _require(box[0] <= center_x <= box[2], "rule operand outside horizontal scope")
+        _require(all(glyph_map[gid]["box"][3] <= box[1] for gid in numerator),
+                 "numerator not above rule")
+        _require(all(glyph_map[gid]["box"][1] >= box[3] for gid in denominator),
+                 "denominator not below rule")
+        rule_map[rid] = rule
+
+    def verify_node(node: dict, output_ids: set[int], used_rules: set[int]) -> set[int]:
+        _require(isinstance(node, dict), "invalid typed node")
+        kind = node.get("kind")
+        _require(kind in {"literal", "script", "fraction", "relation", "quantity"},
+                 "unknown typed node")
+        if kind == "literal":
+            ids = _ids(node.get("glyph_ids"), "literal")
+            _require(set(ids) <= glyph_map.keys(), "literal references unknown glyph")
+            _require(set(ids) <= output_ids, "literal is absent from output")
+            return set(ids)
+        children = node.get("children")
+        expected = {"script": ("base", "subscript"),
+                    "fraction": ("numerator", "denominator"),
+                    "relation": ("left", "operator", "right"),
+                    "quantity": ("value", "unit")}[kind]
+        _require(isinstance(children, dict) and set(children) == set(expected),
+                 "incomplete typed operands")
+        child_sets = [verify_node(children[key], output_ids, used_rules) for key in expected]
+        union = set()
+        for ids in child_sets:
+            _require(not union & ids, "typed operands reuse glyphs")
+            union |= ids
+        if kind == "fraction":
+            rid = node.get("rule_id")
+            _require(rid in rule_map and rid not in used_rules,
+                     "missing or reused fraction rule")
+            rule = rule_map[rid]
+            _require(child_sets[0] == set(rule["numerator_ids"])
+                     and child_sets[1] == set(rule["denominator_ids"]),
+                     "fraction operands disagree with source rule")
+            used_rules.add(rid)
+        if kind == "script":
+            base_y = min(glyph_map[gid]["box"][1] for gid in child_sets[0])
+            sub_y = min(glyph_map[gid]["box"][1] for gid in child_sets[1])
+            _require(sub_y > base_y, "subscript lacks source vertical scope")
+        return union
+
+    def tree_order(node: dict) -> list[int]:
+        if node["kind"] == "literal":
+            return node["glyph_ids"]
+        order = {"script": ("base", "subscript"),
+                 "fraction": ("numerator", "denominator"),
+                 "relation": ("left", "operator", "right"),
+                 "quantity": ("value", "unit")}[node["kind"]]
+        return [gid for key in order for gid in tree_order(node["children"][key])]
+
+    position = 0
+    global_ids: set[int] = set()
+    for token in tokens:
+        _require(isinstance(token, dict), "invalid token")
+        span = token.get("range")
+        _require(isinstance(span, list) and len(span) == 2, "invalid token range")
+        start, end = span
+        _require(type(start) is int and type(end) is int and start == position
+                 and start < end <= len(text), "gap, overlap or invalid token range")
+        position = end
+        token_text = text[start:end]
+        _require(token.get("text") == token_text, "token text mismatch")
+        anchor = token.get("tex_anchor")
+        _require(isinstance(anchor, str) and anchor and tex.count(anchor) == 1,
+                 "TeX anchor absent or ambiguous")
+        alternatives = token.get("alternate_scopes")
+        _require(isinstance(alternatives, list) and alternatives
+                 and all(isinstance(a, dict) and a.get("decision") == "rejected"
+                         and isinstance(a.get("reason"), str) and a["reason"].strip()
+                         for a in alternatives), "alternate scope review incomplete")
+        chars = token.get("characters")
+        _require(isinstance(chars, list) and len(chars) == len(token_text),
+                 "output character lineage incomplete")
+        local_ids: set[int] = set()
+        character_order: list[int] = []
+        synthetic_rules: set[int] = set()
+        for actual, record in zip(token_text, chars):
+            _require(isinstance(record, dict) and record.get("char") == actual,
+                     "output character mismatch")
+            kind = record.get("kind")
+            if kind == "glyph":
+                ids = _ids(record.get("glyph_ids"), "output character")
+                _require(set(ids) <= glyph_map.keys(), "unknown output glyph")
+                # A ligature may produce two characters from one source glyph.
+                _require(all(actual in glyph_map[gid]["char"] for gid in ids),
+                         "output character lacks source character")
+                local_ids.update(ids)
+                character_order.extend(ids)
+            elif kind == "fraction_slash":
+                rid = record.get("rule_id")
+                _require(actual == "/" and rid in rule_map, "unbound synthetic fraction slash")
+                synthetic_rules.add(rid)
+            else:
+                raise TokenLineageError("unbound output character")
+        _require(not global_ids & local_ids, "glyph reused by another token")
+        global_ids |= local_ids
+        used_rules: set[int] = set()
+        tree_ids = verify_node(token.get("tree"), local_ids, used_rules)
+        _require(tree_ids == local_ids, "typed tree does not cover output glyphs")
+        # A ligature may produce more than one output character from one glyph.
+        _require(list(dict.fromkeys(character_order)) == tree_order(token["tree"]),
+                 "typed tree/output glyph order mismatch")
+        _require(synthetic_rules == used_rules, "fraction rule/output mismatch")
+    _require(position == len(text), "output text is not fully tokenized")
+    canonical = json.dumps(packet, ensure_ascii=False, sort_keys=True,
+                           separators=(",", ":")).encode("utf-8")
+    return TokenLineageResult("MECHANICALLY_VERIFIED_REVIEW_REQUIRED", len(tokens),
+                              sha256(canonical).hexdigest())

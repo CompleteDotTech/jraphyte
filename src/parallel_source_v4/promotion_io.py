@@ -9,7 +9,8 @@ import json
 from pathlib import Path
 import re
 
-from trace_gc.pdf_source_parallel_v4 import digest_value, json_bytes, validate_source_spans
+from trace_gc.pdf_source_parallel_v4 import (SourceGeometry, digest_value, json_bytes,
+    validate_source_spans, verify_source_geometry_policy)
 from trace_gc.pdf_structure_parallel_v4 import verify_assessment, verify_interior_footnote_exclusion
 from . import extraction
 from .common import REPO, child, data_root, digest, method_hashes, verify_files, write_once
@@ -137,10 +138,14 @@ def _analyze(root: Path, *, run_relative: str, run_sha256: str, configuration_re
             raise ValueError("native_reference_manifest_hash_mismatch")
     elif native_manifest_relative is not None or native_manifest_sha256 is not None:
         raise ValueError("native_reference_not_recorded_in_experiment")
+    geometry_policy=saved_gate.get('source_geometry_policy','disabled')
+    if geometry_policy not in extraction.GEOMETRY_POLICIES or protocol.get('source_geometry_policy','disabled') != geometry_policy:
+        raise ValueError('acceptance_source_geometry_policy_mismatch')
     current = extraction.preflight(root, mapping, methods=METHODS, replay_saved=True,
                                    native_mode="fresh", runtime_lock=runtime_lock,
                                    native_manifest=child(root, native_manifest_relative) if reference is not None else None,
-                                   native_manifest_sha256=native_manifest_sha256)
+                                   native_manifest_sha256=native_manifest_sha256,
+                                   geometry_policy=geometry_policy)
     if current["status"] != "PASS":
         raise InputGateError(current.get("reason", "acceptance_preflight_blocked"))
     if current["method_hashes"] != code or saved_gate != extraction.public_preflight(current):
@@ -156,6 +161,8 @@ def _analyze(root: Path, *, run_relative: str, run_sha256: str, configuration_re
         remember(relative, sha)
     identities = ("runtime", "method_hashes", "native_mode", "native_manifest_sha256",
                   "extractor_identity", "native_comparison")
+    if geometry_policy != 'disabled':
+        identities += ('source_geometry_policy',)
     if (results.get("cohort") != "regression200" or
             results.get("status") not in {"COMPLETE_OFFLINE_ASSESSMENT_NOT_QUALIFICATION",
                 "FAILED_REGRESSION_PRESERVATION_GATE", "FAILED_SAVED_REPLAY_GATE"} or
@@ -163,6 +170,7 @@ def _analyze(root: Path, *, run_relative: str, run_sha256: str, configuration_re
             results.get("production_graph_writes") != 0 or results.get("new_paid_api_calls") != 0 or
             results.get("experiment_sha256") != digest_value(saved_gate) or
             results.get("execution_identity") != {key: current[key] for key in identities} or
+            results.get("source_geometry_policy", "disabled") != geometry_policy or
             protocol.get("cohort") != "regression200_already_examined" or protocol.get("method_hashes") != code or
             results.get("native_manifest_sha256") != inputs[run_relative + "/native_manifest.json"]):
         raise ValueError("inconsistent_or_non_regression_experiment_identity")
@@ -196,6 +204,10 @@ def _analyze(root: Path, *, run_relative: str, run_sha256: str, configuration_re
     baseline, replay, review_readback_errors = [], [], []
     for case in current["cases"]:
         sid, native = case["id"], case["native_lines"]
+        geometry=None
+        if geometry_policy != 'disabled':
+            geometry=SourceGeometry.from_pdf(load_asset(mapping[sid]),native,
+                expected_source_sha256=case['source_sha256'])
         relative = run_relative + "/native/" + sid + ".json"
         saved_native = load(relative)
         identity = manifest_by_id[sid]
@@ -230,7 +242,9 @@ def _analyze(root: Path, *, run_relative: str, run_sha256: str, configuration_re
                 if prediction.get("status") not in {"error", "truncated"} or prediction["proposal"] or prediction["spans"]:
                     raise ValueError("assessment_native_identity_missing_or_mismatched")
             validate_source_spans(prediction["spans"], native)
-            verify_interior_footnote_exclusion(prediction, native)
+            verify_source_geometry_policy(prediction.get('source_geometry_policy'), geometry,
+                source_sha256=case['source_sha256'],native_sha256=digest_value(native))
+            verify_interior_footnote_exclusion(prediction, native, source_geometry=geometry)
             for evidence in [prediction.get("closing_boundary") or {}, *prediction.get("region_ownership", [])]:
                 validate_source_spans(evidence.get("source_spans", []), native)
                 if evidence.get("marker_span"):
@@ -256,7 +270,8 @@ def _analyze(root: Path, *, run_relative: str, run_sha256: str, configuration_re
                 try:
                     amended, audit = apply_closure_review(prediction, closure_review, native=native,
                         source_identity=case, pdf_bytes=load_asset(mapping[sid]), load_asset=load_asset,
-                        fidelity_reference=reviewed_reference, evaluated_at=evaluated_at)
+                        fidelity_reference=reviewed_reference, evaluated_at=evaluated_at,
+                        source_geometry=geometry)
                     derived[sid] = amended
                     closure_audits[sid] = audit
                     row = score_case(sid, amended, reference_flags, evaluated_at=evaluated_at)
@@ -278,6 +293,7 @@ def _analyze(root: Path, *, run_relative: str, run_sha256: str, configuration_re
                         source_identity=case,
                         pdf_bytes=load_asset(mapping[sid]) if image_cases[sid].get("route") == "image_review" else None,
                         load_json=load, load_asset=load_asset, fidelity_reference=image_reference, evaluated_at=evaluated_at,
+                        native_lines=native, source_geometry=geometry,
                         native_failure_policy=config.get("native_failure_policy", "disabled"), candidate_failures=observations)
                     image_audits[sid] = audit
                     if amended is not None:

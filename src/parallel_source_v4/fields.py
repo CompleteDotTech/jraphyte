@@ -9,7 +9,7 @@ import re
 import sys
 import time
 from pathlib import Path
-from trace_gc.pdf_source_parallel_v4 import digest_value,source_lines,validate_lines
+from trace_gc.pdf_source_parallel_v4 import SourceGeometry,digest_value,source_lines,validate_lines
 from .common import REPO,child,data_root,digest,method_hashes,write_once
 from .retrieval import ASSESSMENT_VERSION,extract_fields,verify_source_bound_assessment
 
@@ -143,7 +143,7 @@ def assessment_entries(mapping: dict | None, ids: set[str]) -> tuple[str | None,
 
 
 def bound_assessment(root: Path, entry: dict, row: dict, native: list[dict], page_size: list[float],
-                     expected_version: str) -> dict:
+                     expected_version: str, source_file: Path) -> tuple[dict,SourceGeometry | None]:
     """An assessment seal does not by itself prove a source span exists."""
     if entry['native_sha256']!=row['native_sha256']:
         raise ValueError('assessment_native_representation_mismatch')
@@ -153,9 +153,14 @@ def bound_assessment(root: Path, entry: dict, row: dict, native: list[dict], pag
         raise ValueError('assessment_record_required')
     if assessment.get('extractor_version')!=expected_version:
         raise ValueError('assessment_extractor_version_mismatch')
+    geometry=None
+    if assessment.get('source_geometry_policy') is not None:
+        geometry=SourceGeometry.from_pdf(source_file.read_bytes(),native,
+                                         expected_source_sha256=row['source_sha256'])
     verify_source_bound_assessment(assessment,native,page_size=page_size,
-                                   source_sha256=row['source_sha256'],page_sha256=row['page_sha256'])
-    return assessment
+                                   source_sha256=row['source_sha256'],page_sha256=row['page_sha256'],
+                                   source_geometry=geometry)
+    return assessment,geometry
 
 
 def build_fields(root: Path, manifest: dict, output: Path | None, *, title_reviews=None, ocr_caches=None,
@@ -213,7 +218,9 @@ def build_fields(root: Path, manifest: dict, output: Path | None, *, title_revie
         if (page_cache['state']=='render_mismatch_review_required' and
                 (sid in entries or sid in (title_reviews or {}) or sid in (ocr_caches or {}))):
             raise ValueError('derived_fields_require_matching_cached_page:'+sid)
-        assessment=bound_assessment(root,entries[sid],row,native,page_size,abstract_assessments['extractor_version']) if sid in entries else None
+        assessment,geometry=(bound_assessment(root,entries[sid],row,native,page_size,
+            abstract_assessments['extractor_version'],source_path(root,row,source_root))
+            if sid in entries else (None,None))
         ocr=(ocr_caches or {}).get(sid)
         if corpus_policy is not None:
             eligible=eligibility(row,native,page_cache)
@@ -227,7 +234,8 @@ def build_fields(root: Path, manifest: dict, output: Path | None, *, title_revie
                                     policy=corpus_policy,code=image_code,read_asset=read_asset)
             decisions=field_decisions(corpus_policy,eligible,assessment,ocr)
         field=extract_fields(sid,native,page_size=page_size,source_sha256=row['source_sha256'],page_sha256=row['page_sha256'],image_sha256=row['image_sha256'],
-                             abstract_assessment=assessment,reviewed_title=(title_reviews or {}).get(sid),ocr_cache=ocr)
+                             abstract_assessment=assessment,reviewed_title=(title_reviews or {}).get(sid),ocr_cache=ocr,
+                             source_geometry=geometry)
         if corpus_policy is not None:
             field['corpus_policy']=decisions
             field['corpus_eligibility']=eligible

@@ -13,7 +13,8 @@ import time
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Callable, Sequence
-from trace_gc.pdf_source_parallel_v4 import canonical, digest_value, locate, normalize, style, validate_lines, validate_source_spans
+from trace_gc.pdf_source_parallel_v4 import (SourceGeometry, canonical, digest_value, locate, normalize,
+    style, validate_lines, validate_source_spans, verify_source_geometry_policy)
 from trace_gc.pdf_structure_parallel_v4 import (METADATA_START, VERSION as ASSESSMENT_VERSION,
     _author_like, verify_assessment, verify_interior_footnote_exclusion)
 from .adapters import conversion_state
@@ -84,7 +85,8 @@ def _affiliation_linked_author(block: dict, following: dict | None) -> bool:
 
 
 def verify_source_bound_assessment(assessment: dict, native: list[dict], *, page_size: list,
-                                   source_sha256: str, page_sha256: str) -> None:
+                                   source_sha256: str, page_sha256: str,
+                                   source_geometry: SourceGeometry | None = None) -> None:
     """Verify the seal, source identity and unique native span for any assessment state."""
     if not isinstance(assessment,dict):
         raise ValueError("abstract_assessment_record_required")
@@ -99,10 +101,12 @@ def verify_source_bound_assessment(assessment: dict, native: list[dict], *, page
             assessment.get("physical_page") != 1 or
             assessment.get("page_size") != page_size):
         raise ValueError("abstract_field_source_mismatch")
+    verify_source_geometry_policy(assessment.get("source_geometry_policy"), source_geometry,
+                                  source_sha256=source_sha256,native_sha256=digest_value(native))
     if "interior_footnote_exclusion" in assessment:
         # Replays the unique unsplit parent and exact source-owned deletion;
         # arbitrary rewritten text or caller-supplied joiners are not accepted.
-        verify_interior_footnote_exclusion(assessment, native)
+        verify_interior_footnote_exclusion(assessment, native, source_geometry=source_geometry)
         return
     if not assessment.get("proposal"):
         return
@@ -118,7 +122,7 @@ def verify_source_bound_assessment(assessment: dict, native: list[dict], *, page
         raise ValueError("abstract_field_native_spans_mismatch") from exc
     if "\n".join(span["text"] for span in assessment["spans"]) != assessment.get("text"):
         raise ValueError("abstract_field_text_not_source_spans")
-    relocated=locate(assessment["text"],native)
+    relocated=locate(assessment["text"],native,source_geometry=source_geometry)
     saved_positions=[(str(s["line_id"]),s["start"],s["end"]) for s in assessment["spans"]]
     located_positions=[(str(s["line_id"]),s["start"],s["end"]) for s in relocated["spans"]]
     if relocated["status"] != "located" or saved_positions != located_positions:
@@ -128,7 +132,8 @@ def verify_source_bound_assessment(assessment: dict, native: list[dict], *, page
 def extract_fields(case_id: str, native: list[dict], *, page_size: list,
                    source_sha256: str, page_sha256: str, image_sha256: str | None = None,
                    abstract_assessment: dict | None = None, reviewed_title: dict | None = None,
-                   ocr_cache: dict | None = None) -> dict:
+                   ocr_cache: dict | None = None,
+                   source_geometry: SourceGeometry | None = None) -> dict:
     native=validate_lines(native,page_size)
     groups = defaultdict(list)
     for line in native:
@@ -187,7 +192,8 @@ def extract_fields(case_id: str, native: list[dict], *, page_size: list,
                 result["field_provenance"]["title"] = {"kind": "local_ocr_title_candidate", "source_reviewed": False}
     if abstract_assessment is not None:
         verify_source_bound_assessment(abstract_assessment,native,page_size=page_size,
-                                       source_sha256=source_sha256,page_sha256=page_sha256)
+                                       source_sha256=source_sha256,page_sha256=page_sha256,
+                                       source_geometry=source_geometry)
     if abstract_assessment and abstract_assessment.get("proposal"):
         result["abstract"] = abstract_assessment["text"]
         result["field_provenance"]["abstract"] = {"kind": "source_located_selector_proposal", "source_reviewed": False,

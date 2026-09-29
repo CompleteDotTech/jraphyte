@@ -8,7 +8,8 @@ import json
 import math
 from io import BytesIO
 
-from trace_gc.pdf_source_parallel_v4 import digest_value, normalize, validate_source_spans
+from trace_gc.pdf_source_parallel_v4 import (SourceGeometry, digest_value, normalize,
+    validate_source_spans, verify_source_geometry_policy)
 from trace_gc.pdf_structure_parallel_v4 import seal, verify_assessment
 from .fidelity import evaluate_fidelity
 
@@ -134,7 +135,8 @@ def _excluded_regions(regions, image, page, accepted, native, image_bytes):
 
 def apply_closure_review(prediction: dict, review: dict, *, native: list[dict],
                          source_identity: dict, pdf_bytes: bytes, load_asset,
-                         fidelity_reference: dict, evaluated_at: str) -> tuple[dict, dict]:
+                         fidelity_reference: dict, evaluated_at: str,
+                         source_geometry: SourceGeometry | None = None) -> tuple[dict, dict]:
     """Return a new sealed assessment only after exact source and fidelity checks.
 
     Originals, transcription and graph admission remain unchanged. Partial,
@@ -160,6 +162,8 @@ def apply_closure_review(prediction: dict, review: dict, *, native: list[dict],
     if any(review.get(k) != v for k, v in identities.items()) or any(
             prediction.get(k) != identities[k] for k in ("source_sha256", "page_sha256", "native_sha256")):
         raise ValueError("closure_review_targets_another_assessment_or_source")
+    verify_source_geometry_policy(prediction.get('source_geometry_policy'), source_geometry,
+        source_sha256=identities['source_sha256'],native_sha256=identities['native_sha256'])
     if hashlib.sha256(pdf_bytes).hexdigest() != identities["source_sha256"]:
         raise ValueError("closure_review_original_pdf_changed")
     if (type(review["physical_page"]) is not int or review["physical_page"] != 1 or review["decision"] != "complete" or

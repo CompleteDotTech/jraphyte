@@ -1,0 +1,71 @@
+{
+  "schema_version": "retrieval-title-role-10k-public-v1",
+  "scope": "source-bound first-physical-page known-item retrieval; native title and body fields plus two unreviewed local OCR cover bodies",
+  "status": "COMPLETE_WITH_PARTIAL_FIELD_POLICY",
+  "frozen_source_commit": "99cd0f942dfc1a855178d77c95840551ac8238e1",
+  "private_evidence_sha256": {
+    "source_manifest": "7136351efa72d766d4364ed29ee4428d45212b4ad768653d0c7c35dd8f668763",
+    "fields_readback": "1a82a5dadef1a2f6973dc448b45bc12019f748e320828f4c26d27faeac6ccc09",
+    "mixed_metadata_title_image_review": "47e2f436b5feb047bf7e5a8757cbdb013f4208f5e4fc17a3dcef5fb0a42095be",
+    "fields": "f1859a033412002a64bac093af1b7b1939184d8cf5f3ea940e920972a30b89db",
+    "trial_protocol": "386f339ab14bf23f77e6c3676909598baaba9ae4a188aa7ac9c34b7a826815f3",
+    "trial_receipt": "e0e7792c5c58f75b2930a30e2450fdc6ac2e01db55b685a03d5f915f7b7a1c59",
+    "final_rank_comparison": "8fa020c79d8338b6b092536a2f06e3affa5b226a79b372b076132dcbe9130ca1",
+    "driver_complete": "8ba2a30bd5cd8595ae4710070c2d0ed5058a75b1c77539ddf5ecd12e39c1f591",
+    "driver_readback": "b0ddf87968039aa7bd4c46bff7ed62d73bd0e9438323c83e0e599ef712f7834a"
+  },
+  "integrity": {
+    "documents": 10000,
+    "queries": 60,
+    "final_source_readback": "VERIFIED",
+    "frozen_input_code_runtime_readback": "MATCH",
+    "driver_postpublication_readback": "PASS",
+    "driver_input_files": 40029,
+    "driver_owned_outputs": 12579,
+    "target_label_permutations": "PASS_IN_ALL_FIVE_MEASURED_CONDITIONS",
+    "new_paid_api_calls": 0,
+    "production_graph_writes": 0
+  },
+  "fields": {
+    "title_policy": "native-title-runs-v2",
+    "changed_title_text_records": 14,
+    "body_text_unchanged": true,
+    "mixed_metadata_title_case": "d21604",
+    "mixed_metadata_title_source_image_reviewed": true,
+    "mixed_metadata_title_line_ids": [1, 2],
+    "searchable_documents": 9988,
+    "native_extraction_errors": 12,
+    "unreviewed_local_ocr_cover_bodies": 2,
+    "v4_abstract_assessments": 0
+  },
+  "candidate_stage_at_depth_50": {
+    "page_bm25_target_hits": 60,
+    "field_weighted_bm25_target_hits": 57,
+    "specter2_target_hits": 56,
+    "union_target_hits": 60
+  },
+  "known_item_metrics": {
+    "repaired_fields": {"candidate_hits": 60, "top1": 59, "top10": 60, "mrr": 0.9916666666666667},
+    "archived_fields_same_runtime": {"candidate_hits": 60, "top1": 59, "top10": 60, "mrr": 0.9916666666666667},
+    "repaired_fields_without_page": {"candidate_hits": 57, "top1": 56, "top10": 57, "mrr": 0.9416666666666667},
+    "repaired_fields_without_dense": {"candidate_hits": 60, "top1": 59, "top10": 60, "mrr": 0.9916666666666667}
+  },
+  "known_cases": {
+    "f076_primary_rank": 1,
+    "f076_without_page_candidate_present": false,
+    "f115_primary_rank": 2
+  },
+  "qualification": {
+    "issue_52_title_role_field_and_frozen_query_verification": "PASS",
+    "issue_22_full_v4_retrieval": "NOT_QUALIFIED",
+    "historical_source_certification": false,
+    "competing_result_relevance_judgments": "NOT_PERFORMED",
+    "paper_to_graph_to_cited_answer": "NOT_RUN"
+  },
+  "limitations": [
+    "The 60 known-item query scores do not measure relevance of competing results.",
+    "The 14 corrected title fields moved some rankings but did not change aggregate known-item scores.",
+    "All 10000 V4 abstract assessments are absent; the native-field trial cannot qualify full V4 retrieval.",
+    "Two OCR cover bodies are unreviewed and cannot certify abstract fidelity or graph admission."
+  ]
+}

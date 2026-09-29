@@ -134,7 +134,8 @@ def _owner(path: Path):
 
 
 def _freeze(root: Path, manifest_path: Path, profile_path: Path, output: Path,
-            source_root: Path | None, *, selected_ids: list[str] | None = None) -> tuple[dict, dict]:
+            source_root: Path | None, *, selected_ids: list[str] | None = None,
+            migration: dict | None = None) -> tuple[dict, dict]:
     manifest, manifest_hash = _read(manifest_path)
     profile, profile_hash = _read(profile_path)
     _profile(root, profile)
@@ -163,6 +164,11 @@ def _freeze(root: Path, manifest_path: Path, profile_path: Path, output: Path,
                 "source_geometry_policy": "source_fraction_v1",
                 "scholarly_abstract": "disabled_no_gold_or_labels", "query_independent": True,
                 "assessment_method": METHOD, "extractor_version": ASSESSMENT_VERSION}
+    if migration is not None:
+        if (not isinstance(migration, dict) or set(migration) != {"relative", "sha256"} or
+                digest(child(root, migration["relative"])) != migration["sha256"]):
+            raise ValueError("assessment_migration_manifest_mismatch")
+        protocol["migration"] = migration
     path = output / "protocol.json"
     if path.exists():
         if _read(path)[0] != protocol:
@@ -341,6 +347,12 @@ def _verify_receipt(root: Path, row: dict, receipt: dict, output: Path, source_r
         if receipt.get("state") != "ineligible" or receipt.get("assessment_relative") is not None:
             raise ValueError("ineligible_assessment_receipt_invalid:" + sid)
         return
+    if receipt.get("schema_version") == "retrieval-assessment-migrated-row-v1":
+        from .assessment_migration import verify_migrated_receipt
+        verify_migrated_receipt(root, row, receipt, output, source_root, protocol, native, size)
+        return
+    if receipt.get("schema_version") not in (None, "retrieval-assessment-row-v1"):
+        raise ValueError("assessment_receipt_schema_unknown:" + sid)
     if receipt.get("state") not in {"complete", "error"}:
         raise ValueError("eligible_assessment_receipt_invalid:" + sid)
     attempt = output / "attempts" / sid
@@ -397,10 +409,15 @@ def _verify_receipt(root: Path, row: dict, receipt: dict, output: Path, source_r
 
 
 def _run(root: Path, manifest_path: Path, profile_path: Path, output: Path,
-         source_root: Path | None, selected_ids: list[str] | None = None) -> dict:
+         source_root: Path | None, selected_ids: list[str] | None = None,
+         *, migration: dict | None = None, migration_initializer=None) -> dict:
     with _owner(output.parent / ("." + output.name + ".owner.lock")):
         manifest, protocol = _freeze(root, manifest_path, profile_path, output, source_root,
-                                     selected_ids=selected_ids)
+                                     selected_ids=selected_ids, migration=migration)
+        if migration_initializer is not None:
+            if migration is None:
+                raise ValueError("assessment_migration_manifest_required")
+            migration_initializer(root, output, manifest, protocol, source_root)
         profile, _ = _read(profile_path, protocol["profile_sha256"])
         rows = {r["sample_id"]: r for r in manifest["pdfs"]}
         session = ConverterSession(root, output, profile)

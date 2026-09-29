@@ -3,7 +3,7 @@
   "hash_algorithm": "SHA-256",
   "manifest_self_excluded": true,
   "source_only": true,
-  "file_count": 569,
+  "file_count": 574,
   "files": [
     {
       "path": ".github/workflows/test.yml",
@@ -696,6 +696,11 @@
       "sha256": "d45717c9b667356beb85f69b6f5765c0d3f4440cf1412d48b993c43e469c63cf"
     },
     {
+      "path": "docs/retrieval_assessment_migration.md",
+      "bytes": 2933,
+      "sha256": "3e1ecc16d5ee5c63e2cc001fbe40c0d2af69229a3901bf45f3196af6abc4f81a"
+    },
+    {
       "path": "docs/retrieval_assessment_producer.md",
       "bytes": 6531,
       "sha256": "09097bf012b7476ef7ed1cd075a7b46f6fc99909fc7858ee4e8810bf34c11f5e"
@@ -954,6 +959,11 @@
       "path": "review/abstract_embedded_metadata_20260928/receipt.json",
       "bytes": 4469,
       "sha256": "da2d7dea53493ea66b7c50ac04b8710815736389e8cb32e8d8f795f814037615"
+    },
+    {
+      "path": "review/assessment_migration/incident_receipt_20260929.json",
+      "bytes": 1427,
+      "sha256": "d0315557c13b825965bbf1d2831f7507aa8ef5c0c6360a0503e0f9bd4c66e4c7"
     },
     {
       "path": "review/baseline_results.json",
@@ -1816,9 +1826,14 @@
       "sha256": "b030f7ed4246320e0e4944b33740eb8c7820585f4ccd86eb8fa259e94331aaaa"
     },
     {
+      "path": "src/parallel_source_v4/assessment_migration.py",
+      "bytes": 24813,
+      "sha256": "37166415c870b3b7ab57d8584ab08e6bdd680a09ff9c4a142839820c96b7b3a5"
+    },
+    {
       "path": "src/parallel_source_v4/assessment_producer.py",
-      "bytes": 35944,
-      "sha256": "9ed09da552dc7d5cc2372b10c5743f7030af9eb2ae2956cd3aad8b802cd94c05"
+      "bytes": 37043,
+      "sha256": "7c81ce6965c14b0cd14222e38d911126ecbcd28baed7a86f7e36ccee0c26bc6a"
     },
     {
       "path": "src/parallel_source_v4/common.py",
@@ -1907,8 +1922,8 @@
     },
     {
       "path": "src/parallel_source_v4/retrieval.py",
-      "bytes": 26809,
-      "sha256": "51e73129ef64c4a9957f42b25a3bdd2771707342f199aa407fac561d189877d9"
+      "bytes": 33850,
+      "sha256": "573c0088acbb5c7023550fdf39a2803ce640481708267bdc816d23549923249c"
     },
     {
       "path": "src/parallel_source_v4/retrieval_policy.py",
@@ -2236,6 +2251,11 @@
       "sha256": "bc24e96e8daca24fa807649fd5b535cc27b3aa08ce5e197954705e82e8124e56"
     },
     {
+      "path": "tests/test_retrieval_assessment_migration.py",
+      "bytes": 12809,
+      "sha256": "3ecbdcc2518ab4f1a9b7fae808538af077f6cbefdc62d9782c70af863018c05e"
+    },
+    {
       "path": "tests/test_retrieval_assessment_producer.py",
       "bytes": 12295,
       "sha256": "c135d57db6bb8db6585ac9f6547ec70d2797d5607ed753b77cbf1e0ec48a3cea"
@@ -2244,6 +2264,11 @@
       "path": "tests/test_retrieval_corpus_policy.py",
       "bytes": 11083,
       "sha256": "b800f149b9f1aa73d34d080946fadc35952e7087326a4c8d8f072b4a878c5279"
+    },
+    {
+      "path": "tests/test_retrieval_source_owned_paragraph_groups.py",
+      "bytes": 9142,
+      "sha256": "4d65a445fe831e7ffc13f957002f29b0d3ff3aa8fa1f754646872ce5c8d78701"
     },
     {
       "path": "tests/test_reviewed_abstract_overlay.py",

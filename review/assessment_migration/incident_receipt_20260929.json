@@ -1,0 +1,25 @@
+{
+  "schema_version": "retrieval-assessment-migration-incident-v1",
+  "date": "2026-09-29",
+  "status": "PREPARED_NOT_EXECUTED",
+  "origin_completed_rows_source_replayed": 108,
+  "origin_sealed_conversion_attempts": 109,
+  "first_unfinished_id": "h009",
+  "failure": {
+    "code": "abstract_field_spans_not_unique_or_current",
+    "cause": "The assessor retained three source-owned abstract paragraphs in the left column, while native PDF reading order interleaved right-column body lines. The verifier replayed the concatenated abstract as one global locate request and rejected it despite exact paragraph-level source spans."
+  },
+  "remediation": "Replay each source-owned paragraph and its closure against original PDF geometry, then compose the same-lane spans under the existing omission guard. Migrate sealed conversions under a new protocol and re-assess without a second model call.",
+  "verification": {
+    "frozen_origin_completed_rows": "PASS_108_OF_108_READ_ONLY",
+    "h009_origin_conversion_lineage": "PASS_READ_ONLY",
+    "h009_fresh_assessment_source_verifier": "PASS_READ_ONLY",
+    "existing_f106_body_closure": "PASS_READ_ONLY",
+    "pinned_evaluator_retrieval_tests": "PASS_26_OF_26",
+    "full_10000_migration": "NOT_RUN"
+  },
+  "limits": [
+    "No 10000-document completion, measured corpus benefit, or graph admission claim",
+    "New source-gate qualification is required after the code change"
+  ]
+}

@@ -25,6 +25,7 @@ from src.parallel_source_v4.common import child, method_hashes, write_once
 from src.parallel_source_v4.fidelity import evaluate_fidelity, compare_notation
 from src.parallel_source_v4.promotion import configuration, METHODS, PRIMARY
 from src.parallel_source_v4.promotion_io import verify as verify_regression, _review_spans
+from src.paper_selector_acceptance_v2 import verify as verify_source_regression, VERSION as SOURCE_REGRESSION_VERSION
 from src.parallel_source_v4.runtime import DEFAULT_RUNTIME_LOCK, runtime_receipt
 from src.parallel_source_v4.extraction import predict
 
@@ -671,8 +672,10 @@ def _evaluate(root, bundle_descriptor, *, expected_preregistration_sha256, trust
     from src.parallel_source_v4.image_ocr import code_identity
     store = Artifacts(root)
     bundle = store.json(bundle_descriptor)
-    exact(bundle, {"version", "study_id", "execution_mode", "preregistration", "configuration", "regression",
-        "source_map", "access", "sampling", "screening", "sources", "references", "execution", "roles", "phases"},
+    base_bundle_keys = {"version", "study_id", "execution_mode", "preregistration", "configuration", "regression",
+        "source_map", "access", "sampling", "screening", "sources", "references", "execution", "roles", "phases"}
+    source_policy_present = "regression_policy" in bundle
+    exact(bundle, base_bundle_keys | ({"regression_policy"} if source_policy_present else set()),
         "study_bundle_contract_required")
     require(bundle["version"] == VERSION and isinstance(bundle["study_id"], str) and bundle["study_id"], "study_identity_required")
     require(bundle["execution_mode"] in {"REAL_LOCAL", "AUTHORED_CONTRACT_TEST"}, "explicit_study_mode_required")
@@ -699,16 +702,37 @@ def _evaluate(root, bundle_descriptor, *, expected_preregistration_sha256, trust
     require(config["image_evidence_policy"] == "source-bound-attributed-image-review-v1", "image_enabled_configuration_required")
     # This check runs before opening any selected PDF/image/native artifact.
     regression_artifact = store.json(bundle["regression"])
-    regression = verify_regression(store.root, bundle["regression"]["relative"], bundle["regression"]["sha256"],
-        configuration_relative=bundle["configuration"]["relative"], source_map_relative=bundle["source_map"]["relative"],
-        runtime_lock=runtime_lock)
+    if source_policy_present:
+        store.json(bundle["regression_policy"])
+        require(regression_artifact.get("version") == SOURCE_REGRESSION_VERSION,
+                "source_verified_regression_version_required")
+        regression = verify_source_regression(store.root, bundle["regression"]["relative"], bundle["regression"]["sha256"],
+            policy_relative=bundle["regression_policy"]["relative"],
+            policy_sha256=bundle["regression_policy"]["sha256"],
+            configuration_relative=bundle["configuration"]["relative"], source_map_relative=bundle["source_map"]["relative"],
+            runtime_lock=runtime_lock)
+    else:
+        require(regression_artifact.get("version") != SOURCE_REGRESSION_VERSION,
+                "source_verified_regression_requires_pinned_policy")
+        regression = verify_regression(store.root, bundle["regression"]["relative"], bundle["regression"]["sha256"],
+            configuration_relative=bundle["configuration"]["relative"], source_map_relative=bundle["source_map"]["relative"],
+            runtime_lock=runtime_lock)
     store.json(bundle["source_map"])
     require(regression.get("status") == "PASS", "exact_image_enabled_regression_pass_required")
-    for relative, sha in regression_artifact["input_file_hashes"].items():
-        store.verify({"relative": relative, "sha256": sha})
-    regression_directory = str(Path(bundle["regression"]["relative"]).parent).replace("\\", "/")
-    for relative, sha in regression_artifact["derived_assessment_files_sha256"].items():
-        store.verify({"relative": regression_directory+"/"+relative, "sha256": sha})
+    if source_policy_present:
+        base_descriptor = regression_artifact["base_acceptance"]
+        base_artifact = store.json(base_descriptor)
+        for relative, sha in base_artifact["input_file_hashes"].items():
+            store.verify({"relative": relative, "sha256": sha})
+        regression_directory = str(Path(base_descriptor["relative"]).parent).replace("\\", "/")
+        for relative, sha in base_artifact["derived_assessment_files_sha256"].items():
+            store.verify({"relative": regression_directory+"/"+relative, "sha256": sha})
+    else:
+        for relative, sha in regression_artifact["input_file_hashes"].items():
+            store.verify({"relative": relative, "sha256": sha})
+        regression_directory = str(Path(bundle["regression"]["relative"]).parent).replace("\\", "/")
+        for relative, sha in regression_artifact["derived_assessment_files_sha256"].items():
+            store.verify({"relative": regression_directory+"/"+relative, "sha256": sha})
     code, image_code, runtime = evaluator_identity(), code_identity(), runtime_receipt(runtime_lock)
     access = store.json(bundle["access"])
     exact(access, {"version", "methods", "image_ocr", "code_sha256", "image_code_sha256", "runtime", "configuration_sha256",
@@ -747,6 +771,8 @@ def _evaluate(root, bundle_descriptor, *, expected_preregistration_sha256, trust
         and type(access["limits"]["retries"]) is int and access["limits"]["retries"] >= 0
         and isinstance(access["limits"]["crop_policy"], str) and access["limits"]["crop_policy"], "invalid_fixed_execution_limits")
     hashes = {k: bundle[k]["sha256"] for k in ("preregistration", "configuration", "regression", "source_map", "access")}
+    if source_policy_present:
+        hashes["regression_policy"] = bundle["regression_policy"]["sha256"]
     hashes["roles"] = digest(bundle["roles"])
     phase_hashes = {PHASES[0]: deepcopy(hashes)}
     for phase, additions in zip(PHASES[1:], (("sampling", "sources"), ("screening", "references"), ("execution",))):
@@ -915,9 +941,17 @@ def _evaluate(root, bundle_descriptor, *, expected_preregistration_sha256, trust
                 "route": "native_automatic", "assessment_sha256": prediction["assessment_sha256"],
                 "status": prediction["status"], "fidelity_dimensions": {d:measured.get(d, {}).get("status") for d in DIMENSIONS}}
     report = statistical_gates([rows[sid] for sid in selection["primary"]], [rows[sid] for sid in selection["challenge"]], strata)
-    require(verify_regression(store.root, bundle["regression"]["relative"], bundle["regression"]["sha256"],
-        configuration_relative=bundle["configuration"]["relative"], source_map_relative=bundle["source_map"]["relative"],
-        runtime_lock=runtime_lock) == regression, "regression_prerequisite_changed_during_qualification")
+    if source_policy_present:
+        regression_recheck = verify_source_regression(store.root, bundle["regression"]["relative"], bundle["regression"]["sha256"],
+            policy_relative=bundle["regression_policy"]["relative"],
+            policy_sha256=bundle["regression_policy"]["sha256"],
+            configuration_relative=bundle["configuration"]["relative"], source_map_relative=bundle["source_map"]["relative"],
+            runtime_lock=runtime_lock)
+    else:
+        regression_recheck = verify_regression(store.root, bundle["regression"]["relative"], bundle["regression"]["sha256"],
+            configuration_relative=bundle["configuration"]["relative"], source_map_relative=bundle["source_map"]["relative"],
+            runtime_lock=runtime_lock)
+    require(regression_recheck == regression, "regression_prerequisite_changed_during_qualification")
     store.recheck()
     require(evaluator_identity() == code and code_identity() == image_code and runtime_receipt(runtime_lock) == runtime,
             "code_or_runtime_changed_during_evaluation")

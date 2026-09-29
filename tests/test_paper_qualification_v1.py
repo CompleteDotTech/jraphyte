@@ -919,5 +919,19 @@ class ComposedContractTests(unittest.TestCase):
             self.assertEqual(result["status"],"BLOCKED")
             self.assertFalse(result["qualification_pass"])
 
+    def test_v1_bundle_rejects_spurious_v2_policy(self):
+        with tempfile.TemporaryDirectory() as d:
+            _,bundle,kwargs=self.fixture(d)
+            bundle["regression_policy"]=self.write(d,"spurious-policy.json",{"version":"forged"})
+            descriptor=self.write(d,"spurious-bundle.json",bundle)
+            self.assertEqual(evaluate(d,descriptor,**kwargs)["status"], "BLOCKED")
+
+    def test_v2_regression_requires_pinned_policy(self):
+        with tempfile.TemporaryDirectory() as d:
+            _,bundle,kwargs=self.fixture(d)
+            bundle["regression"]=self.write(d,"forged-v2-regression.json",{"version":"paper-selector-source-verified-acceptance-v2"})
+            descriptor=self.write(d,"forged-v2-bundle.json",bundle)
+            self.assertEqual(evaluate(d,descriptor,**kwargs)["status"], "BLOCKED")
+
 
 if __name__=="__main__":unittest.main()

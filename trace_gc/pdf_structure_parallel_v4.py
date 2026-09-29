@@ -1263,6 +1263,61 @@ def _compose_section_spans(selected: dict, native: list[dict]) -> dict | None:
             "method": "source_owned_monotone_paragraph_groups", "paragraph_groups": groups}
 
 
+def _body_column_wrap_after_heading(witness: dict, boundary: dict, abstract_spans: list[dict],
+                                    native: list[dict], page_size: list[float], source_geometry) -> dict | None:
+    """Prove a later body column by its source-text wrap across the page gutter.
+
+    A right-column paragraph can begin above a left-column Introduction heading.
+    Its vertical position alone cannot make it a missing abstract sentence. This
+    exemption requires a located body heading, a bottom-of-left-column hyphenated
+    word after that heading, and its styled lowercase continuation at the top of
+    the other column. The exact native IDs and offsets remain in the assessment.
+    """
+    if (type(source_geometry) is not SourceGeometry or boundary.get("kind") != "body_section"
+            or not boundary.get("source_spans") or not witness.get("spans") or not abstract_spans):
+        return None
+    abstract_box = [min(s["bbox"][0] for s in abstract_spans), 0,
+                    max(s["bbox"][2] for s in abstract_spans), page_size[1]]
+    witness_box = [min(s["bbox"][0] for s in witness["spans"]), 0,
+                   max(s["bbox"][2] for s in witness["spans"]), page_size[1]]
+    if overlap(abstract_box, witness_box) > .05:
+        return None
+    heading_top = min(s["bbox"][1] for s in boundary["source_spans"])
+    heading_bottom = max(s["bbox"][3] for s in boundary["source_spans"])
+    heading_ids = {str(s["line_id"]) for s in boundary["source_spans"]}
+    left = [line for line in native if str(line["id"]) not in heading_ids
+            and overlap(line["bbox"], abstract_box) >= .7
+            and line["bbox"][1] > heading_bottom + 4
+            and line["bbox"][3] >= .75 * page_size[1]
+            and re.search(r"[A-Za-z]{2,}[-‐‑]$", line["text"].rstrip())]
+    right = [line for line in native if overlap(line["bbox"], witness_box) >= .8
+             and line["bbox"][1] < heading_top - 30
+             and line["bbox"][1] <= .55 * page_size[1]
+             and re.match(r"^[a-z]{2,}\b", line["text"].lstrip())]
+    if not left or not right:
+        return None
+    tail = max(left, key=lambda line: line["bbox"][3])
+    head = min(right, key=lambda line: line["bbox"][1])
+    if (tail["bbox"][2] + 8 >= head["bbox"][0]
+            or min(s["bbox"][1] for s in witness["spans"]) < head["bbox"][1]
+            or not tail.get("spans") or not head.get("spans")):
+        return None
+    before, after = tail["spans"][-1], head["spans"][0]
+    if (before.get("font") != after.get("font") or before.get("color") != after.get("color")
+            or before.get("flags", 0) & 18 != after.get("flags", 0) & 18
+            or not before.get("size") or not after.get("size")
+            or not .9 <= after["size"] / before["size"] <= 1.1):
+        return None
+    suffix = re.search(r"([A-Za-z]{2,8})[-‐‑]$", tail["text"].rstrip())
+    prefix = re.match(r"^([a-z]{2,8})\b", head["text"].lstrip())
+    if not suffix or not prefix:
+        return None
+    return {"version": "source-body-column-wrap-v1", "heading_line_ids": sorted(heading_ids),
+            "left_line_id": tail["id"], "left_offset": suffix.start(1),
+            "right_line_id": head["id"], "right_offset": len(head["text"])-len(head["text"].lstrip()),
+            "joined_word_sha256": hashlib.sha256((suffix.group(1)+prefix.group(1)).encode()).hexdigest()}
+
+
 def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                     native_lines=None, scholarly_abstract="", max_input_chars=4000,
                     conversion_status="success", source_geometry=None) -> dict:
@@ -1439,6 +1494,12 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                 witness = locate(region["text"], native, region_boxes=region["boxes"], source_geometry=source_geometry)
                 if (witness["status"] == "located" and witness["spans"] and not witness.get("column_change")
                         and abstract_bottom-2 <= min(s["bbox"][1] for s in witness["spans"]) <= boundary_top+2):
+                    bridge = _body_column_wrap_after_heading(
+                        witness, selected["boundary"], result["spans"], native, page_size, source_geometry)
+                    if bridge is not None:
+                        result["region_ownership"].append({"ref": region["ref"], "decision": "excluded",
+                            "reason": "source_body_column_wrap_after_closing_heading", "bridge": bridge})
+                        continue
                     result.update(status="uncertain", complete_candidate=False, section_owner=None,
                                   reasons=["unowned_source_prose_requires_review"])
                     result["region_ownership"].append({"ref": region["ref"], "decision": "held",

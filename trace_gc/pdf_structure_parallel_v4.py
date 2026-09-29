@@ -931,14 +931,22 @@ def _collect(start: dict, ordered: list[dict], native: list[dict], explicit: boo
                         boundary = {**verified[0], "scope_evidence": "numbered_outer_heading_after_subsections_and_native_size_change",
                                     "before_style": previous_style, "after_style": first_style}
                     else:
-                        # A neighboring column may already contain body text
-                        # while this abstract continues. Preserve the bounded
-                        # prefix for review, never certify this transition from
-                        # font size and a foreign-lane heading alone.
-                        boundary = {"kind": "unresolved_section_ownership", "ref": x["ref"],
-                                    "reason": "cross_lane_heading_after_native_size_change_requires_review",
-                                    "candidate_boundary": verified[0], "source_spans": alignment["spans"],
-                                    "before_style": previous_style, "after_style": first_style}
+                        prior_spans = [span for entry in ownership if entry.get("decision") == "included"
+                                       for span in entry.get("source_spans", [])]
+                        divider = _source_divider_closes_cross_lane(
+                            prior_spans, verified[0], alignment["spans"], source_geometry)
+                        if divider:
+                            boundary = {**verified[0], "scope_evidence": "visible_full_lane_rule_before_numbered_body_heading",
+                                        "source_divider": divider,
+                                        "before_style": previous_style, "after_style": first_style}
+                        else:
+                            # A neighboring column may already contain body
+                            # text while this abstract continues. Font size
+                            # and a foreign-lane heading alone cannot close it.
+                            boundary = {"kind": "unresolved_section_ownership", "ref": x["ref"],
+                                        "reason": "cross_lane_heading_after_native_size_change_requires_review",
+                                        "candidate_boundary": verified[0], "source_spans": alignment["spans"],
+                                        "before_style": previous_style, "after_style": first_style}
                     break
                 elif structured:
                     boundary = {"kind": "unresolved_section_ownership", "ref": x["ref"],
@@ -1333,6 +1341,40 @@ def _compose_section_spans(selected: dict, native: list[dict]) -> dict | None:
             "method": "source_owned_monotone_paragraph_groups", "paragraph_groups": groups}
 
 
+def _source_divider_closes_cross_lane(abstract_spans: list[dict], heading: dict,
+                                     body_spans: list[dict], source_geometry) -> dict | None:
+    """Prove a body transition across lanes with a visible original-PDF rule.
+
+    A neighboring numbered heading and a font change are insufficient: the
+    abstract might still continue in the other lane. The source rule must span
+    all three regions and separate every abstract span from both body regions.
+    """
+    if (type(source_geometry) is not SourceGeometry or not abstract_spans or not body_spans
+            or heading.get("kind") != "body_section" or not heading.get("source_spans")
+            or heading.get("source_location") != "located"
+            or not re.fullmatch(r"\s*(?:\d+(?:\.\d+)*|[IVX]+)[.)]?\s+introduction[.:]?\s*",
+                                heading.get("label", ""), re.I)):
+        return None
+    heading_spans = heading["source_spans"]
+    abstract_bottom = max(s["bbox"][3] for s in abstract_spans)
+    next_top = min(s["bbox"][1] for s in heading_spans + body_spans)
+    left = min(s["bbox"][0] for s in abstract_spans + heading_spans + body_spans)
+    right = max(s["bbox"][2] for s in abstract_spans + heading_spans + body_spans)
+    if next_top <= abstract_bottom + 8:
+        return None
+    rules = [rule for rule in source_geometry.descriptor().get("rules", [])
+             if (rule.get("visibility_check") == "no_later_overlapping_paint_v1"
+                 and rule.get("opacity") == 1.0
+                 and rule["x0"] <= left + 2 and rule["x1"] >= right - 2
+                 and abstract_bottom + 4 <= rule["y"] <= next_top - 3)]
+    if len(rules) != 1:
+        return None
+    return {"version": "source-full-lane-abstract-body-divider-v1", "rule": rules[0],
+            "abstract_terminal_line_id": abstract_spans[-1]["line_id"],
+            "heading_line_ids": [s["line_id"] for s in heading_spans],
+            "body_first_line_id": body_spans[0]["line_id"]}
+
+
 def _body_column_wrap_after_heading(witness: dict, boundary: dict, abstract_spans: list[dict],
                                     native: list[dict], page_size: list[float], source_geometry) -> dict | None:
     """Prove a later body column by its source-text wrap across the page gutter.
@@ -1619,6 +1661,11 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
                 witness = locate(region["text"], native, region_boxes=region["boxes"], source_geometry=source_geometry)
                 if (witness["status"] == "located" and witness["spans"] and not witness.get("column_change")
                         and abstract_bottom-2 <= min(s["bbox"][1] for s in witness["spans"]) <= boundary_top+2):
+                    divider = selected["boundary"].get("source_divider")
+                    if (divider and min(s["bbox"][1] for s in witness["spans"]) >= divider["rule"]["y"] + 3):
+                        result["region_ownership"].append({"ref": region["ref"], "decision": "excluded",
+                            "reason": "below_visible_abstract_body_divider", "divider": divider})
+                        continue
                     bridge = _body_column_wrap_after_heading(
                         witness, selected["boundary"], result["spans"], native, page_size, source_geometry)
                     if bridge is not None:

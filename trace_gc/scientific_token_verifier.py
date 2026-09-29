@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from hashlib import sha256
 from typing import Any
+import math
 import unicodedata
 
 
@@ -117,12 +118,14 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
         box = glyph.get("box")
         _require(isinstance(box, list) and len(box) == 4
                  and all(type(v) in (int, float) for v in box)
+                 and all(math.isfinite(v) for v in box)
                  and box[0] < box[2] and box[1] < box[3], "invalid glyph box")
         ink = glyph.get("ink_box")
         if ink is not None:
             _require(ink_evidence is not None
                      and isinstance(ink, list) and len(ink) == 4
                      and all(type(v) in (int, float) for v in ink)
+                     and all(math.isfinite(v) for v in ink)
                      and ink[0] < ink[2] and ink[1] < ink[3]
                      and box[0] - .001 <= ink[0] < ink[2] <= box[2] + .001
                      and box[1] - .001 <= ink[1] < ink[3] <= box[3] + .001,
@@ -136,18 +139,43 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                  "duplicate or invalid source line ID")
         role = line.get("role")
         _require(isinstance(role, str)
-                 and role in {"abstract_body", "excluded_margin", "excluded_other"},
+                 and role in {"abstract_body", "excluded_margin", "excluded_other", "mixed"},
                  "invalid source line role")
         ids = _ids(line.get("glyph_ids"), "source line")
         _require(set(ids) <= glyph_map.keys(), "source line has unknown glyph")
+        if role == "mixed":
+            spans = line.get("role_spans")
+            _require(isinstance(spans, list) and len(spans) >= 2,
+                     "mixed line lacks role spans")
+            roles_by_offset = []
+            for span in spans:
+                _require(isinstance(span, dict), "invalid mixed line span")
+                begin, end, segment_role = (span.get("start"), span.get("end"),
+                                            span.get("role"))
+                _require(type(begin) is int and type(end) is int
+                         and begin == len(roles_by_offset) and begin < end <= len(ids)
+                         and isinstance(segment_role, str)
+                         and segment_role in {"abstract_body", "excluded_heading",
+                                              "excluded_margin", "excluded_other"},
+                         "mixed line role spans overlap, gap or use invalid role")
+                roles_by_offset.extend([segment_role] * (end - begin))
+            _require(len(roles_by_offset) == len(ids)
+                     and "abstract_body" in roles_by_offset
+                     and any(value.startswith("excluded_") for value in roles_by_offset),
+                     "mixed line role spans do not partition body and exclusions")
+        else:
+            _require("role_spans" not in line, "uniform line cannot carry role spans")
+            roles_by_offset = [role] * len(ids)
         for offset, gid in enumerate(ids):
             glyph = glyph_map[gid]
             _require(glyph.get("line_id") == lid and glyph.get("line_offset") == offset,
                      "glyph source line or offset mismatch")
-            _require(glyph.get("role") == line["role"], "glyph source role mismatch")
+            _require(glyph.get("role") == roles_by_offset[offset],
+                     "glyph source role mismatch")
         box = line.get("box")
         _require(isinstance(box, list) and len(box) == 4
                  and all(type(v) in (int, float) for v in box)
+                 and all(math.isfinite(v) for v in box)
                  and box[0] < box[2] and box[1] < box[3], "invalid source line box")
         for gid in ids:
             gb = glyph_map[gid]["box"]
@@ -166,12 +194,14 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
         _require(type(left) is int and type(right) is int
                  and left in line_map and right in line_map and left < right,
                  "line join lacks ordered source lines")
-        _require(line_map[left]["role"] == line_map[right]["role"] == "abstract_body",
+        _require(glyph_map[line_map[left]["glyph_ids"][-1]]["role"] == "abstract_body"
+                 and glyph_map[line_map[right]["glyph_ids"][0]]["role"] == "abstract_body",
                  "line join lacks abstract body roles")
         _require(all(i in line_map for i in range(left + 1, right)),
                  "line join omits intervening source line")
         between = [line_map[i] for i in sorted(line_map) if left < i < right]
-        _require(all(line["role"].startswith("excluded_") for line in between),
+        _require(all(all(glyph_map[gid]["role"].startswith("excluded_")
+                         for gid in line["glyph_ids"]) for line in between),
                  "line join crosses unowned source line")
         _require(node.get("left_glyph_id") == line_map[left]["glyph_ids"][-1]
                  and node.get("right_glyph_id") == line_map[right]["glyph_ids"][0],
@@ -198,6 +228,7 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
         box = rule.get("box")
         _require(isinstance(box, list) and len(box) == 4
                  and all(type(v) in (int, float) for v in box)
+                 and all(math.isfinite(v) for v in box)
                  and box[0] < box[2] and box[1] < box[3], "invalid rule box")
         # A rule cannot claim an unrelated earlier or neighboring occurrence.
         for gid in numerator + denominator:
@@ -428,7 +459,7 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                 glyph = glyph_map[gid]
                 _require(type(glyph.get("line_id")) is int
                          and glyph["line_id"] in line_map
-                         and line_map[glyph["line_id"]]["role"] == "abstract_body"
+                         and glyph["role"] == "abstract_body"
                          and record.get("source_box") == glyph["box"]
                          and record.get("source_line_id") == glyph["line_id"]
                          and record.get("source_line_offset") == glyph["line_offset"]
@@ -443,7 +474,8 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                 _require(actual == " ", "line join must emit one space")
                 left, right = checked_join(record)
                 last_offset = len(_glyph_output(glyph_map[left]["char"])) - 1
-                _require(actual_events and actual_events[-1] == ("glyph", left, last_offset),
+                previous = actual_events[-1] if actual_events else all_events[-1] if all_events else None
+                _require(previous == ("glyph", left, last_offset),
                          "line join is not after left endpoint")
                 actual_events.append(("line_join_space", left, right))
             elif kind == "fraction_slash":
@@ -474,6 +506,11 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                  "output events disagree with typed serialization")
         all_events.extend(actual_events)
     _require(position == len(text), "output text is not fully tokenized")
+    for index, event in enumerate(all_events):
+        if event[0] == "line_join_space":
+            _require(index + 1 < len(all_events)
+                     and all_events[index + 1] == ("glyph", event[2], 0),
+                     "line join is not before right endpoint")
     omitted_ids: set[int] = set()
     for omission in omissions:
         _require(isinstance(omission, dict) and omission.get("kind") == "line_wrap_hyphen",
@@ -487,8 +524,10 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
                  "omission lacks source line pair")
         _require(all(i in line_map for i in range(left + 1, right)),
                  "omission skips unrecorded source line")
-        _require(line_map[left]["role"] == line_map[right]["role"] == "abstract_body"
-                 and all(line_map[i]["role"].startswith("excluded_")
+        _require(glyph_map[line_map[left]["glyph_ids"][-1]]["role"] == "abstract_body"
+                 and glyph_map[line_map[right]["glyph_ids"][0]]["role"] == "abstract_body"
+                 and all(all(glyph_map[gid]["role"].startswith("excluded_")
+                             for gid in line_map[i]["glyph_ids"])
                          for i in range(left + 1, right)),
                  "omission crosses unowned source line")
         left_ids, right_ids = line_map[left]["glyph_ids"], line_map[right]["glyph_ids"]
@@ -512,8 +551,8 @@ def verify_scientific_token_packet(packet: dict, *, source_sha256: str,
         omitted_ids.add(gid)
     _require(not global_ids & omitted_ids, "omitted glyph also emitted")
     if source_lines:
-        body_ids = {gid for line in source_lines if line["role"] == "abstract_body"
-                    for gid in line["glyph_ids"]}
+        body_ids = {gid for line in source_lines for gid in line["glyph_ids"]
+                    if glyph_map[gid]["role"] == "abstract_body"}
         _require(global_ids | omitted_ids == body_ids,
                  "abstract body glyph coverage incomplete")
     canonical = json.dumps(packet, ensure_ascii=False, sort_keys=True,

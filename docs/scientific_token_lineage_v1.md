@@ -51,6 +51,18 @@ silently skip a line, and it cannot justify a removed wrap hyphen. Callers must
 regenerate and independently review the full source-line inventory from the
 original PDF. When `source_lines` is present, it joins the glyphs and rules in
 the canonical evidence hash; old packets without it retain their v1 hash.
+Both the preceding and following output events must be the exact source-line
+endpoint glyphs, including when the space falls across packet token boundaries.
+An inserted or reordered body glyph cannot be hidden between the join and its
+claimed right endpoint.
+
+A source line may have `role: mixed` only with contiguous, nonoverlapping
+`role_spans` that partition every original glyph offset into abstract body and
+excluded heading or other roles. Glyph records retain the original line ID and
+offset and must agree with their role span. This covers a heading and the first
+abstract words on one physical PDF line without dropping the heading glyphs or
+emitting them as body. All body-role glyphs, including those on mixed lines,
+must still be emitted or explicitly listed as supported omissions.
 
 The typed tree is recursively serialized to exact glyph-offset and synthetic
 slash events, so a fraction rule emits one slash precisely between its full
@@ -94,15 +106,10 @@ or scientific scope; callers must independently capture and review them.
 The script geometry and required relation/unit children are structural checks,
 not proof of a scientifically correct subscript, equation, or unit attachment.
 
-The private f081 complete-transcript candidate has 907 output characters and
-160 preliminary token records, plus a separate 41-tree typed AST draft. The
-audits identify a source-backed stacked `spin-1/2`, two chemical subscripts,
-several variable subscripts, an inverse unit, and a terminal stacked fraction.
-Those artifacts are **not a v1 packet**: the 41 draft trees do not partition
-every scientific token, the output slash policy and unit/operator attachments
-have not been approved, and every alternate scope has not been rejected in a
-signed source-first review. No f081 PASS or promotion is claimed. The authored
-tests exercise only mechanical behavior on synthetic evidence.
+All glyph, source-line, rule and optional ink boxes must contain finite numeric
+coordinates. The authored tests exercise mechanical invariants on synthetic
+evidence; a private source-bound packet may pass mechanically while remaining
+scientifically held.
 
 Before this module could support scientific acceptance, an integrator must
 bind the complete original-PDF paint/visible-text coverage, validate reviewed

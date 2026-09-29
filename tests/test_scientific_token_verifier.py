@@ -167,6 +167,96 @@ def omission_fixture():
 
 
 class ScientificTokenVerifierTest(unittest.TestCase):
+    def test_mixed_heading_body_line_keeps_original_glyph_partition(self):
+        packet = fixture()
+        packet["tex"] = "body"
+        packet["source"]["tex_sha256"] = digest(packet["tex"].encode())
+        packet["text"] = "bc"
+        packet["glyphs"] = [
+            {"id": 1, "char": "H", "box": [1, 1, 2, 2], "line_id": 2,
+             "line_offset": 0, "role": "excluded_heading"},
+            {"id": 2, "char": "b", "box": [2, 1, 3, 2], "line_id": 2,
+             "line_offset": 1, "role": "abstract_body"},
+            {"id": 3, "char": "c", "box": [3, 1, 4, 2], "line_id": 2,
+             "line_offset": 2, "role": "abstract_body"},
+        ]
+        packet["source_lines"] = [{"id": 2, "role": "mixed", "glyph_ids": [1, 2, 3],
+                                   "box": [1, 1, 4, 2], "role_spans": [
+                                       {"start": 0, "end": 1, "role": "excluded_heading"},
+                                       {"start": 1, "end": 3, "role": "abstract_body"},
+                                   ]}]
+        packet["rules"] = []
+        packet["tokens"] = [{
+            "range": [0, 2], "text": "bc", "tex_anchor": "body",
+            "alternate_scopes": [{"decision": "rejected", "reason": "visible heading boundary"}],
+            "characters": [
+                {"char": "b", "kind": "glyph", "glyph_ids": [2], "glyph_offset": 0},
+                {"char": "c", "kind": "glyph", "glyph_ids": [3], "glyph_offset": 0},
+            ], "tree": {"kind": "literal", "glyph_ids": [2, 3]},
+        }]
+        self.assertEqual(verify(packet).status, "MECHANICALLY_VERIFIED_REVIEW_REQUIRED")
+        trusted = evidence_digest(packet)
+        packet["source_lines"][0]["role_spans"][1]["end"] = 2
+        with self.assertRaisesRegex(TokenLineageError, "spans do not partition"):
+            verify(packet)
+        packet["source_lines"][0]["role_spans"][1]["end"] = 3
+        packet["tokens"][0]["characters"][0] = {
+            "char": "H", "kind": "glyph", "glyph_ids": [1], "glyph_offset": 0}
+        packet["text"] = "Hc"
+        packet["tokens"][0]["text"] = "Hc"
+        packet["tokens"][0]["tree"]["glyph_ids"] = [1, 3]
+        with self.assertRaisesRegex(TokenLineageError, "body glyph coverage incomplete"):
+            verify(packet)
+        with self.assertRaisesRegex(TokenLineageError, "evidence mismatch"):
+            packet["source_lines"][0]["role_spans"][0]["end"] = 2
+            verify(packet, trusted_evidence=trusted)
+
+    def test_line_join_must_touch_right_endpoint_even_with_all_glyphs_covered(self):
+        packet = join_fixture()
+        packet["glyphs"].append({"id": 3, "char": "X", "box": [2, 3, 3, 4],
+                                  "line_id": 21, "line_offset": 1, "role": "abstract_body"})
+        packet["source_lines"][1]["glyph_ids"] = [2, 3]
+        packet["source_lines"][1]["box"] = [1, 3, 3, 4]
+        packet["tex"] = "Alpha XBeta"
+        packet["source"]["tex_sha256"] = digest(packet["tex"].encode())
+        packet["text"] = "A XB"
+        token = packet["tokens"][0]
+        token["range"] = [0, 4]
+        token["text"] = "A XB"
+        token["tex_anchor"] = "Alpha XBeta"
+        token["characters"].insert(2, {"char": "X", "kind": "glyph",
+                                        "glyph_ids": [3], "glyph_offset": 0})
+        token["tree"]["children"]["right"] = {"kind": "sequence", "parts": [
+            {"kind": "literal", "glyph_ids": [3]},
+            {"kind": "literal", "glyph_ids": [2]},
+        ]}
+        with self.assertRaisesRegex(TokenLineageError, "before right endpoint"):
+            verify(packet)
+
+    def test_nonfinite_source_geometry_rejected(self):
+        for field in ("glyph", "rule", "source_line", "ink"):
+            for value in (float("inf"), float("nan")):
+                with self.subTest(field=field, value=str(value)):
+                    packet = join_fixture() if field == "source_line" else fixture()
+                    if field == "glyph":
+                        packet["glyphs"][0]["box"][0] = value
+                    elif field == "rule":
+                        packet["rules"][0]["box"][0] = value
+                    elif field == "source_line":
+                        packet["source_lines"][0]["box"][0] = value
+                    else:
+                        packet["accurate_bbox_evidence"] = {
+                            "source_pdf_sha256": packet["source"]["pdf_sha256"],
+                            "notation_sha256": packet["source"]["notation_sha256"],
+                            "pymupdf_version": "1.28.0",
+                            "text_accurate_bboxes_flag": 512,
+                            "quad_corrections_disabled": True,
+                            "source_mode": "original_pdf_fresh_rawdict",
+                        }
+                        packet["glyphs"][0]["ink_box"] = [1, 1, 2, value]
+                    with self.assertRaises(TokenLineageError):
+                        verify(packet)
+
     def test_relation_chain_requires_ordered_operators_and_separator_only_gaps(self):
         packet = fixture()
         packet["tex"] = r"1 \le x \le 2"

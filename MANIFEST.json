@@ -57,13 +57,13 @@
     },
     {
       "path": "VALIDATION_LOG.txt",
-      "bytes": 217808,
-      "sha256": "bbb5f14eafd6afae78e20e6aa47e434e217a51d044cbfe4615f9a5039532da78"
+      "bytes": 217712,
+      "sha256": "89cb89c94a62e48a1a40f98c2ea92f18809b09a7fdc05b0177dbce4326fa250f"
     },
     {
       "path": "VALIDATION_REPORT.json",
-      "bytes": 222183,
-      "sha256": "31bd90de275add477fbe9ed33b714497170eeb8c13595853838b27e0db8493ce"
+      "bytes": 222057,
+      "sha256": "a0e1f100488129679c0c6169cded7e2fc953063ac66817ee97713f5fbe2d4348"
     },
     {
       "path": "archive/v0.2/MANIFEST.json",
@@ -1922,8 +1922,8 @@
     },
     {
       "path": "src/parallel_source_v4/fields.py",
-      "bytes": 23021,
-      "sha256": "08caccde43a8d69f04c769951c3ae5b6b7a765574ca881b0f4b3fb2953b072aa"
+      "bytes": 23043,
+      "sha256": "8093f8ee4e416b4184fd3d114cc5c4a76ab2596525455497fe5ad91148080b25"
     },
     {
       "path": "src/parallel_source_v4/freeze.py",

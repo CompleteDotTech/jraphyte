@@ -570,6 +570,10 @@ def _verify_receipt(root: Path, row: dict, receipt: dict, output: Path, source_r
         raise ValueError("assessment_receipt_source_mismatch:" + sid)
     if decision != receipt.get("eligibility"):
         raise ValueError("assessment_receipt_eligibility_mismatch:" + sid)
+    if receipt.get("schema_version") == "retrieval-assessment-prefix-import-row-v2":
+        from .assessment_migration_v2 import verify_prefix_receipt
+        verify_prefix_receipt(root, row, receipt, output, source_root, protocol, native, size)
+        return
     if decision != "eligible":
         if receipt.get("state") != "ineligible" or receipt.get("assessment_relative") is not None:
             raise ValueError("ineligible_assessment_receipt_invalid:" + sid)

@@ -17,7 +17,7 @@ from src.paper_qualification_v1 import (Artifacts, EvidenceError, PHASES, QUOTAS
     validate_protocol, validate_selection, verify_phases, verify_review_order)
 from src.paper_qualification_v1 import (_image_candidate, replay_converters, CACHE_OUTPUTS, evaluator_identity,
     publish, verify_published, reconcile_exposure, native_failure)
-from src.paper_qualification_v1 import CLARIFICATION, normalize_work_id, _source
+from src.paper_qualification_v1 import CLARIFICATION, normalize_work_id, _source, verify_identity_exclusions, image_transition, verify_title_page_source_extent
 from trace_gc.canonical import digest
 from trace_gc.trust import Signer, TrustStore, IssuerPolicy
 
@@ -185,8 +185,20 @@ class ProtocolTests(unittest.TestCase):
 
     def test_unavailable_is_not_replacement_eligibility(self):
         selection=self.selection()
-        selection["identity_exclusions"]=[{"work_id":sid(1999),"reason":"corrupt","evidence_sha256":"a"*64}]
+        selection["identity_exclusions"]=[{"work_id":sid(1999),"reason":"corrupt",
+            "evidence":{"relative":"proof.json","sha256":"a"*64}}]
         with self.assertRaisesRegex(EvidenceError,"cannot_be_replaced"):validate_selection(selection)
+
+    def test_untyped_or_selected_alias_exclusion_cannot_silently_change_rank(self):
+        selection=self.selection()
+        selection["identity_exclusions"]=[{"work_id":sid(1999),"reason":"same_source","evidence_sha256":"a"*64}]
+        with self.assertRaisesRegex(EvidenceError,"identity_exclusion_contract"):
+            validate_selection(selection)
+        selection=self.selection()
+        selection["identity_exclusions"]=[{"work_id":selection["primary"][0],"reason":"same_source",
+            "evidence":{"relative":"proof.json","sha256":"a"*64}}]
+        with self.assertRaisesRegex(EvidenceError,"rank_selection"):
+            validate_selection(selection)
 
     def test_no_prediction_screen_and_no_versioned_alias(self):
         selection=self.selection();selection["screen"][next(iter(selection["screen"]))]["prediction_access"]=True
@@ -241,6 +253,21 @@ class SignedReviewTests(unittest.TestCase):
         records,kwargs=self.reference();verify_review_order(records,**kwargs)
         records[sid(1)]["events"][0]["input_sha256"]=["b"*64]
         with self.assertRaisesRegex(EvidenceError,"image_must_precede"):verify_review_order(records,**kwargs)
+
+    def test_title_page_reference_requires_page_two_access_before_freeze(self):
+        records,kwargs=self.reference();record=records[sid(1)]
+        record["reference"]["source_extent_proof"]={"closure":{"kind":"reviewed_title_page_end",
+            "next_page":{"image":{"sha256":"c"*64},"native":{"sha256":"d"*64}}}}
+        decision=digest(record["reference"])
+        record["events"][0]["decision_sha256"]=decision
+        record["events"][1]["decision_sha256"]=decision
+        with self.assertRaisesRegex(EvidenceError,"second_page_source_first"):
+            verify_review_order(records,**kwargs)
+        record["events"].insert(1,{"kind":"image_inspection","context_id":"authored-source_reviewer",
+            "at":"2026-01-01T01:12:00Z","input_sha256":["c"*64],"decision_sha256":decision})
+        record["events"].insert(2,{"kind":"native_readback","context_id":"authored-source_reviewer",
+            "at":"2026-01-01T01:15:00Z","input_sha256":["d"*64],"decision_sha256":decision})
+        verify_review_order(records,**kwargs)
 
     def test_late_reference_and_missing_fixed_audit_reject(self):
         records,kwargs=self.reference();records[sid(1)]["events"][0]["at"]="2026-01-01T02:00:01Z"
@@ -933,5 +960,195 @@ class ComposedContractTests(unittest.TestCase):
             descriptor=self.write(d,"forged-v2-bundle.json",bundle)
             self.assertEqual(evaluate(d,descriptor,**kwargs)["status"], "BLOCKED")
 
+    def test_composed_alias_exclusion_replays_typed_pdf_proof(self):
+        import fitz
+        from io import BytesIO
+        from PIL import Image
+        from trace_gc.pdf_source_parallel_v4 import source_lines
+        real_open=fitz.open
+        with tempfile.TemporaryDirectory() as d:
+            _,bundle,kwargs=self.fixture(d)
+            sampling=json.loads((Path(d)/"sampling.json").read_text())
+            outside=rank(sampling["recent_frame"],"primary")[-1]
+            self.assertNotIn(outside,sampling["primary"]+sampling["recent_screen"])
+            exposed=sid(99999)
+            document=real_open();document.new_page().insert_text((72,72),"Previously exposed source")
+            pdf=document.tobytes();document.close()
+            with real_open(stream=pdf,filetype="pdf") as original:
+                pixels=original[0].get_pixmap(dpi=120,alpha=False)
+                buffer=BytesIO();Image.frombytes("RGB",(pixels.width,pixels.height),pixels.samples).save(buffer,format="PNG")
+                native=json.dumps(source_lines(original[0])).encode()
+            files={"alias-source.pdf":pdf,"alias-page.pdf":pdf,"alias-image.png":buffer.getvalue(),"alias-native.json":native}
+            assets={}
+            for name,raw in files.items():
+                (Path(d)/name).write_bytes(raw)
+                assets[name]={"relative":name,"sha256":hashlib.sha256(raw).hexdigest()}
+            proof={"version":"paper-identity-alias-proof-v1","work_id":outside,"exposed_work_id":exposed,
+                "reason":"same_source","observed_at":"2026-01-01T00:30:00Z","assets":{
+                    "version_id":outside+"v1","source":assets["alias-source.pdf"],"page":assets["alias-page.pdf"],
+                    "image":assets["alias-image.png"],"native":assets["alias-native.json"],"doi":None}}
+            sampling["identity_exclusions"]=[{"work_id":outside,"reason":"same_source",
+                "evidence":self.write(d,"alias-proof.json",proof)}]
+            sampling["exposed_work_ids"]=[exposed]
+            sampling["exposure_snapshot"]=self.write(d,"exposure-alias.json",{"version":"paper-exposure-snapshot-v1",
+                "reconciled_at":sampling["reconciled_at"],"entries":[{"work_id":exposed,
+                    "source_sha256":[assets["alias-source.pdf"]["sha256"]],"page_sha256":[],"dois":[]}]})
+            bundle["sampling"]=self.write(d,"sampling-alias.json",sampling)
+            descriptor=self.write(d,"bundle-alias.json",bundle)
+            from tests.test_selector_promotion import closure_fixture
+            with patch("fitz.open",real_open):fixture_native=closure_fixture()[2]["native"]
+            fake=lambda store,value:(fixture_native,{key:value[key]["sha256"] for key in ("source","page","image","native")})
+            def source_port(store,value):
+                if value["source"]["relative"]!="alias-source.pdf":return fake(store,value)
+                with patch("fitz.open",real_open):return _source(store,value)
+            times={phase:datetime(2026,1,1,h,tzinfo=timezone.utc) for phase,h in
+                (("configuration_frozen",0),("cohort_frozen",1),("references_frozen",2),("predictions_frozen",3))}
+            with patch("src.paper_qualification_v1.verify_phases",return_value=times),\
+                 patch("src.paper_qualification_v1._source",side_effect=source_port):
+                result=evaluate(d,descriptor,**kwargs)
+            self.assertEqual(result["status"],"AUTHORED_CONTRACT_PASS_NOT_QUALIFICATION",result)
+
+    def test_composed_native_route_cannot_skip_title_page_source_replay(self):
+        import fitz
+        real_open=fitz.open
+        with tempfile.TemporaryDirectory() as d:
+            _,bundle,kwargs=self.fixture(d)
+            sources=json.loads((Path(d)/"sources.json").read_text())
+            references=json.loads((Path(d)/"references.json").read_text())
+            sid_selected=next(work for work in sources if work in references and
+                references[work]["reference"]["status"]=="complete")
+            document=real_open();document.new_page().insert_text((72,72),"Title page abstract")
+            document.new_page().insert_text((72,72),"Body")
+            raw=document.tobytes();document.close()
+            sources[sid_selected]["assets"]["source"]=self.write(d,"title-source.pdf",{})
+            (Path(d)/"title-source.pdf").write_bytes(raw)
+            sources[sid_selected]["assets"]["source"]["sha256"]=hashlib.sha256(raw).hexdigest()
+            references[sid_selected]["reference"]["source_extent_proof"]={"image_sha256":sources[sid_selected]["assets"]["image"]["sha256"],
+                "closure":{"kind":"reviewed_title_page_end","excluded_regions":[],"next_page":{
+                    "image":{"relative":"missing-two.png","sha256":"a"*64,"physical_page":2,"dpi":120},
+                    "native":{"relative":"missing-two.json","sha256":"b"*64,"physical_page":2,
+                        "representation":"pymupdf-page-dict-v1"}}}}
+            bundle["sources"]=self.write(d,"sources-title.json",sources)
+            bundle["references"]=self.write(d,"references-title.json",references)
+            descriptor=self.write(d,"bundle-title.json",bundle)
+            times={phase:datetime(2026,1,1,h,tzinfo=timezone.utc) for phase,h in
+                (("configuration_frozen",0),("cohort_frozen",1),("references_frozen",2),("predictions_frozen",3))}
+            original_guard=verify_title_page_source_extent
+            def actual_guard(store,reference,source):
+                with patch("fitz.open",real_open):return original_guard(store,reference,source)
+            with patch("src.paper_qualification_v1.verify_phases",return_value=times),\
+                 patch("src.paper_qualification_v1.verify_title_page_source_extent",side_effect=actual_guard):
+                result=evaluate(d,descriptor,**kwargs)
+            self.assertEqual(result["status"],"BLOCKED")
+            self.assertIn("missing",result["reason"])
+
+
+class ProspectiveAdapterTests(unittest.TestCase):
+    @unittest.skipUnless(PDF_STACK_AVAILABLE,"PDF stack required")
+    def test_source_alias_replays_original_pdf_and_named_exposure(self):
+        import fitz
+        from io import BytesIO
+        from PIL import Image
+        from trace_gc.pdf_source_parallel_v4 import source_lines
+        document=fitz.open();document.new_page().insert_text((72,72),"Alias source")
+        pdf=document.tobytes();document.close()
+        with tempfile.TemporaryDirectory() as d,fitz.open(stream=pdf,filetype="pdf") as source:
+            pix=source[0].get_pixmap(dpi=120,alpha=False)
+            buf=BytesIO();Image.frombytes("RGB",(pix.width,pix.height),pix.samples).save(buf,format="PNG")
+            blobs={"source.pdf":pdf,"page.pdf":pdf,"page.png":buf.getvalue(),
+                "native.json":json.dumps(source_lines(source[0])).encode()}
+            assets={}
+            for name,raw in blobs.items():
+                (Path(d)/name).write_bytes(raw)
+                assets[name]={"relative":name,"sha256":hashlib.sha256(raw).hexdigest()}
+            proof={"version":"paper-identity-alias-proof-v1","work_id":sid(1),
+                "exposed_work_id":sid(2),"reason":"same_source","observed_at":"2026-09-28T08:00:00Z",
+                "assets":{"version_id":sid(1)+"v1","source":assets["source.pdf"],"page":assets["page.pdf"],
+                    "image":assets["page.png"],"native":assets["native.json"],"doi":None}}
+            raw=json.dumps(proof).encode();(Path(d)/"proof.json").write_bytes(raw)
+            item={"work_id":sid(1),"reason":"same_source",
+                "evidence":{"relative":"proof.json","sha256":hashlib.sha256(raw).hexdigest()}}
+            args=dict(known={"entries":{sid(2):{"source_sha256":[assets["source.pdf"]["sha256"]],"page_sha256":[]}}},
+                frame_dois={},frame_versions={sid(1):sid(1)+"v1"},
+                cohort_frozen=datetime(2026,9,28,9,tzinfo=timezone.utc))
+            verify_identity_exclusions(Artifacts(d),[item],**args)
+            with self.assertRaisesRegex(EvidenceError,"source_alias_not_in_exposed_work"):
+                verify_identity_exclusions(Artifacts(d),[item],**{**args,"known":{"entries":{sid(2):
+                    {"source_sha256":["a"*64],"page_sha256":[]}}}})
+            with self.assertRaisesRegex(EvidenceError,"version_or_doi_drift"):
+                verify_identity_exclusions(Artifacts(d),[item],**{**args,"frame_versions":{sid(1):sid(1)+"v2"}})
+            (Path(d)/"page.pdf").write_bytes(b"corrupt")
+            with self.assertRaisesRegex(EvidenceError,"artifact_bytes_changed"):
+                verify_identity_exclusions(Artifacts(d),[item],**args)
+
+    def test_pinned_doi_alias_requires_named_exposure_and_time(self):
+        with tempfile.TemporaryDirectory() as d:
+            proof={"version":"paper-identity-alias-proof-v1","work_id":sid(1),
+                "exposed_work_id":sid(2),"reason":"same_doi","observed_at":"2026-09-28T08:00:00Z","assets":None}
+            raw=json.dumps(proof).encode();(Path(d)/"proof.json").write_bytes(raw)
+            item={"work_id":sid(1),"reason":"same_doi",
+                "evidence":{"relative":"proof.json","sha256":hashlib.sha256(raw).hexdigest()}}
+            known={"entries":{sid(2):{"dois":["10.1234/exposed"]}}}
+            args=dict(known=known,frame_dois={sid(1):"10.1234/exposed"},
+                frame_versions={},cohort_frozen=datetime(2026,9,28,9,tzinfo=timezone.utc))
+            verify_identity_exclusions(Artifacts(d),[item],**args)
+            with self.assertRaisesRegex(EvidenceError,"doi_alias_not"):
+                verify_identity_exclusions(Artifacts(d),[item],**{**args,"frame_dois":{sid(1):"10.1234/other"}})
+            with self.assertRaisesRegex(EvidenceError,"identity_or_time"):
+                verify_identity_exclusions(Artifacts(d),[item],**{**args,"cohort_frozen":datetime(2026,9,28,7,tzinfo=timezone.utc)})
+
+    @unittest.skipUnless(PDF_STACK_AVAILABLE,"PDF stack required")
+    def test_title_page_requires_replayed_page_two_image_and_native(self):
+        import fitz
+        from io import BytesIO
+        from PIL import Image
+        document=fitz.open();page=document.new_page();page.insert_text((72,72),"Abstract text")
+        page=document.new_page();page.insert_text((72,72),"Introduction")
+        pdf=document.tobytes();document.close()
+        with tempfile.TemporaryDirectory() as d,fitz.open(stream=pdf,filetype="pdf") as source:
+            one=source[0].get_pixmap(dpi=120,alpha=False);two=source[1].get_pixmap(dpi=120,alpha=False)
+            buf=BytesIO();Image.frombytes("RGB",(two.width,two.height),two.samples).save(buf,format="PNG")
+            raw_image=buf.getvalue();raw_native=json.dumps(source[1].get_text("dict",flags=fitz.TEXTFLAGS_DICT & ~fitz.TEXT_PRESERVE_IMAGES)).encode()
+            for name,raw in (("two.png",raw_image),("two.json",raw_native)):(Path(d)/name).write_bytes(raw)
+            image={"relative":"two.png","sha256":hashlib.sha256(raw_image).hexdigest(),"physical_page":2,"dpi":120}
+            native={"relative":"two.json","sha256":hashlib.sha256(raw_native).hexdigest(),
+                "physical_page":2,"representation":"pymupdf-page-dict-v1"}
+            first=BytesIO();Image.frombytes("RGB",(one.width,one.height),one.samples).save(first,format="PNG")
+            closure={"kind":"reviewed_title_page_end","excluded_regions":[[110,100,300,140]],
+                "next_page":{"image":image,"native":native}}
+            (Path(d)/"source.pdf").write_bytes(pdf)
+            source_assets={"source":{"relative":"source.pdf","sha256":hashlib.sha256(pdf).hexdigest()},
+                "image":{"relative":"first.png","sha256":"b"*64}}
+            verify_title_page_source_extent(Artifacts(d),{"source_extent_proof":{"closure":closure,
+                "image_sha256":"b"*64}},source_assets)
+            # The excluded box is outside the abstract and contains actual page-one pixels.
+            image_transition(closure,png=first.getvalue(),crop=[0,0,100,90],store=Artifacts(d),source_pdf=pdf)
+            with self.assertRaisesRegex(ValueError,"page_two_native_asset_required"):
+                image_transition({**closure,"next_page":{"image":image,"native":{**native,"representation":"wrong"}}},
+                    png=first.getvalue(),crop=[0,0,100,90],store=Artifacts(d),source_pdf=pdf)
+            with self.assertRaisesRegex(EvidenceError,"distinct_image_and_native"):
+                image_transition({**closure,"next_page":{"image":image,"native":{**native,"relative":"two.png"}}},
+                    png=first.getvalue(),crop=[0,0,100,90],store=Artifacts(d),source_pdf=pdf)
+            with self.assertRaisesRegex(EvidenceError,"document_end_mismatch|two_source_witness"):
+                image_transition({**closure,"next_page":{"document_end":True}},png=first.getvalue(),
+                    crop=[0,0,100,90],store=Artifacts(d),source_pdf=pdf)
+            bad=bytearray(raw_image);bad[-20]^=1
+            (Path(d)/"two.png").write_bytes(bad)
+            with self.assertRaisesRegex(EvidenceError,"artifact_bytes_changed"):
+                image_transition(closure,png=first.getvalue(),crop=[0,0,100,90],
+                    store=Artifacts(d),source_pdf=pdf)
+
+    @unittest.skipUnless(PDF_STACK_AVAILABLE,"PDF stack required")
+    def test_title_page_document_end_only_for_one_page_pdf(self):
+        import fitz
+        from io import BytesIO
+        from PIL import Image
+        document=fitz.open();document.new_page().insert_text((72,72),"Abstract text")
+        raw=document.tobytes();pix=document[0].get_pixmap(dpi=120,alpha=False);document.close()
+        buf=BytesIO();Image.frombytes("RGB",(pix.width,pix.height),pix.samples).save(buf,format="PNG")
+        with tempfile.TemporaryDirectory() as d:
+            image_transition({"kind":"reviewed_title_page_end","excluded_regions":[[110,100,300,140]],
+                "next_page":{"document_end":True}},png=buf.getvalue(),crop=[0,0,100,90],
+                store=Artifacts(d),source_pdf=raw)
 
 if __name__=="__main__":unittest.main()

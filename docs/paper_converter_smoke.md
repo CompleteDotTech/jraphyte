@@ -47,6 +47,16 @@ attempt directory. Both ends require that prefix to remain absent. `-B` alone
 would still read existing, unpinned bytecode; the isolated prefix ensures imports
 use pinned source without modifying shared environment caches.
 
+The worker verifies the controller PID recorded in the durable intent. Windows
+virtual environments can insert a launcher between that controller and the
+interpreter. This one extra hop is accepted only when the launcher uses the
+exact pinned executable and hash, its parent is the controller, both processes
+remain alive, and their creation times match the launch order. Process handles
+are checked with a zero-timeout wait; an exit code of 259 does not establish
+liveness. Unavailable process metadata fails closed. Other parent chains remain
+unsupported. Worker failures include a bounded `error_code` for known contract
+checks; arbitrary exception text and private paths are excluded.
+
 The exposure declaration and custodian readback are attributed, externally pinned
 local records. They are **unsigned assertions**, not independent human review or
 unforgeable proof that a particular person inspected the evidence. The application

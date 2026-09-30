@@ -2267,8 +2267,8 @@
     },
     {
       "path": "tests/test_retrieval_assessment_session_lifecycle.py",
-      "bytes": 16211,
-      "sha256": "5c9f957d251ede75f52b64c600419aefa683689e018a1d5ee0acc34527e87c41"
+      "bytes": 16338,
+      "sha256": "71892267a68887341e680b3d0922ad0c24622e775296257ea52b2342b4fdffff"
     },
     {
       "path": "tests/test_retrieval_corpus_policy.py",

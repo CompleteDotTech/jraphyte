@@ -11,6 +11,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from src.parallel_source_v4 import assessment_producer as producer
@@ -208,7 +209,7 @@ class SessionLifecycleTests(unittest.TestCase):
                 self.returncode = 1
             def wait(self, timeout): events.append("wait_launcher")
         session.process = Launcher()
-        with patch.object(producer.os, "name", "nt"), \
+        with patch.object(producer, "os", SimpleNamespace(name="nt")), \
                 patch.object(producer, "_terminate_windows_handle", side_effect=lambda _: events.append("kill_worker") or True), \
                 patch.object(producer, "_close_windows_handle"):
             session.close(force=True)
@@ -238,7 +239,8 @@ class SessionLifecycleTests(unittest.TestCase):
             def poll(self): return self.returncode
             def wait(self, timeout): self.returncode = 0
         session.process = Launcher()
-        with patch.object(producer, "_windows_handle_exited", return_value=False):
+        with patch.object(producer, "os", SimpleNamespace(name="nt")), \
+                patch.object(producer, "_windows_handle_exited", return_value=False):
             with self.assertRaisesRegex(ValueError, "converter_worker_exit_unproven"):
                 session.close()
         self.assertIsNotNone(session.process)

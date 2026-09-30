@@ -277,6 +277,12 @@ test_truncation_cannot_finalize (test_paper_converter_smoke.LifecycleTests.test_
 test_unknown_attempt_is_not_retried (test_paper_converter_smoke.LifecycleTests.test_unknown_attempt_is_not_retried) ... ok
 test_worker_cannot_execute_without_controller_intent (test_paper_converter_smoke.LifecycleTests.test_worker_cannot_execute_without_controller_intent) ... ok
 test_original_first_page_exact_render_and_wrong_page (test_paper_converter_smoke.SourcePDFTests.test_original_first_page_exact_render_and_wrong_page) ... ok
+test_direct_parent_and_invalid_pid (test_paper_converter_worker_parent.WorkerParentTests.test_direct_parent_and_invalid_pid) ... ok
+test_failure_reports_bounded_contract_code (test_paper_converter_worker_parent.WorkerParentTests.test_failure_reports_bounded_contract_code) ... ok
+test_genuine_windows_venv_subprocess (test_paper_converter_worker_parent.WorkerParentTests.test_genuine_windows_venv_subprocess) ... ok
+test_only_one_pinned_live_redirector_hop (test_paper_converter_worker_parent.WorkerParentTests.test_only_one_pinned_live_redirector_hop) ... ok
+test_terminated_process_exit_259_is_not_alive (test_paper_converter_worker_parent.WorkerParentTests.test_terminated_process_exit_259_is_not_alive) ... ok
+test_unobservable_windows_parent_fails_closed (test_paper_converter_worker_parent.WorkerParentTests.test_unobservable_windows_parent_fails_closed) ... ok
 test_mutable_caller_buffer_is_frozen_before_render_and_native_read (test_paper_ingestion.ReviewedDocumentPageTests.test_mutable_caller_buffer_is_frozen_before_render_and_native_read) ... ok
 test_second_page_source_and_evidence_reopen_to_exact_pdf_span (test_paper_ingestion.ReviewedDocumentPageTests.test_second_page_source_and_evidence_reopen_to_exact_pdf_span) ... ok
 test_unreviewed_or_forged_native_span_cannot_enter_source (test_paper_ingestion.ReviewedDocumentPageTests.test_unreviewed_or_forged_native_span_cannot_enter_source) ... ok
@@ -1356,7 +1362,7 @@ test_pinned_comparison_replays_fresh_and_verifies_published_receipt (test_select
 test_reference_payload_is_rechecked_after_assessment_evaluation (test_selector_promotion_native_reference.NativeReferenceAuditTests.test_reference_payload_is_rechecked_after_assessment_evaluation) ... ok
 
 ----------------------------------------------------------------------
-Ran 1356 tests in 490.923s
+Ran 1362 tests in 486.849s
 
 OK (skipped=8)
 

@@ -43,6 +43,107 @@ def require(value, code):
         raise ValueError(code)
 
 
+def _redirector_chain_matches(info, controller_pid, executable, executable_sha256):
+    """Only the pinned Windows venv launcher may add one parent hop."""
+    return (info["parent_parent_pid"] == controller_pid
+            and Path(info["parent_executable"]).resolve() == Path(executable).resolve()
+            and info["parent_executable_sha256"] == executable_sha256
+            and info["controller_created"] < info["parent_created"] <= info["worker_created"]
+            and info["controller_alive"] and info["parent_alive"])
+
+
+def _process_handle_alive(kernel, handle):
+    import ctypes
+    result = kernel.WaitForSingleObject(handle, 0)
+    if result not in (0, 258):
+        raise ctypes.WinError(ctypes.get_last_error())
+    return result == 258
+
+
+def _windows_parent_info(controller_pid):
+    import ctypes
+    from ctypes import wintypes as w
+
+    class Entry(ctypes.Structure):
+        _fields_ = [("size", w.DWORD), ("usage", w.DWORD), ("pid", w.DWORD),
+                    ("heap", ctypes.c_size_t), ("module", w.DWORD), ("threads", w.DWORD),
+                    ("parent", w.DWORD), ("priority", w.LONG), ("flags", w.DWORD),
+                    ("name", w.WCHAR * 260)]
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel.CreateToolhelp32Snapshot.argtypes = [w.DWORD, w.DWORD]
+    kernel.CreateToolhelp32Snapshot.restype = w.HANDLE
+    for name in ("Process32FirstW", "Process32NextW"):
+        fn = getattr(kernel, name)
+        fn.argtypes = [w.HANDLE, ctypes.POINTER(Entry)]; fn.restype = w.BOOL
+    kernel.OpenProcess.argtypes = [w.DWORD, w.BOOL, w.DWORD]
+    kernel.OpenProcess.restype = w.HANDLE
+    kernel.CloseHandle.argtypes = [w.HANDLE]; kernel.CloseHandle.restype = w.BOOL
+    kernel.QueryFullProcessImageNameW.argtypes = [w.HANDLE, w.DWORD, w.LPWSTR, ctypes.POINTER(w.DWORD)]
+    kernel.QueryFullProcessImageNameW.restype = w.BOOL
+    kernel.GetProcessTimes.argtypes = [w.HANDLE, *([ctypes.POINTER(w.FILETIME)] * 4)]
+    kernel.GetProcessTimes.restype = w.BOOL
+    kernel.WaitForSingleObject.argtypes = [w.HANDLE, w.DWORD]
+    kernel.WaitForSingleObject.restype = w.DWORD
+    parent_pid = os.getppid()
+    handles = []
+    def check(ok):
+        if not ok:
+            raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        snapshot = kernel.CreateToolhelp32Snapshot(2, 0)
+        check(snapshot not in (None, ctypes.c_void_p(-1).value))
+        handles.append(snapshot)
+        entry = Entry(); entry.size = ctypes.sizeof(entry)
+        check(kernel.Process32FirstW(snapshot, ctypes.byref(entry)))
+        parent_parent = None
+        while True:
+            if entry.pid == parent_pid:
+                parent_parent = entry.parent
+                break
+            if not kernel.Process32NextW(snapshot, ctypes.byref(entry)):
+                break
+        check(parent_parent is not None)
+        def opened(pid):
+            handle = kernel.OpenProcess(0x101000, False, pid)
+            check(handle); handles.append(handle)
+            return handle
+        parent, controller, worker = [opened(pid) for pid in (parent_pid, controller_pid, os.getpid())]
+        image = ctypes.create_unicode_buffer(32768); size = w.DWORD(len(image))
+        check(kernel.QueryFullProcessImageNameW(parent, 0, image, ctypes.byref(size)))
+        def created(handle):
+            times = [w.FILETIME() for _ in range(4)]
+            check(kernel.GetProcessTimes(handle, *[ctypes.byref(value) for value in times]))
+            return (times[0].dwHighDateTime << 32) | times[0].dwLowDateTime
+        def alive(handle):
+            # Exit code 259 is also a legal application exit code. Process
+            # handles become signaled on exit regardless of the exit code.
+            return _process_handle_alive(kernel, handle)
+        result = {"parent_parent_pid": parent_parent, "parent_executable": image.value,
+                  "parent_executable_sha256": digest(Path(image.value)),
+                  "parent_created": created(parent), "controller_created": created(controller),
+                  "worker_created": created(worker), "parent_alive": alive(parent),
+                  "controller_alive": alive(controller)}
+        check(os.getppid() == parent_pid)
+        return result
+    finally:
+        for handle in reversed(handles):
+            kernel.CloseHandle(handle)
+
+
+def controller_parent_matches(controller_pid, executable, executable_sha256):
+    if type(controller_pid) is not int or controller_pid <= 0:
+        return False
+    if os.getppid() == controller_pid:
+        return True
+    if os.name != "nt":
+        return False
+    try:
+        return _redirector_chain_matches(_windows_parent_info(controller_pid),
+                                         controller_pid, executable, executable_sha256)
+    except (OSError, ValueError, KeyError):
+        return False
+
+
 def _json(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
 
@@ -380,7 +481,9 @@ def run(root, plan_descriptor, output):
     exact(intent, {"version", "plan", "started_at", "mode", "attempt", "controller_pid"}, "worker_intent_required")
     require(intent["version"] == "paper-converter-intent-v1" and intent["plan"] == plan_descriptor
             and intent["mode"] == plan["mode"] and type(intent["attempt"]) is int and intent["attempt"] == 1
-            and type(intent["controller_pid"]) is int and intent["controller_pid"] == os.getppid(), "worker_controller_intent_required")
+            and controller_parent_matches(intent["controller_pid"],
+                child(root, plan["runtime"]["executable"]["relative"]),
+                plan["runtime"]["executable"]["sha256"]), "worker_controller_intent_required")
     runtime = _runtime(plan, root)
     assets = plan["engine"]["assets"] + plan["runtime"]["files"] + [plan["runtime"]["executable"]]
     require(Path(sys.executable).resolve() == child(root, plan["runtime"]["executable"]["relative"]), "wrong_worker_interpreter")
@@ -444,7 +547,9 @@ def main():
     try:
         return run(args.data_root, {"relative": args.plan, "sha256": args.expected_plan_sha256}, args.output)
     except Exception as exc:
-        print(json.dumps({"status": "WORKER_FAILED", "error": type(exc).__name__}), file=sys.stderr, flush=True)
+        code = str(exc) if isinstance(exc, ValueError) and re.fullmatch(r"[a-z][a-z0-9_]{0,95}", str(exc)) else None
+        print(json.dumps({"status": "WORKER_FAILED", "error": type(exc).__name__,
+                          "error_code": code}), file=sys.stderr, flush=True)
         return 2
 
 

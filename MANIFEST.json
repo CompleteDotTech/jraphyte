@@ -3,7 +3,7 @@
   "hash_algorithm": "SHA-256",
   "manifest_self_excluded": true,
   "source_only": true,
-  "file_count": 584,
+  "file_count": 597,
   "files": [
     {
       "path": ".github/workflows/test.yml",
@@ -57,13 +57,13 @@
     },
     {
       "path": "VALIDATION_LOG.txt",
-      "bytes": 213656,
-      "sha256": "f864eb7b3a5b500c2e63f6f8ac3e251199d42146afe53e0fa125313cc5332d5a"
+      "bytes": 213545,
+      "sha256": "a05e2e4e959f470997aad7247ca07b2611c7af2f7f5be0000c0be14cd9018c94"
     },
     {
       "path": "VALIDATION_REPORT.json",
-      "bytes": 222536,
-      "sha256": "5cf5ceff4400cd067ccaecfc008a7f07b893b76bef9dda9ce1bbedd08fcb58ec"
+      "bytes": 218012,
+      "sha256": "8ddc22eb9db8a6d3b5eececbdd0fa44b0d9c782cc03709984a627085cc2fbb0e"
     },
     {
       "path": "archive/v0.2/MANIFEST.json",
@@ -694,6 +694,11 @@
       "path": "docs/paper_pilot_controller.md",
       "bytes": 3291,
       "sha256": "2296de73fc39b29f172cb4fad1d6326545ca3aa97d04825fdc5ae24c8adc9001"
+    },
+    {
+      "path": "docs/paper_pilot_phase_transition.md",
+      "bytes": 5553,
+      "sha256": "1bce7d71520c1c6b77fdc8609d83cc817bc48764c04911a5ea3e9242bc27553f"
     },
     {
       "path": "docs/paper_pilot_workflow.md",
@@ -1466,6 +1471,16 @@
       "sha256": "c3dde6cebefc61007adbe5f4bfb24be91625bd71cba1fb4d8fd9bdee3548fe24"
     },
     {
+      "path": "schemas/runtime/paper-pilot-phase-capsule.schema.json",
+      "bytes": 6275,
+      "sha256": "fb3bf95bd437d0568f806aeb195bfa8f2d27892f75abbcfff89f85d6428db8f8"
+    },
+    {
+      "path": "schemas/runtime/paper-pilot-phase-import.schema.json",
+      "bytes": 766,
+      "sha256": "1b7092b53588171da7c19fde1239d43202ccf0ce08d679756e7acd5e6af40cd5"
+    },
+    {
       "path": "schemas/runtime/plan.schema.json",
       "bytes": 17154,
       "sha256": "39450a9bd33e575e4eddb72b7feab8c99bcd4703d44be3945842cabea9c9eec9"
@@ -1816,6 +1831,16 @@
       "sha256": "63c1a67143a1fb220db59b84752721c12054405f3d72f7afb0b2eedc3497d2fa"
     },
     {
+      "path": "src/paper_pilot_phase_cutover.py",
+      "bytes": 5969,
+      "sha256": "e12545acd4e62d8e80179e356e1b2140424a048188e4b12a0285f34b9143cfd1"
+    },
+    {
+      "path": "src/paper_pilot_phase_export.py",
+      "bytes": 14124,
+      "sha256": "e71071e10e98ea342bc1b0964ae4755028d145d44e429a0db565dc936044e0b4"
+    },
+    {
       "path": "src/paper_qualification_v1.py",
       "bytes": 86186,
       "sha256": "18438e75da7d230e23863f541ca681f393f55e7e84c8bbc9170ed397a7edb327"
@@ -2106,6 +2131,21 @@
       "sha256": "75acb5e3ef850284da2a65dff6e2ef2eba7e0391ccfafa7e8190d0dee764279b"
     },
     {
+      "path": "tests/test_paper_pilot_phase_backup.py",
+      "bytes": 2639,
+      "sha256": "006c341f31625c71a1607262c8eaefaa565c7b2ac5ce262ba8db007dcdf93d52"
+    },
+    {
+      "path": "tests/test_paper_pilot_phase_fence.py",
+      "bytes": 5050,
+      "sha256": "ce53724a2a31c5fe385be5f3010dae14da5babfa168e02ad936e92c54743f65f"
+    },
+    {
+      "path": "tests/test_paper_pilot_phase_import_lock.py",
+      "bytes": 2988,
+      "sha256": "25c6cc18444050b2f54aacf996e6a5a7b9d9e16ca3bc99dd32a06b0c76eada96"
+    },
+    {
       "path": "tests/test_paper_qualification_v1.py",
       "bytes": 80357,
       "sha256": "e969ec1e9a82b2b4683052c14720f1dc1c327752a4bf3121afc0f9d17e1e64b8"
@@ -2377,8 +2417,8 @@
     },
     {
       "path": "tools/build_schemas.py",
-      "bytes": 12907,
-      "sha256": "6a115f5384e0d7044d6f5a3e433743bf25a3e7d1c132746bcbea5caa47769165"
+      "bytes": 12978,
+      "sha256": "ce42e889513d3836142a653728aac2fb9de4d5fd83f8f7fd17e9cb52eeeeaf9a"
     },
     {
       "path": "tools/build_vectors.py",
@@ -2419,6 +2459,11 @@
       "path": "tools/paper_ingestion_schemas.py",
       "bytes": 1748,
       "sha256": "0fe95ad1ac86bd5ac4d686d2e0fc415f04b1f71cf2ca066ddeaf37dc2ff3f0ca"
+    },
+    {
+      "path": "tools/phase_schemas.py",
+      "bytes": 2239,
+      "sha256": "4aac06da780269b92af6d275e3599c2bef6c1b61ca0b808584ffc55862b8c43c"
     },
     {
       "path": "tools/public_fixtures_parallel_v4.py",
@@ -2467,13 +2512,13 @@
     },
     {
       "path": "trace_gc/backend.py",
-      "bytes": 30109,
-      "sha256": "4e27a9da835803e7457ee4a9d75b1700752eb83b785ad54991c7cb7d6451afc9"
+      "bytes": 32813,
+      "sha256": "c46aab21f76908967ea75afb61ff1a88a3269d95c3c6b10bfb2e696022b83630"
     },
     {
       "path": "trace_gc/budget.py",
-      "bytes": 3336,
-      "sha256": "cbb9e7cb4e15bbcafdc37e89d9eb95938580dcce6b20c67d7c5bd84d4a08aa88"
+      "bytes": 5484,
+      "sha256": "847676635898294765ff2981b5871586fe6aa746528f92082813201dd22e0fb8"
     },
     {
       "path": "trace_gc/canonical.py",
@@ -2574,6 +2619,16 @@
       "path": "trace_gc/data/schemas/pack.schema.json",
       "bytes": 13223,
       "sha256": "c3dde6cebefc61007adbe5f4bfb24be91625bd71cba1fb4d8fd9bdee3548fe24"
+    },
+    {
+      "path": "trace_gc/data/schemas/paper-pilot-phase-capsule.schema.json",
+      "bytes": 6275,
+      "sha256": "fb3bf95bd437d0568f806aeb195bfa8f2d27892f75abbcfff89f85d6428db8f8"
+    },
+    {
+      "path": "trace_gc/data/schemas/paper-pilot-phase-import.schema.json",
+      "bytes": 766,
+      "sha256": "1b7092b53588171da7c19fde1239d43202ccf0ce08d679756e7acd5e6af40cd5"
     },
     {
       "path": "trace_gc/data/schemas/plan.schema.json",
@@ -2702,8 +2757,8 @@
     },
     {
       "path": "trace_gc/paper_pilot.py",
-      "bytes": 55735,
-      "sha256": "c344fa67c8777d0404552880dd0fbdb01459697e7d3d3eb7dd0534595f497491"
+      "bytes": 64337,
+      "sha256": "7ffcee47b9b51340f8121833ef84fc3d44ca37e714478562a1cb27c932a47f1a"
     },
     {
       "path": "trace_gc/paper_pilot_application.py",
@@ -2712,8 +2767,8 @@
     },
     {
       "path": "trace_gc/paper_pilot_controller.py",
-      "bytes": 14159,
-      "sha256": "d66c3d4d8ae555dffe179339a60d020073263570070e5c3d3bf3596abe577d0e"
+      "bytes": 17744,
+      "sha256": "d2ffd0e80ba02c292d86e0fbb22e4c7393fdebcd78541ead59bf5dadf6063bd7"
     },
     {
       "path": "trace_gc/paper_pilot_lifecycle.py",
@@ -2769,6 +2824,16 @@
       "path": "trace_gc/pdf_structure_parallel_v4.py",
       "bytes": 133296,
       "sha256": "e8193a8bb62d826774ab239cfe7ffa966d3cf42cafa431b3e40c50d358dbb5e4"
+    },
+    {
+      "path": "trace_gc/phase_authority.py",
+      "bytes": 10610,
+      "sha256": "b2ffc2e12be3c927f167a456acb1f95a7d2c615756131b2f889ddc97610dfee9"
+    },
+    {
+      "path": "trace_gc/phase_transition.py",
+      "bytes": 23095,
+      "sha256": "5acdec9e5c22eac6817a7846bc670b2f51568eca1f47a3638d410161552f40c9"
     },
     {
       "path": "trace_gc/plans.py",

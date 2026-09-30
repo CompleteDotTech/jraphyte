@@ -5,6 +5,8 @@ application injects its PaperPilot with enrolled trust and current ACL.
 """
 from __future__ import annotations
 
+from contextlib import nullcontext
+from functools import wraps
 from pathlib import Path
 import sqlite3
 
@@ -12,6 +14,15 @@ from .canonical import bytes_digest, digest, dumps, loads
 from .errors import require
 from .paper_ingestion import CHECKS
 from .pdf_image_evidence import CHECKS as IMAGE_CHECKS
+
+
+def _phase_stage(method):
+    @wraps(method)
+    def run(self, *args, **kwargs):
+        authority = self.pilot._phase_authority
+        with (authority.write() if authority is not None else nullcontext()):
+            return method(self, *args, **kwargs)
+    return run
 
 
 class PaperPilotController:
@@ -76,25 +87,50 @@ class PaperPilotController:
                 "this controller freezes source-review checks only; final pilot criteria need a separate protocol")
         self.manifest = loads(dumps(manifest))
         self.manifest_sha256 = digest(self.manifest)
-        self.db = sqlite3.connect(self.root / "application-journal.sqlite3", isolation_level=None)
-        self.db.execute("PRAGMA journal_mode=WAL")
-        self.db.execute("PRAGMA synchronous=FULL")
-        self.db.execute("CREATE TABLE IF NOT EXISTS events(seq INTEGER PRIMARY KEY, body TEXT NOT NULL, hash TEXT NOT NULL)")
-        events = self.db.execute("SELECT seq,body,hash FROM events ORDER BY seq").fetchall()
-        previous = None
-        for expected_index, (index, raw, recorded_hash) in enumerate(events, 1):
-            event = loads(raw)
-            require(index == expected_index and event["previous"] == previous and digest(event) == recorded_hash,
-                    "CONTROLLER_JOURNAL", "journal chain changed")
-            previous = recorded_hash
-        if events:
-            first = loads(events[0][1])
-            require(first["kind"] == "FREEZE" and first["manifest"] == self.manifest and
-                    first["pilot_head"] == self._open_head(), "CONTROLLER_FREEZE", "cohort or pilot opening changed")
-        else:
-            require(len(pilot.requests) == 0, "CONTROLLER_FREEZE", "freeze before preparing sources")
-            self._append({"kind": "FREEZE", "manifest": self.manifest, "pilot_head": self._open_head()})
-        self._check_actions()
+        authority = pilot._phase_authority
+        scope = (authority.write() if Path(pilot.phase_import["activation_path"]).exists() else authority.staging()) if authority is not None else nullcontext()
+        self.db = None
+        try:
+            with scope:
+                self.db = sqlite3.connect(self.root / "application-journal.sqlite3", isolation_level=None)
+                self.db.execute("PRAGMA journal_mode=WAL")
+                self.db.execute("PRAGMA synchronous=FULL")
+                self.db.execute("CREATE TABLE IF NOT EXISTS events(seq INTEGER PRIMARY KEY, body TEXT NOT NULL, hash TEXT NOT NULL)")
+                events = self.db.execute("SELECT seq,body,hash FROM events ORDER BY seq").fetchall()
+                previous = None
+                for expected_index, (index, raw, recorded_hash) in enumerate(events, 1):
+                    event = loads(raw)
+                    require(index == expected_index and event["previous"] == previous and digest(event) == recorded_hash,
+                            "CONTROLLER_JOURNAL", "journal chain changed")
+                    previous = recorded_hash
+                if events:
+                    first = loads(events[0][1])
+                    require(first["kind"] == "FREEZE" and first["manifest"] == self.manifest and
+                            first["pilot_head"] == self._open_head(), "CONTROLLER_FREEZE", "cohort or pilot opening changed")
+                else:
+                    require(len(pilot.requests) == 0 or getattr(pilot, "_phase_imported", False),
+                            "CONTROLLER_FREEZE", "freeze before preparing sources or exact phase import")
+                    self._append({"kind": "FREEZE", "manifest": self.manifest, "pilot_head": self._open_head()})
+                if getattr(pilot, "_phase_imported", False) and len(events) <= 1:
+                    # A crash after the target FREEZE and before the import event
+                    # resumes the same immutable application-journal transition.
+                    from .phase_transition import _read_once, verify_capsule
+                    capsule = loads(_read_once(pilot.phase_import["capsule_path"],
+                                               pilot.phase_import["capsule_sha256"]))
+                    verify_capsule(capsule)
+                    original_freeze = loads(capsule["application_journal_events"][0][1])
+                    require(original_freeze["manifest"] == self.manifest and
+                            original_freeze["pilot_head"] == capsule["checkpoint_events"][0][2],
+                            "CONTROLLER_FREEZE", "imported source manifest or old OPEN changed")
+                    self._append({"kind": "APPLICATION_PHASE_IMPORT",
+                                  "capsule_sha256": pilot.phase_import["capsule_sha256"],
+                                  "old_journal_head": capsule["application_journal_head"],
+                                  "old_pilot_head": capsule["checkpoint_head"]})
+                self._check_actions()
+        except BaseException:
+            if self.db is not None:
+                self.db.close()
+            raise
 
     def _open_head(self):
         row = self.pilot.db.execute("SELECT hash FROM events WHERE seq=1").fetchone()
@@ -110,8 +146,20 @@ class PaperPilotController:
     def _check_actions(self):
         preflight_seen = False
         seen_image_prepares = set()
-        for _, raw in self.db.execute("SELECT seq,body FROM events WHERE seq>1 ORDER BY seq"):
-            event = loads(raw)
+        events = [loads(raw) for (raw,) in self.db.execute(
+            "SELECT body FROM events WHERE seq>1 ORDER BY seq")]
+        if getattr(self.pilot, "_phase_imported", False):
+            from .phase_transition import _read_once, verify_capsule
+            capsule = loads(_read_once(self.pilot.phase_import["capsule_path"],
+                                       self.pilot.phase_import["capsule_sha256"]))
+            verify_capsule(capsule)
+            require(events and events[0]["kind"] == "APPLICATION_PHASE_IMPORT" and
+                    events[0]["capsule_sha256"] == self.pilot.phase_import["capsule_sha256"] and
+                    events[0]["old_journal_head"] == capsule["application_journal_head"] and
+                    events[0]["old_pilot_head"] == capsule["checkpoint_head"],
+                    "CONTROLLER_JOURNAL", "application phase import changed")
+            events = [loads(raw) for _, raw, _ in capsule["application_journal_events"][1:]] + events[1:]
+        for event in events:
             if event["kind"] == "PREFLIGHT":
                 require(not preflight_seen and event["manifest_sha256"] == self.manifest_sha256 and
                         event["pdf_sha256_by_page"] == {row["id"]: row["pdf_sha256"] for row in
@@ -140,9 +188,18 @@ class PaperPilotController:
                 require(False, "CONTROLLER_JOURNAL", "unknown journal action")
 
     def _preflight_recorded(self):
-        return any(loads(raw)["kind"] == "PREFLIGHT" for (raw,) in
-                   self.db.execute("SELECT body FROM events WHERE seq>1"))
+        if any(loads(raw)["kind"] == "PREFLIGHT" for (raw,) in
+               self.db.execute("SELECT body FROM events WHERE seq>1")):
+            return True
+        if getattr(self.pilot, "_phase_imported", False):
+            from .phase_transition import _read_once
+            capsule = loads(_read_once(self.pilot.phase_import["capsule_path"],
+                                       self.pilot.phase_import["capsule_sha256"]))
+            return any(loads(raw)["kind"] == "PREFLIGHT" for _, raw, _ in
+                       capsule["application_journal_events"][1:])
+        return False
 
+    @_phase_stage
     def preflight(self, pdfs: dict[str, bytes]) -> dict:
         """Read all frozen PDFs before any source preparation or model action."""
         rows = self.manifest["pages"] + self.manifest.get("image_pages", [])
@@ -158,6 +215,7 @@ class PaperPilotController:
         return {"status": "PREFLIGHT_PASS", "manifest_sha256": self.manifest_sha256,
                 "pages": len(expected), "pilot_checkpoint_head": self.pilot.status()["checkpoint_head"]}
 
+    @_phase_stage
     def prepare(self, page_id: str, pdf_bytes: bytes) -> dict:
         """Stop at source review; no model execution, trust bootstrap or graph write."""
         row = next((r for r in self.manifest["pages"] if r["id"] == page_id), None)
@@ -175,6 +233,7 @@ class PaperPilotController:
         return {"request_id": request_id, "state": result["state"], "packet_sha256": result["packet_sha256"],
                 "checkpoint_head": self.pilot.status()["checkpoint_head"]}
 
+    @_phase_stage
     def prepare_image(self, page_id: str, pdf_bytes: bytes, raw_output: bytes) -> dict:
         """Durably prepare a frozen image candidate after full-cohort preflight."""
         require(self.manifest["version"] == "real-paper-pilot-controller-v2" and self._preflight_recorded(),

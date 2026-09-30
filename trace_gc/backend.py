@@ -7,6 +7,7 @@ The deployment adapter in legacy.py rejects nonmatching upstream bytes. Its
 explicit conformance command is a separate mandatory deployment acceptance gate.
 """
 from __future__ import annotations
+from contextlib import nullcontext
 import sqlite3
 import threading
 from copy import deepcopy
@@ -23,11 +24,36 @@ from .trust import TrustStore,Signer,verify_authorization,verify_observation_att
 
 class SQLiteReferenceBackend:
     """Single-host inspectable reference backend. No external graph connection."""
-    def __init__(self,path: str | Path, *, catalog: Catalog, schema_id: str, nodes: dict[str,str], sandbox: bool=False):
+    def __init__(self,path: str | Path, *, catalog: Catalog, schema_id: str, nodes: dict[str,str],
+                 sandbox: bool=False, phase_authority=None):
         self.path,self.sandbox=str(path),sandbox
         self._lock=threading.RLock()
-        self.db=sqlite3.connect(self.path,isolation_level=None,timeout=10,check_same_thread=False)
+        self._phase_authority = phase_authority
+        self._phase_guard = phase_authority.write if phase_authority is not None else None
+        if phase_authority is None:
+            self.db=sqlite3.connect(self.path,isolation_level=None,timeout=10,check_same_thread=False)
+        else:
+            self.db=sqlite3.connect(f"file:{Path(self.path).as_posix()}?mode=rw", uri=True,
+                                    isolation_level=None,timeout=10,check_same_thread=False)
+        phase_scope = None
+        phase_entered = False
         try:
+            marker_exists = self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' "
+                                            "AND name='trace_phase_binding'").fetchone() is not None
+            if marker_exists:
+                from .phase_authority import PhaseAuthority, binding_sha256
+                marker = self.db.execute("SELECT binding_sha256 FROM trace_phase_binding WHERE id=1").fetchone()
+                require(type(phase_authority) is PhaseAuthority and marker is not None and
+                        marker[0] == binding_sha256(phase_authority.binding),
+                        "PHASE_GUARD", "persisted graph phase requires exact authority")
+            else:
+                require(phase_authority is None, "PHASE_GUARD", "graph phase marker absent")
+            if phase_authority is not None:
+                phase_scope = (phase_authority.write() if
+                    Path(phase_authority.binding["activation_path"]).exists() else
+                    phase_authority.staging())
+                phase_scope.__enter__()
+                phase_entered = True
             self.db.execute("PRAGMA foreign_keys=ON")
             self.db.execute("PRAGMA journal_mode=WAL")
             self.db.execute("PRAGMA synchronous=FULL")
@@ -61,8 +87,14 @@ class SQLiteReferenceBackend:
             finally:
                 self.db.close()
             raise
+        finally:
+            if phase_entered:
+                phase_scope.__exit__(None, None, None)
 
     def close(self) -> None:self.db.close()
+    def bind_phase_guard(self, guard) -> None:
+        require(self._phase_authority is not None and guard == self._phase_authority.write,
+                "PHASE_GUARD", "graph authority must be installed at database open")
     def __enter__(self):return self
     def __exit__(self,*args):self.close()
     def state(self) -> dict[str,Any]:
@@ -97,6 +129,16 @@ class SQLiteReferenceBackend:
                      fault: Callable[[str],None] | None = None, at: str | None = None,
                      lineage_prefix: list[dict[str,Any]] | None = None) -> dict[str,Any]:
         require(bool(key) and type(expected_version) is int and expected_version>=0,"TRANSACTION_INPUT","explicit version/key required")
+        with (self._phase_guard() if self._phase_guard is not None else nullcontext()):
+            return self._transaction_locked(key=key, fingerprint=fingerprint,
+                expected_version=expected_version, operation=operation, catalog=catalog,
+                apply=apply, authorization_hash=authorization_hash,
+                preflight_hash=preflight_hash, upstream_head=upstream_head,
+                fault=fault, at=at, lineage_prefix=lineage_prefix)
+
+    def _transaction_locked(self, *, key, fingerprint, expected_version, operation,
+                            catalog, apply, authorization_hash, preflight_hash,
+                            upstream_head, fault, at, lineage_prefix):
         when=at or now()
         def checkpoint(name: str) -> None:
             if fault is not None:fault(name)
@@ -206,7 +248,7 @@ class SQLiteReferenceBackend:
         Caller-held copies and exports are outside this local retention boundary.
         """
         require(bool(reason),"ERASURE_REASON","reason required")
-        with self._lock:
+        with (self._phase_guard() if self._phase_guard is not None else nullcontext()), self._lock:
             self.db.execute("BEGIN IMMEDIATE")
             try:
                 status=self.statuses().get(source_id)

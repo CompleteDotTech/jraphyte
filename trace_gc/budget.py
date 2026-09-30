@@ -1,5 +1,6 @@
 """Shared, persistent, monotonic per-run budgets across services and retries."""
 from __future__ import annotations
+from contextlib import nullcontext
 import sqlite3
 from pathlib import Path
 from typing import Any, Mapping
@@ -9,14 +10,38 @@ from .errors import ContractError, require
 RESOURCES = {"retrieval_requests","model_calls","retries","solver_expansions","review_actions","request_bytes"}
 
 class RunBudget:
-    def __init__(self, path: str | Path, run_id: str, limits: Mapping[str,int]):
+    def __init__(self, path: str | Path, run_id: str, limits: Mapping[str,int], *, phase_authority=None):
         require(bool(run_id) and set(limits) == RESOURCES,"BUDGET_CONFIG","all resource limits required")
         require(all(type(x) is int and x >= 0 for x in limits.values()),"BUDGET_CONFIG","nonnegative integer limits")
         self.path, self.run_id = str(path), run_id
-        self.db = sqlite3.connect(self.path, isolation_level=None, timeout=10, check_same_thread=False)
+        self._phase_authority = phase_authority
+        self._phase_guard = phase_authority.write if phase_authority is not None else None
+        if phase_authority is None:
+            self.db = sqlite3.connect(self.path, isolation_level=None, timeout=10, check_same_thread=False)
+        else:
+            self.db = sqlite3.connect(f"file:{Path(self.path).as_posix()}?mode=rw", uri=True,
+                                      isolation_level=None, timeout=10, check_same_thread=False)
         import threading
         self._lock = threading.RLock()
+        phase_scope = None
+        phase_entered = False
         try:
+            marker_exists = self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' "
+                                            "AND name='trace_phase_binding'").fetchone() is not None
+            if marker_exists:
+                from .phase_authority import PhaseAuthority, binding_sha256
+                marker = self.db.execute("SELECT binding_sha256 FROM trace_phase_binding WHERE id=1").fetchone()
+                require(type(phase_authority) is PhaseAuthority and marker is not None and
+                        marker[0] == binding_sha256(phase_authority.binding),
+                        "PHASE_GUARD", "persisted budget phase requires exact authority")
+            else:
+                require(phase_authority is None, "PHASE_GUARD", "budget phase marker absent")
+            if phase_authority is not None:
+                phase_scope = (phase_authority.write() if
+                    Path(phase_authority.binding["activation_path"]).exists() else
+                    phase_authority.staging())
+                phase_scope.__enter__()
+                phase_entered = True
             self.db.execute("CREATE TABLE IF NOT EXISTS trace_budgets (run_id TEXT PRIMARY KEY, limits TEXT NOT NULL, used TEXT NOT NULL)")
             with self._lock:
                 self.db.execute("BEGIN IMMEDIATE")
@@ -30,13 +55,24 @@ class RunBudget:
             finally:
                 self.db.close()
             raise
+        finally:
+            if phase_entered:
+                phase_scope.__exit__(None, None, None)
 
     def consume(self, resource: str, amount: int = 1) -> dict[str,int]:
         return self.consume_many({resource:amount})
 
+    def bind_phase_guard(self, guard) -> None:
+        require(self._phase_authority is not None and guard == self._phase_authority.write,
+                "PHASE_GUARD", "budget authority must be installed at database open")
+
     def consume_many(self, requests: Mapping[str,int]) -> dict[str,int]:
         require(set(requests) <= RESOURCES and all(type(v) is int and v >= 0 for v in requests.values()),
                 "BUDGET_REQUEST","invalid resource or amount")
+        with (self._phase_guard() if self._phase_guard is not None else nullcontext()):
+            return self._consume_many_locked(requests)
+
+    def _consume_many_locked(self, requests: Mapping[str,int]) -> dict[str,int]:
         with self._lock:
             self.db.execute("BEGIN IMMEDIATE")
             try:

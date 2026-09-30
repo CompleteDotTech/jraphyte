@@ -3,7 +3,7 @@
   "hash_algorithm": "SHA-256",
   "manifest_self_excluded": true,
   "source_only": true,
-  "file_count": 589,
+  "file_count": 597,
   "files": [
     {
       "path": ".github/workflows/test.yml",
@@ -57,13 +57,13 @@
     },
     {
       "path": "VALIDATION_LOG.txt",
-      "bytes": 215110,
-      "sha256": "64064bf25859b8c3bdd5be1799b1af34234aec84a936bb9c62910122b55c6956"
+      "bytes": 213545,
+      "sha256": "a05e2e4e959f470997aad7247ca07b2611c7af2f7f5be0000c0be14cd9018c94"
     },
     {
       "path": "VALIDATION_REPORT.json",
-      "bytes": 219540,
-      "sha256": "dee07fc9d3f9903052596b4243c7d3a1055407f00aaef8f8790a8e9618beb386"
+      "bytes": 218012,
+      "sha256": "8ddc22eb9db8a6d3b5eececbdd0fa44b0d9c782cc03709984a627085cc2fbb0e"
     },
     {
       "path": "archive/v0.2/MANIFEST.json",
@@ -611,11 +611,6 @@
       "sha256": "928f4558c8fac1490e6214ee4c96163fbbf70cac8000b1fe30f64c800938a056"
     },
     {
-      "path": "docs/assessment_migration_v3.md",
-      "bytes": 3153,
-      "sha256": "71fb5b4b83ec188b5cb8ee76e9cc81a3615607080746ac6474ac47d70b9afbf5"
-    },
-    {
       "path": "docs/document_page_and_cited_answer.md",
       "bytes": 3739,
       "sha256": "ea610b2f8727c24c9f89469cab6afca9dfa494dc8476771ebea324b178c8c54c"
@@ -699,6 +694,11 @@
       "path": "docs/paper_pilot_controller.md",
       "bytes": 3291,
       "sha256": "2296de73fc39b29f172cb4fad1d6326545ca3aa97d04825fdc5ae24c8adc9001"
+    },
+    {
+      "path": "docs/paper_pilot_phase_transition.md",
+      "bytes": 5553,
+      "sha256": "1bce7d71520c1c6b77fdc8609d83cc817bc48764c04911a5ea3e9242bc27553f"
     },
     {
       "path": "docs/paper_pilot_workflow.md",
@@ -789,11 +789,6 @@
       "path": "docs/source_fraction_seam.md",
       "bytes": 5440,
       "sha256": "459ca2861c31fdfa5f8397fd7ccd4e36f33fc0dd261b05fcba0f6b5d7c3b4846"
-    },
-    {
-      "path": "docs/source_short_native_wrap_v4.md",
-      "bytes": 1180,
-      "sha256": "dd697df33d2a311a8f54ae1158ae0615d18d78ee804a480260f9ed5dfd652fd0"
     },
     {
       "path": "docs/source_vector_figure_abstract_closure_v4.md",
@@ -1476,6 +1471,16 @@
       "sha256": "c3dde6cebefc61007adbe5f4bfb24be91625bd71cba1fb4d8fd9bdee3548fe24"
     },
     {
+      "path": "schemas/runtime/paper-pilot-phase-capsule.schema.json",
+      "bytes": 6275,
+      "sha256": "fb3bf95bd437d0568f806aeb195bfa8f2d27892f75abbcfff89f85d6428db8f8"
+    },
+    {
+      "path": "schemas/runtime/paper-pilot-phase-import.schema.json",
+      "bytes": 766,
+      "sha256": "1b7092b53588171da7c19fde1239d43202ccf0ce08d679756e7acd5e6af40cd5"
+    },
+    {
       "path": "schemas/runtime/plan.schema.json",
       "bytes": 17154,
       "sha256": "39450a9bd33e575e4eddb72b7feab8c99bcd4703d44be3945842cabea9c9eec9"
@@ -1826,6 +1831,16 @@
       "sha256": "63c1a67143a1fb220db59b84752721c12054405f3d72f7afb0b2eedc3497d2fa"
     },
     {
+      "path": "src/paper_pilot_phase_cutover.py",
+      "bytes": 5969,
+      "sha256": "e12545acd4e62d8e80179e356e1b2140424a048188e4b12a0285f34b9143cfd1"
+    },
+    {
+      "path": "src/paper_pilot_phase_export.py",
+      "bytes": 14124,
+      "sha256": "e71071e10e98ea342bc1b0964ae4755028d145d44e429a0db565dc936044e0b4"
+    },
+    {
       "path": "src/paper_qualification_v1.py",
       "bytes": 86186,
       "sha256": "18438e75da7d230e23863f541ca681f393f55e7e84c8bbc9170ed397a7edb327"
@@ -1866,14 +1881,9 @@
       "sha256": "307217f494350260ee6244f74b2ab894d7ee98a249ba206b640a70d8a9005eff"
     },
     {
-      "path": "src/parallel_source_v4/assessment_migration_v3.py",
-      "bytes": 33271,
-      "sha256": "94c16c962dc827ef749644b4809a3ad51dbb39dfe50ceed12dd912148be06f35"
-    },
-    {
       "path": "src/parallel_source_v4/assessment_producer.py",
-      "bytes": 55420,
-      "sha256": "1a2793489ff00e467ae65a937f10cfc4b527009b49e99f7c3cdce842770f709d"
+      "bytes": 54887,
+      "sha256": "7a1d2ed665d7dbb3b6b857f7a1c5d291006929fba7a5532ed9b0c996d738bb1a"
     },
     {
       "path": "src/parallel_source_v4/common.py",
@@ -1962,8 +1972,8 @@
     },
     {
       "path": "src/parallel_source_v4/retrieval.py",
-      "bytes": 33867,
-      "sha256": "5de8de833781975054aafb953c1d540f39d1b053a891d83215175670924fd870"
+      "bytes": 33850,
+      "sha256": "573c0088acbb5c7023550fdf39a2803ce640481708267bdc816d23549923249c"
     },
     {
       "path": "src/parallel_source_v4/retrieval_policy.py",
@@ -2121,6 +2131,21 @@
       "sha256": "75acb5e3ef850284da2a65dff6e2ef2eba7e0391ccfafa7e8190d0dee764279b"
     },
     {
+      "path": "tests/test_paper_pilot_phase_backup.py",
+      "bytes": 2639,
+      "sha256": "006c341f31625c71a1607262c8eaefaa565c7b2ac5ce262ba8db007dcdf93d52"
+    },
+    {
+      "path": "tests/test_paper_pilot_phase_fence.py",
+      "bytes": 5050,
+      "sha256": "ce53724a2a31c5fe385be5f3010dae14da5babfa168e02ad936e92c54743f65f"
+    },
+    {
+      "path": "tests/test_paper_pilot_phase_import_lock.py",
+      "bytes": 2988,
+      "sha256": "25c6cc18444050b2f54aacf996e6a5a7b9d9e16ca3bc99dd32a06b0c76eada96"
+    },
+    {
       "path": "tests/test_paper_qualification_v1.py",
       "bytes": 80357,
       "sha256": "e969ec1e9a82b2b4683052c14720f1dc1c327752a4bf3121afc0f9d17e1e64b8"
@@ -2154,11 +2179,6 @@
       "path": "tests/test_parallel_shaded_synopsis_closure_v4.py",
       "bytes": 5111,
       "sha256": "7b23000f65d9ba945d5e4d3c04f05ad54a084a1329be2f818eebb9f2a098902a"
-    },
-    {
-      "path": "tests/test_parallel_short_native_wrap_v4.py",
-      "bytes": 2768,
-      "sha256": "3fb9c9d80547564749a7db33696b51687a7a473e811ba14cce734cccd62ad43e"
     },
     {
       "path": "tests/test_parallel_source_abstract_structure_v4.py",
@@ -2316,14 +2336,9 @@
       "sha256": "caa09fbac9f96be2b0b53942b0f47343bfa8f55533e9b0a5e1a9fba253c939b4"
     },
     {
-      "path": "tests/test_retrieval_assessment_migration_v3.py",
-      "bytes": 14028,
-      "sha256": "c44bd237767080f9edfca89fe07457aa021ba4ea5d1a6b4594cfaaf4d8fe5677"
-    },
-    {
       "path": "tests/test_retrieval_assessment_producer.py",
-      "bytes": 14525,
-      "sha256": "2af9894b668bacdae3641f53bb7ac06875e1b81f112a474ea1a93490a42be9d4"
+      "bytes": 12295,
+      "sha256": "c135d57db6bb8db6585ac9f6547ec70d2797d5607ed753b77cbf1e0ec48a3cea"
     },
     {
       "path": "tests/test_retrieval_assessment_session_lifecycle.py",
@@ -2337,8 +2352,8 @@
     },
     {
       "path": "tests/test_retrieval_source_owned_paragraph_groups.py",
-      "bytes": 11423,
-      "sha256": "32a266e68e01d5f431eaea0ec127550e300887213c27481ae45135f8b285412a"
+      "bytes": 9142,
+      "sha256": "4d65a445fe831e7ffc13f957002f29b0d3ff3aa8fa1f754646872ce5c8d78701"
     },
     {
       "path": "tests/test_reviewed_abstract_overlay.py",
@@ -2402,8 +2417,8 @@
     },
     {
       "path": "tools/build_schemas.py",
-      "bytes": 12907,
-      "sha256": "6a115f5384e0d7044d6f5a3e433743bf25a3e7d1c132746bcbea5caa47769165"
+      "bytes": 12978,
+      "sha256": "ce42e889513d3836142a653728aac2fb9de4d5fd83f8f7fd17e9cb52eeeeaf9a"
     },
     {
       "path": "tools/build_vectors.py",
@@ -2444,6 +2459,11 @@
       "path": "tools/paper_ingestion_schemas.py",
       "bytes": 1748,
       "sha256": "0fe95ad1ac86bd5ac4d686d2e0fc415f04b1f71cf2ca066ddeaf37dc2ff3f0ca"
+    },
+    {
+      "path": "tools/phase_schemas.py",
+      "bytes": 2239,
+      "sha256": "4aac06da780269b92af6d275e3599c2bef6c1b61ca0b808584ffc55862b8c43c"
     },
     {
       "path": "tools/public_fixtures_parallel_v4.py",
@@ -2492,13 +2512,13 @@
     },
     {
       "path": "trace_gc/backend.py",
-      "bytes": 30109,
-      "sha256": "4e27a9da835803e7457ee4a9d75b1700752eb83b785ad54991c7cb7d6451afc9"
+      "bytes": 32813,
+      "sha256": "c46aab21f76908967ea75afb61ff1a88a3269d95c3c6b10bfb2e696022b83630"
     },
     {
       "path": "trace_gc/budget.py",
-      "bytes": 3336,
-      "sha256": "cbb9e7cb4e15bbcafdc37e89d9eb95938580dcce6b20c67d7c5bd84d4a08aa88"
+      "bytes": 5484,
+      "sha256": "847676635898294765ff2981b5871586fe6aa746528f92082813201dd22e0fb8"
     },
     {
       "path": "trace_gc/canonical.py",
@@ -2599,6 +2619,16 @@
       "path": "trace_gc/data/schemas/pack.schema.json",
       "bytes": 13223,
       "sha256": "c3dde6cebefc61007adbe5f4bfb24be91625bd71cba1fb4d8fd9bdee3548fe24"
+    },
+    {
+      "path": "trace_gc/data/schemas/paper-pilot-phase-capsule.schema.json",
+      "bytes": 6275,
+      "sha256": "fb3bf95bd437d0568f806aeb195bfa8f2d27892f75abbcfff89f85d6428db8f8"
+    },
+    {
+      "path": "trace_gc/data/schemas/paper-pilot-phase-import.schema.json",
+      "bytes": 766,
+      "sha256": "1b7092b53588171da7c19fde1239d43202ccf0ce08d679756e7acd5e6af40cd5"
     },
     {
       "path": "trace_gc/data/schemas/plan.schema.json",
@@ -2727,8 +2757,8 @@
     },
     {
       "path": "trace_gc/paper_pilot.py",
-      "bytes": 55735,
-      "sha256": "c344fa67c8777d0404552880dd0fbdb01459697e7d3d3eb7dd0534595f497491"
+      "bytes": 64337,
+      "sha256": "7ffcee47b9b51340f8121833ef84fc3d44ca37e714478562a1cb27c932a47f1a"
     },
     {
       "path": "trace_gc/paper_pilot_application.py",
@@ -2737,8 +2767,8 @@
     },
     {
       "path": "trace_gc/paper_pilot_controller.py",
-      "bytes": 14159,
-      "sha256": "d66c3d4d8ae555dffe179339a60d020073263570070e5c3d3bf3596abe577d0e"
+      "bytes": 17744,
+      "sha256": "d2ffd0e80ba02c292d86e0fbb22e4c7393fdebcd78541ead59bf5dadf6063bd7"
     },
     {
       "path": "trace_gc/paper_pilot_lifecycle.py",
@@ -2777,8 +2807,8 @@
     },
     {
       "path": "trace_gc/pdf_source_parallel_v4.py",
-      "bytes": 53443,
-      "sha256": "54cdef42e684a87bb1cd1d92c4691dffffc2b3f0051c1aeb1cd9d31e46876ca6"
+      "bytes": 50549,
+      "sha256": "89b67a53b3e98f6415efc5dd54e22babbf16aba88d1b3e87e19cb61fd6bb2821"
     },
     {
       "path": "trace_gc/pdf_source_v3.py",
@@ -2792,8 +2822,18 @@
     },
     {
       "path": "trace_gc/pdf_structure_parallel_v4.py",
-      "bytes": 134492,
-      "sha256": "f65679d3f987448cbd22829d0cc518d7935b66cdbb70722691186fe6e1b61bfb"
+      "bytes": 133296,
+      "sha256": "e8193a8bb62d826774ab239cfe7ffa966d3cf42cafa431b3e40c50d358dbb5e4"
+    },
+    {
+      "path": "trace_gc/phase_authority.py",
+      "bytes": 10610,
+      "sha256": "b2ffc2e12be3c927f167a456acb1f95a7d2c615756131b2f889ddc97610dfee9"
+    },
+    {
+      "path": "trace_gc/phase_transition.py",
+      "bytes": 23095,
+      "sha256": "5acdec9e5c22eac6817a7846bc670b2f51568eca1f47a3638d410161552f40c9"
     },
     {
       "path": "trace_gc/plans.py",

@@ -7,6 +7,7 @@ the isolated reference graph. Model execution and reviews belong to the caller.
 from __future__ import annotations
 
 import base64
+from contextlib import nullcontext
 import importlib.metadata
 import json
 import os
@@ -57,7 +58,8 @@ class PaperPilot:
 
     @boundary
     def __init__(self, root, *, config, catalog, backend, service, budget, current_access,
-                 token_counter=None, semantic_profile=None):
+                 token_counter=None, semantic_profile=None, phase_import=None,
+                 phase_authority=None):
         self.root = Path(root).resolve()
         self.root.mkdir(parents=True, exist_ok=True)
         require(type(backend) is SQLiteReferenceBackend and type(service) is CompilerService and
@@ -69,6 +71,10 @@ class PaperPilot:
         self.trust, self.current_access, self.token_counter = service.trust, current_access, token_counter
         self.config = loads(dumps(config))
         self.semantic_profile = loads(dumps(semantic_profile))
+        self.phase_import = loads(dumps(phase_import)) if phase_import is not None else None
+        self._phase_authority = phase_authority
+        self._old_lock_file = None
+        self._phase_imported = False
         require(set(config) == {"run_id", "security_scope", "execution_mode", "documents", "questions",
                 "semantic_model", "answer_model", "cohort_manifest_sha256"}, "PILOT_CONFIG", "exact config fields required")
         require(config["execution_mode"] in {"LIVE", "SYNTHETIC"} and
@@ -99,9 +105,23 @@ class PaperPilot:
                     "tokenizer_id": "tokenizer-sha256:" + semantic_profile["tokenizer_sha256"]},
                     "PILOT_MODEL", "local profile differs from frozen application model")
         self._identity = implementation_identity()
+        if self.phase_import is None:
+            require(phase_authority is None and backend._phase_authority is None and
+                    budget._phase_authority is None,
+                    "PHASE_CONFIG", "unphased pilot cannot own phase-bound stores")
+        else:
+            from .phase_authority import PhaseAuthority
+            require(type(phase_authority) is PhaseAuthority and
+                    phase_authority.binding == self.phase_import and
+                    phase_authority.binding["implementation_sha256"] == digest(self._identity) and
+                    backend._phase_authority is phase_authority and
+                    budget._phase_authority is phase_authority,
+                    "PHASE_CONFIG", "all target stores require one exact phase authority")
         self._mutex = threading.RLock()
         self._lock_file = (self.root / "controller.lock").open("a+b")
         self.db = None
+        phase_scope = None
+        phase_entered = False
         try:
             self._lock_file.seek(0)
             if os.name == "nt":
@@ -113,6 +133,32 @@ class PaperPilot:
             else:
                 import fcntl
                 fcntl.flock(self._lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            if self.phase_import is not None:
+                required = {"phase_id", "run_id", "capsule_sha256", "implementation_sha256",
+                            "activation_path", "activation_sha256", "activation_epoch",
+                            "phase_lock_path", "fence_receipt_path", "fence_receipt_sha256",
+                            "old_root_path", "archived_old_root_path", "capsule_path",
+                            "authorization_path", "authorization_sha256"}
+                require(set(self.phase_import) == required and
+                        self.phase_import["run_id"] == self.config["run_id"],
+                        "PHASE_CONFIG", "exact imported phase fields required")
+                old_lock = (Path(self.phase_import["archived_old_root_path"]) / "controller.lock").resolve(strict=True)
+                require(old_lock.name == "controller.lock" and old_lock.parent != self.root,
+                        "PHASE_CONFIG", "archived historical controller lock required")
+                self._old_lock_file = old_lock.open("r+b")
+                if os.name == "nt":
+                    import msvcrt
+                    self._old_lock_file.seek(0)
+                    msvcrt.locking(self._old_lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(self._old_lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                phase_authority.bind_archived_lock(self._old_lock_file)
+                phase_scope = (phase_authority.write() if
+                    Path(self.phase_import["activation_path"]).exists() else
+                    phase_authority.staging())
+                phase_scope.__enter__()
+                phase_entered = True
             self.db = sqlite3.connect(self.root / "checkpoint.sqlite3", isolation_level=None)
             self.db.execute("PRAGMA journal_mode=WAL")
             self.db.execute("PRAGMA synchronous=FULL")
@@ -128,6 +174,8 @@ class PaperPilot:
                         "budget_limits": budget.snapshot()["limits"], "schema_hash": backend.state()["schema_hash"],
                         "policy_hash": service.policy_hash, "population": service.population,
                         "policy_version": service.policy_version, "sandbox": backend.sandbox}
+            if self.phase_import is not None:
+                expected["phase_import"] = self.phase_import
             self._application_binding = digest({k: v for k, v in expected.items() if k != "implementation"})
             for index, (seq, raw, hash_) in enumerate(events, 1):
                 event = loads(raw)
@@ -141,6 +189,9 @@ class PaperPilot:
                     self._apply(event)
             if not events:
                 self._append("OPEN", expected)
+            if self.phase_import is not None:
+                backend.bind_phase_guard(phase_authority.write)
+                budget.bind_phase_guard(phase_authority.write)
             backend.audit()
             for record in backend.load_catalog().all():
                 if record["id"] in catalog:
@@ -152,6 +203,9 @@ class PaperPilot:
         except BaseException:
             self.close()
             raise
+        finally:
+            if phase_entered:
+                phase_scope.__exit__(None, None, None)
 
     @staticmethod
     def _sha(value):
@@ -163,6 +217,10 @@ class PaperPilot:
             self.db.close(); self.db = None
         if not self._lock_file.closed:
             self._lock_file.close()  # OS releases the lock, including on process exit.
+        if self._old_lock_file is not None and not self._old_lock_file.closed:
+            if self._phase_authority is not None:
+                self._phase_authority.unbind_archived_lock(self._old_lock_file)
+            self._old_lock_file.close()
 
     def __enter__(self):
         return self
@@ -181,6 +239,31 @@ class PaperPilot:
             for record in value["records"]:
                 self.catalog.add(record)
             request["result"] = value["result"]
+        elif event["kind"] == "IMPORT_PHASE":
+            from .phase_transition import _read_once, verify_capsule, verify_import_authorization
+            require(self.phase_import is not None and not self._phase_imported and
+                    value == {"capsule_sha256": self.phase_import["capsule_sha256"],
+                              "authorization_sha256": self.phase_import["authorization_sha256"]},
+                    "PHASE_IMPORT", "phase import event differs")
+            capsule = loads(_read_once(self.phase_import["capsule_path"],
+                                       self.phase_import["capsule_sha256"]))
+            authorization = loads(_read_once(self.phase_import["authorization_path"],
+                                              self.phase_import["authorization_sha256"]))
+            verify_import_authorization(self.trust, authorization,
+                capsule_sha256=self.phase_import["capsule_sha256"],
+                target_implementation_sha256=digest(self._identity),
+                run_id=self.config["run_id"], historical=True)
+            imported, _ = verify_capsule(capsule)
+            require(capsule["run_id"] == self.config["run_id"] and
+                    capsule["config"] == self.config and not self.requests and
+                    self.backend.state() == capsule["graph_state"] and
+                    self.backend.statuses() == capsule["source_statuses"] and
+                    self.budget.snapshot() == capsule["budget_snapshot"],
+                    "PHASE_IMPORT", "import run/config/request inventory differs")
+            for record in capsule["catalog_records"]:
+                self.catalog.add(record)
+            self.requests.update(imported)
+            self._phase_imported = True
         else:
             require(False, "PILOT_CHECKPOINT", "unknown event")
 
@@ -208,7 +291,9 @@ class PaperPilot:
         return bytes(row[0])
 
     def _step(self, id_, kind, args, action):
-        with self._mutex:
+        with self._mutex, (self._phase_authority.write() if self._phase_authority is not None else nullcontext()):
+            if self.phase_import is not None:
+                require(self._phase_imported, "PHASE_INACTIVE", "historical phase import incomplete")
             require(type(id_) is str and bool(id_), "PILOT_REQUEST", "stable request ID required")
             require(implementation_identity() == self._identity, "PILOT_CODE_CHANGED", "implementation changed during run")
             require(self.service.backend is self.backend and self.service.trust is self.trust and
@@ -231,6 +316,53 @@ class PaperPilot:
                 require(implementation_identity() == self._identity, "PILOT_CODE_CHANGED", "implementation changed during stage")
                 self._append("RESULT", {"id": id_, "result": result, "records": self.catalog.all()})
             return loads(dumps(self.requests[id_]["result"]))
+
+    def _require_active_phase(self):
+        require(self._phase_imported and self._phase_authority is not None,
+                "PHASE_INACTIVE", "historical phase import incomplete")
+        self._phase_authority.check()
+
+    def import_phase(self, *, capsule_path, capsule_sha256, authorization):
+        """Materialize verified old requests and blobs once, before activation."""
+        require(self._phase_authority is not None,
+                "PHASE_IMPORT", "phase authority required")
+        with self._mutex, self._phase_authority.staging():
+            require(not Path(self.phase_import["activation_path"]).exists(),
+                    "PHASE_INACTIVE", "phase already activated")
+            return self._import_phase_locked(capsule_path=capsule_path,
+                capsule_sha256=capsule_sha256, authorization=authorization)
+
+    def _import_phase_locked(self, *, capsule_path, capsule_sha256, authorization):
+        from .phase_transition import _read_once, verify_capsule, verify_import_authorization
+        require(self.phase_import is not None and not self._phase_imported and
+                str(Path(capsule_path).resolve(strict=True)) ==
+                    str(Path(self.phase_import["capsule_path"]).resolve(strict=True)) and
+                capsule_sha256 == self.phase_import["capsule_sha256"],
+                "PHASE_IMPORT", "unapproved capsule")
+        raw = _read_once(capsule_path, capsule_sha256)
+        capsule = loads(raw)
+        requests, _ = verify_capsule(capsule)
+        require(authorization == loads(_read_once(self.phase_import["authorization_path"],
+                                                  self.phase_import["authorization_sha256"])),
+                "PHASE_AUTHORITY", "import authorization file differs")
+        verify_import_authorization(self.trust, authorization,
+            capsule_sha256=capsule_sha256,
+            target_implementation_sha256=digest(self._identity),
+            run_id=self.config["run_id"])
+        require(capsule["config"] == self.config and capsule["run_id"] == self.config["run_id"] and
+                not self.requests and self.backend.state() == capsule["graph_state"] and
+                self.backend.statuses() == capsule["source_statuses"] and
+                self.budget.snapshot() == capsule["budget_snapshot"],
+                "PHASE_IMPORT", "new phase is not an exact target")
+        for sha, encoded in capsule["blobs"].items():
+            body = base64.b64decode(encoded, validate=True)
+            require(bytes_digest(body) == sha, "PHASE_BLOB", "import blob differs")
+            self.db.execute("INSERT OR IGNORE INTO blobs(hash,body) VALUES (?,?)", (sha, body))
+        self._append("IMPORT_PHASE", {"capsule_sha256": capsule_sha256,
+                                     "authorization_sha256": self.phase_import["authorization_sha256"]})
+        require(set(self.requests) == set(requests), "PHASE_IMPORT", "request projection differs")
+        return {"status": "PHASE_IMPORTED_HELD", "capsule_sha256": capsule_sha256,
+                "checkpoint_head": self._head, "model_calls": 0}
 
     def _result(self, id_, kind):
         row = self.requests.get(id_)

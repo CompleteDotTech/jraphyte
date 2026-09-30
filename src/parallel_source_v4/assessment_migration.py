@@ -399,7 +399,7 @@ def main() -> int:
         Path(args.origin_interpreter).resolve(), args.origin_head,
         args.origin_protocol_sha256, args.expected_import_count)
     print(json.dumps({k: summary[k] for k in ("status", "document_count", "eligible_count", "state_counts")}))
-    return 0
+    return 4 if summary["status"] == "STOPPED_DRAINED" else 0
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@
   "hash_algorithm": "SHA-256",
   "manifest_self_excluded": true,
   "source_only": true,
-  "file_count": 575,
+  "file_count": 576,
   "files": [
     {
       "path": ".github/workflows/test.yml",
@@ -707,8 +707,8 @@
     },
     {
       "path": "docs/retrieval_assessment_producer.md",
-      "bytes": 6531,
-      "sha256": "09097bf012b7476ef7ed1cd075a7b46f6fc99909fc7858ee4e8810bf34c11f5e"
+      "bytes": 8455,
+      "sha256": "6fa026106b5aa2794e59a120a2af9b78115db377d5c8026a08f6d8ce5800acfd"
     },
     {
       "path": "docs/retrieval_field_assessments.md",
@@ -1832,13 +1832,13 @@
     },
     {
       "path": "src/parallel_source_v4/assessment_migration.py",
-      "bytes": 24813,
-      "sha256": "37166415c870b3b7ab57d8584ab08e6bdd680a09ff9c4a142839820c96b7b3a5"
+      "bytes": 24862,
+      "sha256": "0015850f7cf3ca09c4d56531f2582bd4d2c411ff23455498b61d641405646726"
     },
     {
       "path": "src/parallel_source_v4/assessment_producer.py",
-      "bytes": 37043,
-      "sha256": "7c81ce6965c14b0cd14222e38d911126ecbcd28baed7a86f7e36ccee0c26bc6a"
+      "bytes": 54625,
+      "sha256": "c45536d0cdf63ef476397c7ac253b44a0a356a1549a1eb372ffbce86e1f3d8d0"
     },
     {
       "path": "src/parallel_source_v4/common.py",
@@ -2264,6 +2264,11 @@
       "path": "tests/test_retrieval_assessment_producer.py",
       "bytes": 12295,
       "sha256": "c135d57db6bb8db6585ac9f6547ec70d2797d5607ed753b77cbf1e0ec48a3cea"
+    },
+    {
+      "path": "tests/test_retrieval_assessment_session_lifecycle.py",
+      "bytes": 16211,
+      "sha256": "5c9f957d251ede75f52b64c600419aefa683689e018a1d5ee0acc34527e87c41"
     },
     {
       "path": "tests/test_retrieval_corpus_policy.py",

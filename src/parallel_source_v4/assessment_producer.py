@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 from contextlib import contextmanager
+import ctypes
 import hashlib
 import importlib.metadata
 import json
@@ -33,6 +34,48 @@ ID = re.compile(r"[A-Za-z0-9_-]+\Z")
 SHA = re.compile(r"[a-f0-9]{64}\Z")
 METHOD = "parallel_structure_v4"
 CONVERTER_PACKAGES = ("docling", "docling-core", "docling-ibm-models", "rapidocr", "torch")
+DEFAULT_MAX_DOCUMENTS_PER_SESSION = 64
+
+
+class _FileTime(ctypes.Structure):
+    _fields_ = [("low", ctypes.c_uint32), ("high", ctypes.c_uint32)]
+
+
+def _windows_process_handle(pid: int):
+    """Bind a Windows process by kernel handle and exact creation time."""
+    if os.name != "nt":
+        return None, None
+    api = ctypes.windll.kernel32
+    api.OpenProcess.restype = ctypes.c_void_p
+    handle = api.OpenProcess(0x00100000 | 0x1000 | 0x0001, False, pid)
+    if not handle:
+        raise ValueError("owned_worker_process_unavailable")
+    created, exited, kernel, user = (_FileTime() for _ in range(4))
+    if not api.GetProcessTimes(ctypes.c_void_p(handle), ctypes.byref(created), ctypes.byref(exited),
+                               ctypes.byref(kernel), ctypes.byref(user)):
+        api.CloseHandle(ctypes.c_void_p(handle))
+        raise ValueError("owned_worker_process_identity_unavailable")
+    return handle, (created.high << 32) | created.low
+
+
+def _close_windows_handle(handle):
+    if handle is not None:
+        ctypes.windll.kernel32.CloseHandle(ctypes.c_void_p(handle))
+
+
+def _terminate_windows_handle(handle) -> bool:
+    """Terminate and wait on the already-open exact process, never a reused PID."""
+    api = ctypes.windll.kernel32
+    bound = ctypes.c_void_p(handle)
+    if api.WaitForSingleObject(bound, 0) == 0:
+        return True
+    if not api.TerminateProcess(bound, 1):
+        return False
+    return api.WaitForSingleObject(bound, 10000) == 0
+
+
+def _windows_handle_exited(handle) -> bool:
+    return ctypes.windll.kernel32.WaitForSingleObject(ctypes.c_void_p(handle), 10000) == 0
 
 
 def _sha(raw: bytes) -> str:
@@ -135,7 +178,10 @@ def _owner(path: Path):
 
 def _freeze(root: Path, manifest_path: Path, profile_path: Path, output: Path,
             source_root: Path | None, *, selected_ids: list[str] | None = None,
-            migration: dict | None = None) -> tuple[dict, dict]:
+            migration: dict | None = None,
+            max_documents_per_session: int = DEFAULT_MAX_DOCUMENTS_PER_SESSION) -> tuple[dict, dict]:
+    if type(max_documents_per_session) is not int or not 1 <= max_documents_per_session <= 256:
+        raise ValueError("bounded_converter_session_limit_required")
     manifest, manifest_hash = _read(manifest_path)
     profile, profile_hash = _read(profile_path)
     _profile(root, profile)
@@ -164,6 +210,9 @@ def _freeze(root: Path, manifest_path: Path, profile_path: Path, output: Path,
                 "source_geometry_policy": "source_fraction_v1",
                 "scholarly_abstract": "disabled_no_gold_or_labels", "query_independent": True,
                 "assessment_method": METHOD, "extractor_version": ASSESSMENT_VERSION}
+    protocol["converter_session"] = {"max_documents": max_documents_per_session,
+                                      "drain": "external_request_after_verified_row_v1",
+                                      "drain_timeout_seconds": 30}
     if migration is not None:
         if (not isinstance(migration, dict) or set(migration) != {"relative", "sha256"} or
                 digest(child(root, migration["relative"])) != migration["sha256"]):
@@ -197,23 +246,84 @@ def _check_code(protocol: dict):
 
 
 class ConverterSession:
-    """One owned CPU worker retains Docling models across sequential pages."""
+    """One owned CPU worker with a protocol-bounded document residence."""
 
     def __init__(self, root: Path, output: Path, profile: dict):
         self.root, self.output, self.profile = root, output, profile
         self.process = None
         self.log = None
+        self.documents = 0
+        self.last_drain_receipt = None
+        self.worker_pid = None
+        self.session_start = None
+        self.worker_handle = None
+        self.worker_created_ticks = None
+
+    def _launch_hold(self, launch_id: str, reason: str):
+        write_once(self.output / "sessions" / "launch-failures" / (launch_id + ".json"),
+                   {"status": "HOLD_OWNED_CONVERTER_LAUNCH_UNKNOWN", "reason": reason,
+                    "launch_id": launch_id, "launcher_pid": self.process.pid if self.process else None,
+                    "worker_pid": self.worker_pid, "session_start": self.session_start,
+                    "protocol_sha256": digest(self.output / "protocol.json")})
+        raise ValueError(reason)
+
+    def _drain_timeout(self) -> int:
+        protocol, _ = _read(self.output / "protocol.json")
+        session = protocol.get("converter_session")
+        if (not isinstance(session, dict) or session.get("drain") !=
+                "external_request_after_verified_row_v1" or
+                type(session.get("drain_timeout_seconds")) is not int or
+                not 1 <= session["drain_timeout_seconds"] <= 60):
+            raise ValueError("converter_drain_protocol_changed")
+        return session["drain_timeout_seconds"]
 
     def _start(self):
         if self.process is not None:
             return
         path = self.output / "converter-session.log"
         self.log = path.open("ab")
+        launch_id = uuid.uuid4().hex
         command = [str(child(self.root, self.profile["runtime"]["executable"])), "-B", "-s", "-m",
                    "src.parallel_source_v4.assessment_producer", "convert-session", "--data-root", str(self.root),
-                   "--output", self.output.relative_to(self.root).as_posix()]
+                   "--output", self.output.relative_to(self.root).as_posix(), "--launch-id", launch_id]
         self.process = subprocess.Popen(command, cwd=REPO, stdin=subprocess.PIPE,
                                         stdout=self.log, stderr=self.log, bufsize=0)
+        launch = self.output / "sessions" / "launches" / (launch_id + ".json")
+        deadline = time.monotonic() + self.profile["limits"]["timeout_seconds"]
+        while time.monotonic() < deadline:
+            if launch.is_file():
+                body, _ = _read(launch)
+                if (body.get("launch_id") != launch_id or
+                        not (body.get("launcher_pid") == self.process.pid or
+                             body.get("worker_pid") == self.process.pid) or
+                        body.get("protocol_sha256") != digest(self.output / "protocol.json") or
+                        type(body.get("worker_pid")) is not int or
+                        not isinstance(body.get("session_start"), dict) or
+                        set(body["session_start"]) != {"relative", "sha256"}):
+                    self._launch_hold(launch_id, "converter_launch_identity_mismatch")
+                start = body["session_start"]
+                start_body, _ = _read(child(self.root, start["relative"]), start["sha256"])
+                if (start_body.get("worker_pid") != body["worker_pid"] or
+                        start_body.get("launcher_pid") != body["launcher_pid"] or
+                        start_body.get("process_created_ticks") != body.get("process_created_ticks") or
+                        start_body.get("protocol_sha256") != body["protocol_sha256"] or
+                        start_body.get("converter_profile_sha256") !=
+                        _read(self.output / "protocol.json")[0]["profile_sha256"]):
+                    self._launch_hold(launch_id, "converter_launch_session_start_mismatch")
+                try:
+                    handle, ticks = _windows_process_handle(body["worker_pid"])
+                except ValueError:
+                    self._launch_hold(launch_id, "converter_launch_process_unavailable")
+                if os.name == "nt" and ticks != body.get("process_created_ticks"):
+                    _close_windows_handle(handle)
+                    self._launch_hold(launch_id, "converter_launch_process_replaced")
+                self.worker_pid, self.session_start = body["worker_pid"], body["session_start"]
+                self.worker_handle, self.worker_created_ticks = handle, ticks
+                return
+            if self.process.poll() is not None:
+                self._launch_hold(launch_id, "converter_launch_exited_without_identity")
+            time.sleep(0.1)
+        self._launch_hold(launch_id, "converter_launch_identity_timeout")
 
     def convert(self, sid: str, result_path: Path) -> int:
         self._start()
@@ -224,6 +334,14 @@ class ConverterSession:
         deadline = time.monotonic() + self.profile["limits"]["timeout_seconds"]
         while time.monotonic() < deadline:
             if result_path.is_file():
+                conversion, _ = _read(result_path)
+                pid, start = conversion.get("worker_pid"), conversion.get("session_start")
+                if (type(pid) is not int or pid <= 0 or not isinstance(start, dict) or
+                        set(start) != {"relative", "sha256"} or
+                        (self.worker_pid is not None and (pid != self.worker_pid or start != self.session_start))):
+                    raise ValueError("converter_session_worker_identity_changed")
+                self.worker_pid, self.session_start = pid, start
+                self.documents += 1
                 return 0
             code = self.process.poll()
             if code is not None:
@@ -233,21 +351,130 @@ class ConverterSession:
         return 124
 
     def close(self, *, force: bool = False):
-        if self.process is not None:
+        process = self.process
+        proven_exit = False
+        try:
+            if process is None:
+                proven_exit = True
+                return
             if force:
-                if self.process.poll() is None:
-                    self.process.kill()  # only the child started by this controller
-            elif self.process.poll() is None:
-                try:
-                    self.process.stdin.write(b'{"stop":true}\n')
-                    self.process.stdin.flush()
-                    self.process.wait(timeout=10)
-                except (BrokenPipeError, subprocess.TimeoutExpired):
-                    self.process.kill()
-            self.process.wait(timeout=10)
-            self.process = None
-        if self.log is not None:
-            self.log.close(); self.log = None
+                if os.name == "nt":
+                    if self.worker_handle is None or self.worker_pid is None:
+                        raise ValueError("converter_worker_identity_unknown_no_safe_kill")
+                    if not _terminate_windows_handle(self.worker_handle):
+                        raise ValueError("converter_worker_exit_unproven")
+                if process.poll() is None:
+                    process.kill()  # only the launcher started by this controller
+                process.wait(timeout=10)
+                proven_exit = True
+                write_once(self.output / "sessions" / "drains" / (uuid.uuid4().hex + "-forced.json"),
+                           {"status": "OWNED_WORKER_TERMINATED_AFTER_UNKNOWN_CONVERSION",
+                            "worker_pid": self.worker_pid, "session_start": self.session_start,
+                            "launcher_pid": process.pid,
+                            "protocol_sha256": digest(self.output / "protocol.json")})
+                return
+            if process.poll() is not None:
+                raise ValueError("converter_drain_outcome_unknown")
+            if os.name == "nt" and self.worker_handle is None:
+                raise ValueError("converter_worker_identity_unknown_no_safe_drain")
+            nonce = uuid.uuid4().hex
+            receipt = self.output / "sessions" / "drains" / (nonce + ".json")
+            drain_timeout = self._drain_timeout()
+            try:
+                process.stdin.write((json.dumps({"drain": nonce}) + "\n").encode())
+                process.stdin.flush()
+                process.wait(timeout=drain_timeout)
+            except (BrokenPipeError, subprocess.TimeoutExpired) as exc:
+                self.close(force=True)
+                raise ValueError("converter_drain_outcome_unknown") from exc
+            if process.returncode != 0 or not receipt.is_file():
+                raise ValueError("converter_drain_outcome_unknown")
+            if os.name == "nt" and not _windows_handle_exited(self.worker_handle):
+                raise ValueError("converter_worker_exit_unproven")
+            outcome, _ = _read(receipt)
+            if (outcome.get("nonce") != nonce or outcome.get("documents") != self.documents or
+                    outcome.get("protocol_sha256") != digest(self.output / "protocol.json") or
+                    not isinstance(outcome.get("session_start"), dict) or
+                    set(outcome["session_start"]) != {"relative", "sha256"}):
+                raise ValueError("converter_drain_receipt_mismatch")
+            start = outcome["session_start"]
+            start_path = child(self.root, start["relative"])
+            if (digest(start_path) != start["sha256"] or
+                    _read(start_path)[0].get("worker_pid") != outcome.get("worker_pid") or
+                    (self.worker_pid is not None and
+                     (outcome["worker_pid"] != self.worker_pid or start != self.session_start))):
+                raise ValueError("converter_drain_session_identity_mismatch")
+            self.last_drain_receipt = {"relative": receipt.relative_to(self.root).as_posix(),
+                                       "sha256": digest(receipt)}
+            proven_exit = True
+        finally:
+            if proven_exit:
+                self.process = None
+                _close_windows_handle(self.worker_handle)
+                self.worker_handle = None
+                if self.log is not None:
+                    self.log.close(); self.log = None
+
+
+def _external_drain(output: Path, protocol: dict, session: ConverterSession,
+                    last_verified: Path | None = None) -> bool:
+    """Honor an external write-once request at a verified row boundary."""
+    requests = output / "control" / "drain-requests"
+    candidates = sorted(requests.glob("*.json")) if requests.exists() else []
+    ack_paths = sorted((output / "control").glob("drain-ack-*.json"))
+    if not candidates and not ack_paths:
+        return False
+    request_ids = {path.stem for path in candidates}
+    if any(not re.fullmatch(r"[a-f0-9]{32}\.json", path.name) for path in candidates):
+        raise ValueError("invalid_external_drain_request_name")
+    if any(not re.fullmatch(r"drain-ack-[a-f0-9]{32}\.json", path.name) or
+           path.stem.removeprefix("drain-ack-") not in request_ids for path in ack_paths):
+        raise ValueError("orphan_external_drain_ack")
+    pending = []
+    for request in candidates:
+        body, request_sha = _read(request)
+        if (not isinstance(body, dict) or set(body) != {"version", "request_id", "protocol_sha256", "requested_at"} or
+                body["version"] != "assessment-graceful-drain-v1" or
+                body["request_id"] != request.stem or
+                body["protocol_sha256"] != digest(output / "protocol.json") or
+                not isinstance(body["requested_at"], str) or not body["requested_at"]):
+            raise ValueError("invalid_external_drain_request")
+        ack = output / "control" / ("drain-ack-" + body["request_id"] + ".json")
+        if not ack.exists():
+            pending.append((body, request_sha, ack))
+            continue
+        prior, _ = _read(ack)
+        if (prior.get("version") != "assessment-graceful-drain-ack-v1" or
+                prior.get("status") != "STOPPED_DRAINED" or
+                prior.get("request_sha256") != request_sha or
+                prior.get("protocol_sha256") != body["protocol_sha256"]):
+            raise ValueError("external_drain_request_changed")
+        if prior.get("last_verified_row") is not None:
+            if (not isinstance(prior["last_verified_row"], str) or
+                    not re.fullmatch(r"[A-Za-z0-9_-]+\.json", prior["last_verified_row"])):
+                raise ValueError("external_drain_row_name_invalid")
+            row = output / "rows" / prior["last_verified_row"]
+            if (not row.is_file() or digest(row) != prior.get("last_verified_row_sha256")):
+                raise ValueError("external_drain_row_changed")
+        if prior.get("child_drain") is not None:
+            drained = prior["child_drain"]
+            if digest(child(session.root, drained["relative"])) != drained["sha256"]:
+                raise ValueError("external_drain_child_receipt_changed")
+    if len(pending) > 1:
+        raise ValueError("multiple_pending_external_drains")
+    if not pending:
+        return False
+    body, request_sha, ack = pending[0]
+    if last_verified is not None and not last_verified.is_file():
+        raise ValueError("external_drain_without_verified_row")
+    session.close()
+    write_once(ack, {"version": "assessment-graceful-drain-ack-v1", "request_sha256": request_sha,
+                     "protocol_sha256": body["protocol_sha256"],
+                     "last_verified_row": last_verified.name if last_verified else None,
+                     "last_verified_row_sha256": digest(last_verified) if last_verified else None,
+                     "child_drain": session.last_drain_receipt,
+                     "status": "STOPPED_DRAINED"})
+    return True
 
 
 def _attempt(root: Path, output: Path, row: dict, profile: dict, protocol: dict,
@@ -410,10 +637,12 @@ def _verify_receipt(root: Path, row: dict, receipt: dict, output: Path, source_r
 
 def _run(root: Path, manifest_path: Path, profile_path: Path, output: Path,
          source_root: Path | None, selected_ids: list[str] | None = None,
-         *, migration: dict | None = None, migration_initializer=None) -> dict:
+         *, migration: dict | None = None, migration_initializer=None,
+         max_documents_per_session: int = DEFAULT_MAX_DOCUMENTS_PER_SESSION) -> dict:
     with _owner(output.parent / ("." + output.name + ".owner.lock")):
         manifest, protocol = _freeze(root, manifest_path, profile_path, output, source_root,
-                                     selected_ids=selected_ids, migration=migration)
+                                     selected_ids=selected_ids, migration=migration,
+                                     max_documents_per_session=max_documents_per_session)
         if migration_initializer is not None:
             if migration is None:
                 raise ValueError("assessment_migration_manifest_required")
@@ -421,13 +650,30 @@ def _run(root: Path, manifest_path: Path, profile_path: Path, output: Path,
         profile, _ = _read(profile_path, protocol["profile_sha256"])
         rows = {r["sample_id"]: r for r in manifest["pdfs"]}
         session = ConverterSession(root, output, profile)
+        last_verified = None
+        if (output / "control" / "drain-requests").exists():
+            saw_gap = False
+            for prior_id in protocol["ids"]:
+                prior_path = output / "rows" / (prior_id + ".json")
+                if prior_path.is_file():
+                    if saw_gap:
+                        raise ValueError("external_drain_noncontiguous_completed_rows")
+                    _verify_receipt(root, rows[prior_id], _read(prior_path)[0],
+                                    output, source_root, protocol)
+                    last_verified = prior_path
+                else:
+                    saw_gap = True
         try:
             for sid in protocol["ids"]:
+                if _external_drain(output, protocol, session, last_verified):
+                    return {"status": "STOPPED_DRAINED", "document_count": len(protocol["ids"]),
+                            "eligible_count": None, "state_counts": {}}
                 _check_code(protocol)
                 row = rows[sid]
                 receipt_path = output / "rows" / (sid + ".json")
                 if receipt_path.is_file():
                     _verify_receipt(root, row, _read(receipt_path)[0], output, source_root, protocol)
+                    last_verified = receipt_path
                     continue
                 native, size, decision = _verified_row(root, row, source_root)
                 data = {"schema_version": "retrieval-assessment-row-v1", "sample_id": sid,
@@ -439,8 +685,31 @@ def _run(root: Path, manifest_path: Path, profile_path: Path, output: Path,
                     data.update(state="ineligible", assessment_relative=None, assessment_sha256=None)
                 write_once(receipt_path, data)
                 _verify_receipt(root, row, data, output, source_root, protocol)
+                last_verified = receipt_path
+                if session.documents == protocol["converter_session"]["max_documents"]:
+                    session.close()
+                    session = ConverterSession(root, output, profile)
+            if _external_drain(output, protocol, session, last_verified):
+                return {"status": "STOPPED_DRAINED", "document_count": len(protocol["ids"]),
+                        "eligible_count": None, "state_counts": {}}
         finally:
-            session.close()
+            original_error = sys.exception()
+            try:
+                session.close()
+            except Exception as shutdown_error:
+                failure = {"status": "HOLD_OWNED_CONVERTER_SHUTDOWN_UNKNOWN",
+                           "primary_error_class": type(original_error).__name__ if original_error else None,
+                           "shutdown_error_class": type(shutdown_error).__name__,
+                           "worker_pid": session.worker_pid,
+                           "session_start": session.session_start,
+                           "launcher_pid": session.process.pid if session.process else None,
+                           "protocol_sha256": digest(output / "protocol.json")}
+                write_once(output / "sessions" / "shutdown-failures" / (uuid.uuid4().hex + ".json"), failure)
+                if original_error is not None:
+                    group = ExceptionGroup if isinstance(original_error, Exception) else BaseExceptionGroup
+                    raise group("assessment and converter shutdown both failed",
+                                [original_error, shutdown_error])
+                raise
         _profile(root, profile)
         return _finalize(root, manifest, protocol, output, source_root)
 
@@ -505,11 +774,14 @@ def _docling_converter(root: Path, profile: dict):
 
 def _session_start(root: Path, output: Path, protocol: dict, profile: dict) -> dict:
     folder = output / "sessions" / uuid.uuid4().hex
+    own_handle, created_ticks = _windows_process_handle(os.getpid())
+    _close_windows_handle(own_handle)
     started = {"schema_version": "retrieval-docling-session-start-v1",
                "protocol_sha256": digest(output / "protocol.json"),
                "converter_profile_sha256": protocol["profile_sha256"],
                "runtime": _runtime(), "worker_pid": os.getpid(),
                "started_ns": time.time_ns(), "network_guard": "nonlocal_connect_denied",
+               "launcher_pid": os.getppid(), "process_created_ticks": created_ticks,
                "code_sha256": protocol["code_sha256"]}
     start_path = folder / "start.json"
     start_sha = write_once(start_path, started)
@@ -594,7 +866,7 @@ def _convert_one(root: Path, output: Path, sid: str, converter=None, session_sta
         "peak_process_memory_bytes": process_peak_memory()})
 
 
-def _convert_session(root: Path, output: Path) -> None:
+def _convert_session(root: Path, output: Path, launch_id: str) -> None:
     protocol, _ = _read(output / "protocol.json")
     if method_hashes(REPO) != protocol["code_sha256"]:
         raise ValueError("assessment_worker_code_changed")
@@ -603,14 +875,28 @@ def _convert_session(root: Path, output: Path) -> None:
     from src.paper_converter_worker import _network_guard
     _network_guard("docling")
     session_start = _session_start(root, output, protocol, profile)
+    start_body, _ = _read(child(root, session_start["relative"]), session_start["sha256"])
+    write_once(output / "sessions" / "launches" / (launch_id + ".json"),
+               {"launch_id": launch_id, "launcher_pid": os.getppid(),
+                "worker_pid": os.getpid(), "process_created_ticks": start_body["process_created_ticks"],
+                "session_start": session_start, "protocol_sha256": digest(output / "protocol.json")})
     converter = _docling_converter(root, profile)
+    count = 0
     for raw in sys.stdin.buffer:
         command = parse_bound_json(raw)
-        if command == {"stop": True}:
+        if (isinstance(command, dict) and set(command) == {"drain"} and
+                isinstance(command["drain"], str) and re.fullmatch(r"[a-f0-9]{32}", command["drain"])):
+            write_once(output / "sessions" / "drains" / (command["drain"] + ".json"),
+                       {"nonce": command["drain"], "documents": count,
+                        "session_start": session_start,
+                        "protocol_sha256": digest(output / "protocol.json"), "worker_pid": os.getpid()})
             break
         if not isinstance(command, dict) or set(command) != {"sample_id"} or command["sample_id"] not in protocol["ids"]:
             raise ValueError("invalid_converter_session_command")
+        if count >= protocol["converter_session"]["max_documents"]:
+            raise ValueError("converter_session_document_limit_reached")
         _convert_one(root, output, command["sample_id"], converter, session_start)
+        count += 1
     _profile(root, profile, verify_runtime=True)
 
 
@@ -626,8 +912,12 @@ def main() -> int:
             sub.add_argument("--profile", required=True)
             sub.add_argument("--source-root")
             sub.add_argument("--id", action="append", dest="selected_ids")
+            sub.add_argument("--max-documents-per-session", type=int,
+                             default=DEFAULT_MAX_DOCUMENTS_PER_SESSION)
         elif name == "convert-one":
             sub.add_argument("--id", required=True)
+        elif name == "convert-session":
+            sub.add_argument("--launch-id", required=True)
     args = p.parse_args()
     root = data_root(args.data_root)
     output = child(root, args.output)
@@ -635,12 +925,15 @@ def main() -> int:
         _convert_one(root, output, args.id)
         return 0
     if args.command == "convert-session":
-        _convert_session(root, output)
+        if not re.fullmatch(r"[a-f0-9]{32}", args.launch_id):
+            raise ValueError("invalid_converter_launch_id")
+        _convert_session(root, output, args.launch_id)
         return 0
     summary = _run(root, child(root, args.manifest), child(root, args.profile), output,
-                   Path(args.source_root).resolve() if args.source_root else None, args.selected_ids)
+                   Path(args.source_root).resolve() if args.source_root else None, args.selected_ids,
+                   max_documents_per_session=args.max_documents_per_session)
     print(json.dumps({k: summary[k] for k in ("status", "document_count", "eligible_count", "state_counts")}))
-    return 0
+    return 4 if summary["status"] == "STOPPED_DRAINED" else 0
 
 
 if __name__ == "__main__":

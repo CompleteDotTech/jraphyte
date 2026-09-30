@@ -16,9 +16,38 @@ The Docling worker is launched under a separate pinned converter interpreter.
 It uses the offline Heron/RapidOCR CPU configuration from
 `src.paper_converter_worker._docling` with network connections denied. The
 converter and evaluator runtimes are separate identities.
-One owned CPU worker stays resident for the selected run and converts pages
-sequentially under a per-page timeout. The controller terminates only its own
-worker if a page exceeds that timeout and seals that page as an error.
+One owned CPU worker converts at most 64 pages by default. The
+`--max-documents-per-session` option pins a limit from 1 to 256 in the immutable
+run protocol. After each completed conversion has a verified row receipt, the
+controller asks its owned child to drain, verifies the child's exit and hashed
+drain receipt, then starts a fresh session for the next eligible page. This is
+an operational residence bound, not a measured memory cap or a proven fix for
+the underlying native thread growth. A timeout or an unknown child exit holds
+the run without retrying that page.
+The new protocol and changed code identity require a new versioned run or an
+explicit migration; an older frozen run cannot be silently resumed with this
+controller. Existing intents, conversions and receipts retain their original
+protocol and provenance.
+
+An external supervisor may write one immutable
+`control/drain-requests/<request_id>.json` with `version` set to
+`assessment-graceful-drain-v1`, a fresh 32-digit lowercase hexadecimal
+`request_id`, the exact `protocol_sha256`, and `requested_at`. The owner checks
+it only at a verified row boundary, drains its child, writes
+`control/drain-ack-<request_id>.json`, and returns `STOPPED_DRAINED` without a
+completed corpus map. Both the direct producer and migration commands exit 4
+for this controlled stop; exit 0 remains reserved for a completed assessment.
+The same request and acknowledgement are recognized on
+resume; a changed request or unknown child outcome holds. Later requests use
+new IDs and keep earlier request and acknowledgement files intact. More than
+one pending request holds. The supervisor must not signal or terminate the
+converter child directly.
+The request folder is a trusted local owner control channel. The request ID
+and protocol hash bind its identity; they are not a cryptographic signature.
+On Windows the controller records the actual worker PID and creation time
+before conversion, retains a kernel handle to that exact process, and verifies
+its exit before ending a timed-out attempt. A child whose ownership cannot be
+verified remains an unknown outcome and cannot be silently retried.
 
 The private profile JSON has exactly these keys:
 

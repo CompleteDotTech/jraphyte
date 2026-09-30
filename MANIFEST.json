@@ -3,7 +3,7 @@
   "hash_algorithm": "SHA-256",
   "manifest_self_excluded": true,
   "source_only": true,
-  "file_count": 574,
+  "file_count": 575,
   "files": [
     {
       "path": ".github/workflows/test.yml",
@@ -669,6 +669,11 @@
       "path": "docs/page_two_bibliographic_intro_v4.md",
       "bytes": 2441,
       "sha256": "38908c7466f7c8664461b08edc8983470cc25ee96c895450d1b8de397ecca336"
+    },
+    {
+      "path": "docs/paper-qualification-alias-title-page-v1.md",
+      "bytes": 2447,
+      "sha256": "a1bf4c7fdba808a8b82f6262082fa1a024060ea858e3de0f6db1f347e59d5f27"
     },
     {
       "path": "docs/paper_converter_smoke.md",
@@ -1802,8 +1807,8 @@
     },
     {
       "path": "src/paper_qualification_v1.py",
-      "bytes": 79616,
-      "sha256": "8e5ae783b971fabe3085d128ba1d450fac0ebb5d71bfdd3199e2728c82154a04"
+      "bytes": 86186,
+      "sha256": "18438e75da7d230e23863f541ca681f393f55e7e84c8bbc9170ed397a7edb327"
     },
     {
       "path": "src/paper_review_packets.py",
@@ -2077,8 +2082,8 @@
     },
     {
       "path": "tests/test_paper_qualification_v1.py",
-      "bytes": 64534,
-      "sha256": "d6b5463fdd21d570c553d1c77d5779cc2df179e63029dc965f9025af3e4d0d8c"
+      "bytes": 80357,
+      "sha256": "e969ec1e9a82b2b4683052c14720f1dc1c327752a4bf3121afc0f9d17e1e64b8"
     },
     {
       "path": "tests/test_paper_review_packets.py",

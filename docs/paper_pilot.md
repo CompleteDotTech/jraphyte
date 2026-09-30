@@ -78,11 +78,13 @@ The embedding application must supply all of the following before a real run:
   Missing source/node/edge grants deny access. This callback must not derive
   permissions from a query or model response. It is invoked again on resume.
 - Pinned semantic and answer provider/model/revision/tokenizer identities and
-  an application tokenizer callable for a `LIVE` semantic pack. The current
-  semantic compiler accepts the existing `jev-x.y.z` TypeSafe contract only.
-  A local free-text answer model is not a substitute for its semantic response
-  probabilities. A compatible genuine semantic execution is a missing input
-  until the application can supply one; do not fabricate or relabel one.
+  an application tokenizer callable for a `LIVE` semantic pack. Semantic
+  execution supports the existing `jev-x.y.z` TypeSafe contract and the
+  separately pinned [local Qwen CHOICE profile](local_semantic_pilot.md).
+  For the local route, supply the exact frozen `semantic_profile` to
+  `PaperPilot` and retain its original execution context and signed import
+  receipt. The answer adapter has its own pinned identity and response contract.
+  Genuine semantic execution remains required for real-paper acceptance.
 
 `PyMuPDF`, `Pillow`, `jsonschema` and `cryptography` must be installed in the
 application environment. Python/package versions, all runtime Python files and
@@ -133,6 +135,7 @@ source-first judgments in the private run. No default reviewer or allow-all ACL
 is supplied by the pilot.
 
 ```python
+from trace_gc.canonical import digest
 from trace_gc.paper_pilot import PaperPilot
 from trace_gc.trust import attest_observation, authorize_plan
 
@@ -151,6 +154,7 @@ pilot = PaperPilot(
     backend=app_sqlite_backend, service=app_compiler_service,
     budget=app_persistent_budget, current_access=app_current_access,
     token_counter=app_pinned_semantic_token_counter,
+    semantic_profile=app_semantic_profile,  # exact local profile, or None for Jev wire
 )
 
 prepared = pilot.prepare_native_page(
@@ -179,12 +183,18 @@ compiled = pilot.compile_candidates("compile-001", candidates=app_reviewable_can
 # compatible model. Persist/reconcile its provider request ID outside the pilot.
 # `app_actual_semantic_exchange` contains original response bytes, generated_at,
 # usage, cost, response_source and provider_request_id from that execution.
+# For the local profile, save semantic_execution_context("compile-001") before
+# the external call and bind that exact context in the observed local execution.
 response_bytes = app_actual_semantic_exchange["response_bytes"]
+local_execution = app_actual_semantic_exchange.get("local_execution")
 execution_payload = pilot.execution_payload(
-    "compile-001", kind="SEMANTIC", **app_actual_semantic_execution_metadata)
+    "compile-001", kind="SEMANTIC",
+    local_execution_sha256=digest(local_execution) if local_execution is not None else None,
+    **app_actual_semantic_execution_metadata)
 execution_receipt = app_semantic_importer.issue("OBSERVATION", execution_payload)
 observed = pilot.record_semantic_response("semantic-001", compile_id="compile-001",
-    response=response_bytes, execution_receipt=execution_receipt)
+    response=response_bytes, execution_receipt=execution_receipt,
+    local_execution=local_execution)
 # STOP: the trusted importer validates and attests the resulting observations.
 attestations = {ref: attest_observation(app_observation_attestor,
                     app_catalog.record(ref, "observation"))
@@ -204,18 +214,23 @@ pilot.publish_plan("publish-001", preflight_id="preflight-001", authorization=au
 context = pilot.retrieve("retrieve-001", request=app_current_graph_query)
 answer_request = pilot.prepare_answer("answer-prepare-001", retrieval_id="retrieve-001",
                                      question_text=app_current_graph_query["text"])
-# No authorized evidence yields an abstention and no model slot/request.
-# Otherwise STOP: execute exact exported prompt once via approved pinned model.
-answer_execution = pilot.execution_payload("answer-prepare-001", kind="ANSWER",
-                                           **app_actual_answer_execution_metadata)
-draft = pilot.record_answer_response("answer-001", prepared_id="answer-prepare-001",
-    response=app_actual_answer_bytes,
-    execution_receipt=app_answer_importer.issue("OBSERVATION", answer_execution))
-# STOP if WAIT_ANSWER_REVIEW: read original cited evidence, judge each claim.
-answer_review = pilot.answer_review_payload("answer-001", **app_actual_answer_judgment)
-final = pilot.review_answer("answer-review-001", response_id="answer-001",
-    receipt=app_answer_reviewer.issue("SOURCE_STATUS", answer_review,
-                                      issued_at=answer_review["reviewed_at"]))
+if answer_request["state"] == "WAIT_ANSWER_RESPONSE":
+    # STOP: execute exact exported prompt once via the approved pinned model.
+    answer_execution = pilot.execution_payload("answer-prepare-001", kind="ANSWER",
+                                               **app_actual_answer_execution_metadata)
+    draft = pilot.record_answer_response("answer-001", prepared_id="answer-prepare-001",
+        response=app_actual_answer_bytes,
+        execution_receipt=app_answer_importer.issue("OBSERVATION", answer_execution))
+    if draft["state"] == "WAIT_ANSWER_REVIEW":
+        # STOP: read original cited evidence and judge every material claim.
+        answer_review = pilot.answer_review_payload("answer-001", **app_actual_answer_judgment)
+        final = pilot.review_answer("answer-review-001", response_id="answer-001",
+            receipt=app_answer_reviewer.issue("SOURCE_STATUS", answer_review,
+                                              issued_at=answer_review["reviewed_at"]))
+    else:
+        final = draft  # Preserve model abstention for attributed source assessment.
+else:
+    final = answer_request  # No authorized evidence; no model exchange is requested.
 pilot.close()
 ```
 
@@ -288,6 +303,16 @@ genuine compatible semantic execution and exact receipts; actual reviewed
 publication of its resolved plans; current approved answer-model exchanges;
 supported/unsupported/conflict query outcomes; real fresh-process replay and
 permission-change evidence; resource/cost results; applicable #20 and #22 gates.
-Image transcription routing is not implemented by this native-page service.
-An image-enabled final pilot needs a separately integrated reviewed image route;
-do not convert image transcription into fictitious native PDF offsets.
+An image-enabled pilot must freeze and review each original page/crop,
+transcription and derived representation through the image methods above.
+Its evidence offsets belong to that reviewed representation; the held native
+route and first-page benchmark result remain separately recorded.
+
+## Postpublication successor workflow
+
+Use the [lifecycle service workflow](paper_pilot_workflow.md) to archive a
+qualified parent, prepare an isolated successor with a bounded remaining budget,
+and reconcile signed source-status changes. Reopen historical runs with their
+original implementation/runtime identity and retain their receipts. Each
+revision, withdrawal and permission scenario requires its own current-access
+and stale-answer checks before the application reports acceptance.

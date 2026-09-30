@@ -1,0 +1,278 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-gc:0.3.0:paper-pilot-phase-capsule",
+  "title": "TRACE-GC paper-pilot-phase-capsule v0.3.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "paper-pilot-phase-capsule-v1"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "config": {
+      "type": "object"
+    },
+    "old_implementation": {
+      "type": "object"
+    },
+    "checkpoint_events": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "integer",
+            "minimum": 1
+          },
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        ],
+        "minItems": 3,
+        "maxItems": 3
+      },
+      "minItems": 1
+    },
+    "checkpoint_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "blobs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "catalog_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "source",
+              "claim",
+              "evidence",
+              "candidate",
+              "pack",
+              "observation",
+              "evaluation",
+              "resolution-batch",
+              "resolution",
+              "plan",
+              "qualification",
+              "receipt",
+              "transaction",
+              "schema",
+              "graph-snapshot",
+              "policy",
+              "retrieval-query",
+              "retrieval-plan",
+              "graph-access",
+              "graph-context",
+              "retrieval-result",
+              "retrieval-expansion",
+              "retrieval-lineage",
+              "graphrag-answer",
+              "retrieval-replay",
+              "retrieval-evaluation",
+              "image-evidence-v1"
+            ]
+          },
+          "hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "body": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "hash",
+          "body"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "database_state": {
+      "type": "object",
+      "properties": {
+        "checkpoint": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "graph": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "budget": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "application_journal": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "checkpoint",
+        "graph",
+        "budget",
+        "application_journal"
+      ],
+      "additionalProperties": false
+    },
+    "database_backup_sha256": {
+      "type": "object",
+      "properties": {
+        "checkpoint": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "graph": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "budget": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "application_journal": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "checkpoint",
+        "graph",
+        "budget",
+        "application_journal"
+      ],
+      "additionalProperties": false
+    },
+    "graph_state": {
+      "type": "object"
+    },
+    "source_statuses": {
+      "type": "object"
+    },
+    "budget_snapshot": {
+      "type": "object"
+    },
+    "application_journal_events": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "integer",
+            "minimum": 1
+          },
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        ],
+        "minItems": 3,
+        "maxItems": 3
+      },
+      "minItems": 1
+    },
+    "application_journal_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "external_semantic_intent_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "external_semantic_intent": {
+      "type": "object"
+    },
+    "external_semantic_intent_base64": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attempt_manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "attempt_manifest": {
+      "type": "object"
+    },
+    "attempt_manifest_base64": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attempt_inventory": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "source_receipt_sha256": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "source_open_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "version",
+    "run_id",
+    "config",
+    "old_implementation",
+    "checkpoint_events",
+    "checkpoint_head",
+    "blobs",
+    "catalog_records",
+    "database_state",
+    "database_backup_sha256",
+    "graph_state",
+    "source_statuses",
+    "budget_snapshot",
+    "application_journal_events",
+    "application_journal_head",
+    "external_semantic_intent_sha256",
+    "external_semantic_intent",
+    "external_semantic_intent_base64",
+    "attempt_manifest_sha256",
+    "attempt_manifest",
+    "attempt_manifest_base64",
+    "attempt_inventory",
+    "source_receipt_sha256",
+    "source_open_sha256"
+  ],
+  "additionalProperties": false
+}

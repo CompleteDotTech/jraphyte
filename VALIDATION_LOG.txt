@@ -365,6 +365,14 @@ test_after_commit_lost_result_reconciles_without_retry (test_paper_pilot_lifecyc
 test_fork_and_signed_status_replay (test_paper_pilot_lifecycle.LifecycleTests.test_fork_and_signed_status_replay) ... ok
 test_historical_local_execution_uses_original_graph_one_context (test_paper_pilot_lifecycle.LifecycleTests.test_historical_local_execution_uses_original_graph_one_context) ... ok
 test_tampered_response_and_parent_path_rejected_before_fork (test_paper_pilot_lifecycle.LifecycleTests.test_tampered_response_and_parent_path_rejected_before_fork) ... ok
+test_completed_pending_backup_promotes_once (test_paper_pilot_phase_backup.PhaseBackupTests.test_completed_pending_backup_promotes_once) ... ok
+test_incomplete_pending_preserved_then_replaced (test_paper_pilot_phase_backup.PhaseBackupTests.test_incomplete_pending_preserved_then_replaced) ... ok
+test_schema_objects_are_part_of_logical_snapshot (test_paper_pilot_phase_backup.PhaseBackupTests.test_schema_objects_are_part_of_logical_snapshot) ... ok
+test_exact_replay_after_closed_directory_move (test_paper_pilot_phase_fence.PhaseNamespaceFenceTests.test_exact_replay_after_closed_directory_move) ... ok
+test_junction_archive_parent_holds_before_acl_or_rename (test_paper_pilot_phase_fence.PhaseNamespaceFenceTests.test_junction_archive_parent_holds_before_acl_or_rename) ... ok
+test_wrong_hash_holds_before_acl_change (test_paper_pilot_phase_fence.PhaseNamespaceFenceTests.test_wrong_hash_holds_before_acl_change) ... ok
+test_existing_pointer_rejects_before_import_body (test_paper_pilot_phase_import_lock.ImportLockTests.test_existing_pointer_rejects_before_import_body) ... ok
+test_import_holds_shared_phase_lock_until_mutation_returns (test_paper_pilot_phase_import_lock.ImportLockTests.test_import_holds_shared_phase_lock_until_mutation_returns) ... ok
 test_blocked_publication_is_immutable_and_redacted (test_paper_qualification_v1.ArtifactTests.test_blocked_publication_is_immutable_and_redacted) ... ok
 test_containment_before_read (test_paper_qualification_v1.ArtifactTests.test_containment_before_read) ... ok
 test_failed_regression_does_not_open_unseen_source (test_paper_qualification_v1.ArtifactTests.test_failed_regression_does_not_open_unseen_source) ... ok
@@ -1328,7 +1336,7 @@ test_pinned_comparison_replays_fresh_and_verifies_published_receipt (test_select
 test_reference_payload_is_rechecked_after_assessment_evaluation (test_selector_promotion_native_reference.NativeReferenceAuditTests.test_reference_payload_is_rechecked_after_assessment_evaluation) ... ok
 
 ----------------------------------------------------------------------
-Ran 1328 tests in 392.292s
+Ran 1336 tests in 420.575s
 
 OK (skipped=8)
 

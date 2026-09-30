@@ -1290,19 +1290,20 @@ def _frontmatter_contents_closure(result: dict, page_size: list[float], source_g
             "affiliation_source_spans": affiliation}
 
 
-def _compose_section_spans(selected: dict, native: list[dict]) -> dict | None:
+def _compose_section_spans(selected: dict, native: list[dict], source_geometry=None) -> dict | None:
     """Compose located paragraphs when unrelated native lanes interleave them.
 
     This does not override an ambiguous global occurrence or any per-paragraph
     alignment/column failure. Paragraph extents, not their last short lines,
     establish a monotone lane; every exact native character remains unchanged.
     """
-    if selected.get("alignment_failure") or len(selected["refs"]) < 2:
+    if (source_geometry is None or selected.get("alignment_failure") or
+            len(selected["refs"]) < 2):
         return None
     entries = [o for o in selected["ownership"] if o.get("decision") == "included"]
     if [e["ref"] for e in entries] != selected["refs"]:
         return None
-    spans, occupied, groups = [], set(), []
+    spans, occupied, groups, rebased = [], set(), [], []
     previous = None
     for entry in entries:
         current = entry.get("source_spans", [])
@@ -1310,6 +1311,18 @@ def _compose_section_spans(selected: dict, native: list[dict]) -> dict | None:
         if not current or proof.get("status") != "located" or proof.get("column_change"):
             return None
         validate_source_spans(current, native)
+        # Region boxes may make a converter paragraph locally unique. The
+        # source-bound verifier deliberately locates it on the whole page, so
+        # require that same global replay before composing a positive proof.
+        replay = locate("\n".join(span["text"] for span in current), native,
+                        source_geometry=source_geometry)
+        positions = lambda source: [(str(span["line_id"]), span["start"], span["end"])
+                                    for span in source]
+        if (replay["status"] != "located" or replay.get("column_change") or
+                positions(replay["spans"]) != positions(current)):
+            return None
+        global_proof = {key: value for key, value in replay.items()
+                        if key not in {"text", "spans"}}
         boxes = [s["bbox"] for s in current]
         box = [min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes)]
         if previous and (box[1] < previous[3]-2 or overlap(box, previous) < .8
@@ -1321,7 +1334,8 @@ def _compose_section_spans(selected: dict, native: list[dict]) -> dict | None:
                 return None
             occupied |= keys
         spans.extend(current)
-        groups.append({"ref": entry["ref"], "bbox": box, "source_alignment": proof})
+        groups.append({"ref": entry["ref"], "bbox": box, "source_alignment": global_proof})
+        rebased.append((entry, global_proof))
         previous = box
     extent = [min(g["bbox"][0] for g in groups), groups[0]["bbox"][1],
               max(g["bbox"][2] for g in groups), groups[-1]["bbox"][3]]
@@ -1337,6 +1351,10 @@ def _compose_section_spans(selected: dict, native: list[dict]) -> dict | None:
     text = "\n".join(s["text"] for s in spans)
     if normalize(text) != normalize(selected["text"]):
         return None
+    # Persist the global proof only after every paragraph and same-lane
+    # omission check succeeds; the verifier compares these exact entries.
+    for entry, global_proof in rebased:
+        entry["source_alignment"] = global_proof
     return {"status": "located", "text": text, "spans": spans, "column_change": False,
             "method": "source_owned_monotone_paragraph_groups", "paragraph_groups": groups}
 
@@ -1964,7 +1982,7 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
             return seal(result)
         alignment = locate(text, native, source_geometry=source_geometry)
         if alignment["status"] == "unlocated":
-            alignment = _compose_section_spans(selected, native) or alignment
+            alignment = _compose_section_spans(selected, native, source_geometry) or alignment
         elif alignment["status"] == "located" and not selected["alignment_failure"]:
             # A 98% global match can omit an entire short native wrap line.
             # Every non-whitespace position selected by the located paragraphs
@@ -1975,7 +1993,7 @@ def assess_document(document: dict, *, page_size, source_sha256, page_sha256,
             expected = positions([s for entry in selected["ownership"]
                 if entry.get("decision") == "included" for s in entry.get("source_spans", [])])
             if expected and positions(alignment["spans"]) != expected:
-                composed = _compose_section_spans(selected, native)
+                composed = _compose_section_spans(selected, native, source_geometry)
                 if composed:
                     alignment = composed
                 else:

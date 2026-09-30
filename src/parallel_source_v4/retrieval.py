@@ -175,7 +175,7 @@ def _verify_source_owned_paragraph_groups(assessment: dict, native: list[dict],
             raise ValueError("abstract_paragraph_group_alignment_changed")
         current_entries.append({**entry, "source_alignment": replay})
     composed = _compose_section_spans({"alignment_failure": None, "refs": refs,
-        "ownership": current_entries, "text": assessment["text"]}, native)
+        "ownership": current_entries, "text": assessment["text"]}, native, source_geometry)
     positions = lambda source: [(str(span["line_id"]), span["start"], span["end"])
                                 for span in source]
     if (composed is None or positions(composed["spans"]) != positions(assessment["spans"]) or

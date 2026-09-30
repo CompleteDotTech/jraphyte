@@ -574,6 +574,14 @@ def _verify_receipt(root: Path, row: dict, receipt: dict, output: Path, source_r
         from .assessment_migration_v2 import verify_prefix_receipt
         verify_prefix_receipt(root, row, receipt, output, source_root, protocol, native, size)
         return
+    if receipt.get("schema_version") == "retrieval-assessment-mixed-prefix-import-row-v3":
+        from .assessment_migration_v3 import verify_prefix_receipt
+        verify_prefix_receipt(root, row, receipt, output, source_root, protocol, native, size)
+        return
+    if receipt.get("schema_version") == "retrieval-assessment-pending-import-row-v3":
+        from .assessment_migration_v3 import verify_pending_receipt
+        verify_pending_receipt(root, row, receipt, output, source_root, protocol, native, size)
+        return
     if decision != "eligible":
         if receipt.get("state") != "ineligible" or receipt.get("assessment_relative") is not None:
             raise ValueError("ineligible_assessment_receipt_invalid:" + sid)

@@ -16,7 +16,7 @@ from src.parallel_source_v4.retrieval import verify_source_bound_assessment
 
 @unittest.skipUnless(fitz, "optional PyMuPDF required for two-column source replay")
 class SourceOwnedParagraphGroupTests(unittest.TestCase):
-    def fixture(self, *, body_closure=False):
+    def fixture(self, *, body_closure=False, duplicate_paragraph=False):
         left = [
             "The abstract opens with a complete scientific claim about the left lane.",
             "A second paragraph measures a stable response across repeated trials.",
@@ -29,6 +29,8 @@ class SourceOwnedParagraphGroupTests(unittest.TestCase):
             page.insert_text((330, 195), "1 Introduction", fontsize=12)
             page.insert_text((330, 115), "This right lane contains unrelated body prose.", fontsize=8)
             page.insert_text((40, 120), left[1], fontsize=8)
+            if duplicate_paragraph:
+                page.insert_text((330, 120), left[1], fontsize=8)
             page.insert_text((330, 140), "A second right-lane sentence is also unrelated.", fontsize=8)
             page.insert_text((40, 145), left[2], fontsize=8)
             page.insert_text((40, 170), "2 Methods" if body_closure else "Keywords", fontsize=12)
@@ -37,7 +39,10 @@ class SourceOwnedParagraphGroupTests(unittest.TestCase):
             native = source_lines(pdf[0])
         source_hash = hashlib.sha256(payload).hexdigest()
         geometry = SourceGeometry.from_pdf(payload, native, expected_source_sha256=source_hash)
-        by_text = {line["text"]: line for line in native}
+        by_text = {}
+        for line in native:
+            if line["text"] not in by_text or line["bbox"][0] < by_text[line["text"]]["bbox"][0]:
+                by_text[line["text"]] = line
         closing_text = "2 Methods" if body_closure else "Keywords"
         doc = document([
             item(0, "Abstract", "section_header", [by_text["Abstract"]["bbox"]]),
@@ -51,10 +56,12 @@ class SourceOwnedParagraphGroupTests(unittest.TestCase):
         params = {"page_size": [600, 800], "source_sha256": source_hash,
                   "page_sha256": source_hash, "source_geometry": geometry}
         assessment = assess_document(doc, native_lines=native, **params)
+        if duplicate_paragraph:
+            return assessment, native, params
         composed = _compose_section_spans({"alignment_failure": None,
             "refs": assessment["region_refs"],
             "ownership": assessment["region_ownership"],
-            "text": assessment["text"]}, native)
+            "text": assessment["text"]}, native, geometry)
         self.assertIsNotNone(composed)
         assessment["spans"] = composed["spans"]
         assessment["text"] = composed["text"]
@@ -76,6 +83,36 @@ class SourceOwnedParagraphGroupTests(unittest.TestCase):
         self.assertEqual(assessment["source_alignment"].get("method"),
                          "source_owned_monotone_paragraph_groups", assessment)
         self.assertEqual(assessment["status"], "complete", assessment)
+        verify_source_bound_assessment(assessment, native, **params)
+
+    def test_locally_selected_duplicate_paragraph_cannot_be_composed(self):
+        assessment, native, params = self.fixture(duplicate_paragraph=True)
+        selected = {"alignment_failure": None, "refs": assessment["region_refs"],
+                    "ownership": assessment["region_ownership"], "text": assessment["text"]}
+        original_ownership = deepcopy(selected["ownership"])
+        # The region's boxes select one of two matching native paragraphs;
+        # the whole-page replay is ambiguous and cannot certify composition.
+        self.assertIsNone(_compose_section_spans(selected, native, params["source_geometry"]))
+        self.assertEqual(selected["ownership"], original_ownership)
+
+    def test_same_spans_rebase_local_proof_to_global_replay(self):
+        assessment, native, params = self.fixture()
+        ownership = deepcopy(assessment["region_ownership"])
+        local = next(entry for entry in ownership if entry.get("decision") == "included")
+        local["source_alignment"]["local_region_only"] = True
+        selected = {"alignment_failure": None, "refs": assessment["region_refs"],
+                    "ownership": ownership, "text": assessment["text"]}
+        self.assertIsNone(_compose_section_spans(selected, native))
+        self.assertIn("local_region_only", local["source_alignment"])
+        composed = _compose_section_spans(selected, native, params["source_geometry"])
+        self.assertIsNotNone(composed)
+        self.assertNotIn("local_region_only", local["source_alignment"])
+        assessment["region_ownership"] = ownership
+        assessment["spans"] = composed["spans"]
+        assessment["text"] = composed["text"]
+        assessment["source_alignment"] = {key: value for key, value in composed.items()
+                                          if key not in {"text", "spans"}}
+        seal(assessment)
         verify_source_bound_assessment(assessment, native, **params)
 
     def test_same_lane_body_heading_closes_groups(self):

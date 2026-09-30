@@ -11,13 +11,13 @@
     "paper-b-refutation"
   ],
   "resolver_decisions": [
-    "resolution:defe71ddb09d86353db473b1362dcc7d2fccea9020d0bf2045537ca17eb30db3"
+    "resolution:f9909973c0a272083535b608a49201a6296e6f7ad016056d0d2d3a3f86e2a837"
   ],
   "retrieval_results": [
-    "retrieval-result:ac2c334f8ce44c9431e9eef761cb4a26673dc218a6e41600247bd50e8f12fc8d"
+    "retrieval-result:7e1a5f759eeb5c254af3dc5d0a7508daf3177254e2e9779b192b306760f78c23"
   ],
   "expansions": [
-    "retrieval-expansion:bef9c83b42723605c46257dd420f13994121d24d8098bea031e56363ddb10f7f"
+    "retrieval-expansion:b06d3f663c84bd9284c4a50c0ebddc1501ec6cb301d42c9a5c8e2c0ce5c5bf06"
   ],
   "commit_version": 4,
   "downstream_graph_version": 4,

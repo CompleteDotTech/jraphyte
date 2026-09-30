@@ -49,3 +49,48 @@ This utility has not been run on the full 10,000-document corpus. Local tests
 cover immutable import, a crash between assessment and row sealing, idempotent
 resume, altered source/origin/runtime/plan rejection, and source-owned abstract
 closure. No model conversion or graph publication occurs in those tests.
+
+## Sealed-prefix migration v2
+
+`assessment_migration_v2` handles a different stopped-run shape: a complete
+row prefix followed by an **empty pre-intent directory** for the next ID. It
+does not reuse a pending conversion or restart the old worker. The empty
+directory must be the exact next protocol ID, have no hidden entries, and
+follow the frozen producer's verified `mkdir -> durable intent -> convert`
+call order. Any intent, conversion, later row, or unknown attempt holds for
+separate reconciliation. The old directory remains unchanged.
+
+`prepare` replays every completed receipt using the frozen original checkout
+and evaluator. It writes a distinct immutable plan outside either run. This
+step performs no model conversion. `run` requires that same plan, a fresh
+source-verified acceptance receipt whose V4 method hashes equal the current
+producer closure, and the exact pinned approval policy, configuration and
+source map. Imported cached Docling documents are assessed again under the
+current code and source geometry, retaining their original success/error and
+eligibility states. All imported rows explicitly record zero new model calls.
+Subsequent IDs use the current bounded producer, capped at 64 documents per
+converter session. The source gate and resource guard must be verified for
+the new code before allowing that model work.
+
+```powershell
+& $evaluatorPython -B -s -m src.parallel_source_v4.assessment_migration_v2 prepare `
+  --data-root $dataRoot --origin-output $originRelative --new-output $freshRelative `
+  --origin-checkout $frozenCheckout --origin-interpreter $originalEvaluatorPython `
+  --origin-head $frozenHead --origin-protocol-sha256 $frozenProtocolSha `
+  --expected-prefix-count $verifiedCompletedRows --max-documents-per-session 64
+
+& $evaluatorPython -B -s -m src.parallel_source_v4.assessment_migration_v2 run `
+  --data-root $dataRoot --origin-output $originRelative --new-output $freshRelative `
+  --origin-checkout $frozenCheckout --origin-interpreter $originalEvaluatorPython `
+  --origin-head $frozenHead --origin-protocol-sha256 $frozenProtocolSha `
+  --expected-prefix-count $verifiedCompletedRows --max-documents-per-session 64 `
+  --gate-receipt $currentGateReceipt --gate-receipt-sha256 $currentGateSha `
+  --gate-policy $currentPolicy --gate-policy-sha256 $currentPolicySha `
+  --gate-configuration $currentConfiguration --gate-source-map $currentSourceMap
+```
+
+The 1,207-row `d02857` prefix and empty `d02858` directory are incident
+evidence, not defaults. Preserve the old supervisor failure and the empty
+directory. A distinct new output and protocol are required. An interrupted
+new run resumes only with identical plan, runtime, source, profile, and code
+identities; unknown converter outcomes remain held.

@@ -130,6 +130,38 @@ class AssessmentProducerTests(unittest.TestCase):
         self.assertEqual(receipt["state"], "error")
         self.assertEqual(receipt["document_sha256"], partial_document_sha)
 
+    def test_sealed_success_reassessment_can_hold_without_reconversion(self):
+        row = self.manifest_rows(["f001"])[0]
+        _, protocol = self.freeze()
+        folder = self.output / "attempts" / "f001"
+        folder.mkdir(parents=True)
+        write_once(folder / "intent.json", {"sample_id": "f001",
+            "protocol_sha256": producer.digest(self.output / "protocol.json"),
+            **{key + "_sha256": row[key + "_sha256"] for key in ("source", "page", "image", "native")}})
+        runtime = {"python": "3.12.10", "executable_sha256": "0" * 64, "packages": {}}
+        document_sha = write_once(folder / "document.json", {"texts": [], "body": {"children": []}})
+        write_once(folder / "conversion.json", {"status": "success", "error_class": None,
+            "docling_status": "ConversionStatus.SUCCESS", "document_sha256": document_sha,
+            "worker_pid": 123, "runtime": runtime, "model_called": True,
+            "session_start": {"relative": "sessions/one/start.json", "sha256": "0" * 64},
+            "wall_seconds": 0.5, "peak_process_memory_bytes": 1000})
+        source = self.root / "source.pdf"
+        source.write_bytes(b"placeholder")
+        session = Mock()
+        with patch.object(producer, "_check_code"), \
+                patch.object(producer, "_verified_row", return_value=([], [100, 100], "eligible")), \
+                patch.object(producer, "source_path", return_value=source), \
+                patch.object(producer.SourceGeometry, "from_pdf", return_value=Mock()), \
+                patch.object(producer, "assess_document", return_value={"status": "uncertain", "proposal": False}), \
+                patch("trace_gc.pdf_structure_parallel_v4.seal", side_effect=lambda value: value), \
+                patch.object(producer, "verify_source_bound_assessment"):
+            receipt = producer._attempt(self.root, self.output, row, {"runtime": runtime}, protocol, None,
+                                        [], [100, 100], session)
+        session.convert.assert_not_called()
+        self.assertEqual(receipt["assessment_status"], "uncertain")
+        self.assertEqual(receipt["state"], "complete")
+        self.assertEqual(receipt["document_sha256"], document_sha)
+
     def test_forged_success_converter_status_rejected(self):
         row = self.manifest_rows(["f001"])[0]
         _, protocol = self.freeze()

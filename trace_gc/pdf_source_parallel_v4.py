@@ -647,6 +647,54 @@ def _terminal_wraps(source_rows: list[dict]) -> list[tuple[dict, dict]]:
     return candidates
 
 
+def _cached_paragraph_font(line: dict, font_cache: dict | None) -> tuple | None:
+    if font_cache is None:
+        return _paragraph_font(line)
+    key = id(line)
+    if key not in font_cache:
+        font_cache[key] = _paragraph_font(line)
+    return font_cache[key]
+
+
+def _short_laneline_between(previous: dict, candidate: dict, following: dict,
+                            source_rows: list[dict], font_cache: dict | None = None) -> bool:
+    """Corroborate one short native line omitted by a width-filtered lane.
+
+    This only adds a search chain. ``locate`` still requires a unique whole
+    transcription and checks native transition geometry; it never treats a
+    converter region box as source authority.
+    """
+    previous_font = _cached_paragraph_font(previous, font_cache)
+    if not previous_font:
+        return False
+    em = previous_font[1]
+    before, short, after = (line["bbox"] for line in (previous, candidate, following))
+    widths = [box[2]-box[0] for box in (before, short, after)]
+    if (not all(_horizontal(line) for line in (previous, candidate, following)) or
+            min(widths[0], widths[2]) < 10*em or
+            not 2*em <= widths[1] < min(widths[0], widths[2])/1.65 or
+            abs(widths[0]-widths[2]) > .5*em or
+            abs(before[0]-short[0]) > .25*em or
+            abs(after[0]-short[0]) > .25*em or
+            not before[3] <= short[1] <= before[3]+.8*em or
+            not short[3]+.3*em <= after[1] or
+            not re.search(r"[.!?][\s\)\]\}’\"']*$", candidate["text"])):
+        return False
+    if (_cached_paragraph_font(candidate, font_cache) != previous_font or
+            _cached_paragraph_font(following, font_cache) != previous_font):
+        return False
+    # Inspect the full native page even when a caller restricts a model box.
+    # A hidden competing left-lane row cannot become a synthetic wrap.
+    for row in source_rows:
+        if any(str(line["id"]) in {str(previous["id"]), str(candidate["id"]),
+                                    str(following["id"])} for line in row["lines"]):
+            continue
+        box = row["bbox"]
+        if abs(box[0]-short[0]) <= .25*em and before[3] <= box[1] <= short[3]:
+            return False
+    return True
+
+
 def _chains(lines: list[dict], rows: list[dict] | None = None, *, source_rows=None,
             evidence: dict | None = None) -> list[list[dict]]:
     """Column-local order plus original order; never a global y-sort only.
@@ -673,6 +721,25 @@ def _chains(lines: list[dict], rows: list[dict] | None = None, *, source_rows=No
             if evidence is not None:
                 evidence[tuple(str(line["id"]) for line in chain)] = [proof for _, proof in added]
         result.append([line for row in local for line in row["lines"]])
+    # A short terminal sentence can fall outside the 1.65 width ratio even
+    # though native typography and lane position place it between two wide
+    # rows. Offer that exact native order as an additional global search
+    # chain. This cannot by itself approve a source match or hide duplicates.
+    full_rows = rows if source_rows is None else source_rows
+    eligible_ids = {str(line["id"]) for line in lines}
+    short_rows = [row for row in full_rows if len(row["lines"]) == 1 and
+                  str(row["lines"][0]["id"]) in eligible_ids]
+    font_cache = {}
+    for chain in list(result):
+        ids = {str(line["id"]) for line in chain}
+        for index in range(len(chain)-1):
+            previous, following = chain[index:index+2]
+            candidates = [row["lines"][0] for row in short_rows
+                          if str(row["lines"][0]["id"]) not in ids and
+                          _short_laneline_between(previous, row["lines"][0], following, full_rows,
+                                                  font_cache)]
+            if len(candidates) == 1:
+                result.append(chain[:index+1]+candidates+chain[index+1:])
     # Native original order can encode legitimate multi-column continuation.
     # Such a match is returned but held by the caller unless layout corroborates it.
     result.append(lines)

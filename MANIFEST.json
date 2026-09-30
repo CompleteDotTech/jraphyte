@@ -3,7 +3,7 @@
   "hash_algorithm": "SHA-256",
   "manifest_self_excluded": true,
   "source_only": true,
-  "file_count": 597,
+  "file_count": 603,
   "files": [
     {
       "path": ".github/workflows/test.yml",
@@ -57,13 +57,13 @@
     },
     {
       "path": "VALIDATION_LOG.txt",
-      "bytes": 213545,
-      "sha256": "a05e2e4e959f470997aad7247ca07b2611c7af2f7f5be0000c0be14cd9018c94"
+      "bytes": 216940,
+      "sha256": "a5c4b43ebeddbc6b5de0499b2ed6db52143c38f1d02ef56148def0b0d7c731cd"
     },
     {
       "path": "VALIDATION_REPORT.json",
-      "bytes": 218012,
-      "sha256": "8ddc22eb9db8a6d3b5eececbdd0fa44b0d9c782cc03709984a627085cc2fbb0e"
+      "bytes": 221299,
+      "sha256": "40bdc3e44440152add886782a40cab595fba454213b94b7fe57c628a848f981e"
     },
     {
       "path": "archive/v0.2/MANIFEST.json",
@@ -611,6 +611,11 @@
       "sha256": "928f4558c8fac1490e6214ee4c96163fbbf70cac8000b1fe30f64c800938a056"
     },
     {
+      "path": "docs/assessment_migration_v3.md",
+      "bytes": 3153,
+      "sha256": "71fb5b4b83ec188b5cb8ee76e9cc81a3615607080746ac6474ac47d70b9afbf5"
+    },
+    {
       "path": "docs/document_page_and_cited_answer.md",
       "bytes": 3739,
       "sha256": "ea610b2f8727c24c9f89469cab6afca9dfa494dc8476771ebea324b178c8c54c"
@@ -789,6 +794,11 @@
       "path": "docs/source_fraction_seam.md",
       "bytes": 5440,
       "sha256": "459ca2861c31fdfa5f8397fd7ccd4e36f33fc0dd261b05fcba0f6b5d7c3b4846"
+    },
+    {
+      "path": "docs/source_short_native_wrap_v4.md",
+      "bytes": 1180,
+      "sha256": "dd697df33d2a311a8f54ae1158ae0615d18d78ee804a480260f9ed5dfd652fd0"
     },
     {
       "path": "docs/source_vector_figure_abstract_closure_v4.md",
@@ -1881,9 +1891,14 @@
       "sha256": "307217f494350260ee6244f74b2ab894d7ee98a249ba206b640a70d8a9005eff"
     },
     {
+      "path": "src/parallel_source_v4/assessment_migration_v3.py",
+      "bytes": 33271,
+      "sha256": "94c16c962dc827ef749644b4809a3ad51dbb39dfe50ceed12dd912148be06f35"
+    },
+    {
       "path": "src/parallel_source_v4/assessment_producer.py",
-      "bytes": 54887,
-      "sha256": "7a1d2ed665d7dbb3b6b857f7a1c5d291006929fba7a5532ed9b0c996d738bb1a"
+      "bytes": 55420,
+      "sha256": "1a2793489ff00e467ae65a937f10cfc4b527009b49e99f7c3cdce842770f709d"
     },
     {
       "path": "src/parallel_source_v4/common.py",
@@ -1972,8 +1987,8 @@
     },
     {
       "path": "src/parallel_source_v4/retrieval.py",
-      "bytes": 33850,
-      "sha256": "573c0088acbb5c7023550fdf39a2803ce640481708267bdc816d23549923249c"
+      "bytes": 33867,
+      "sha256": "5de8de833781975054aafb953c1d540f39d1b053a891d83215175670924fd870"
     },
     {
       "path": "src/parallel_source_v4/retrieval_policy.py",
@@ -2181,6 +2196,11 @@
       "sha256": "7b23000f65d9ba945d5e4d3c04f05ad54a084a1329be2f818eebb9f2a098902a"
     },
     {
+      "path": "tests/test_parallel_short_native_wrap_v4.py",
+      "bytes": 2768,
+      "sha256": "3fb9c9d80547564749a7db33696b51687a7a473e811ba14cce734cccd62ad43e"
+    },
+    {
       "path": "tests/test_parallel_source_abstract_structure_v4.py",
       "bytes": 14616,
       "sha256": "3137de74d86b180461dcead5c8cf90206a63e73b128fc6e08258098d51645427"
@@ -2276,6 +2296,11 @@
       "sha256": "d85dcdcc5fe53619d6498d8368d2b5ccabd281249129ca9717ab32d395e75b08"
     },
     {
+      "path": "tests/test_parallel_source_shortwrap_performance_v4.py",
+      "bytes": 3126,
+      "sha256": "2a3fb7995e731be6565ea7d2ab2de9c21b2f1e39423eee65e08e38d9912b56ac"
+    },
+    {
       "path": "tests/test_parallel_source_structure_followup_v4.py",
       "bytes": 11287,
       "sha256": "9ba849094a75cf4e62504f0f7455d3eb660c7f07e32b425e1c8db42c32ffeed4"
@@ -2336,9 +2361,14 @@
       "sha256": "caa09fbac9f96be2b0b53942b0f47343bfa8f55533e9b0a5e1a9fba253c939b4"
     },
     {
+      "path": "tests/test_retrieval_assessment_migration_v3.py",
+      "bytes": 14028,
+      "sha256": "c44bd237767080f9edfca89fe07457aa021ba4ea5d1a6b4594cfaaf4d8fe5677"
+    },
+    {
       "path": "tests/test_retrieval_assessment_producer.py",
-      "bytes": 12295,
-      "sha256": "c135d57db6bb8db6585ac9f6547ec70d2797d5607ed753b77cbf1e0ec48a3cea"
+      "bytes": 14525,
+      "sha256": "2af9894b668bacdae3641f53bb7ac06875e1b81f112a474ea1a93490a42be9d4"
     },
     {
       "path": "tests/test_retrieval_assessment_session_lifecycle.py",
@@ -2352,8 +2382,8 @@
     },
     {
       "path": "tests/test_retrieval_source_owned_paragraph_groups.py",
-      "bytes": 9142,
-      "sha256": "4d65a445fe831e7ffc13f957002f29b0d3ff3aa8fa1f754646872ce5c8d78701"
+      "bytes": 11423,
+      "sha256": "32a266e68e01d5f431eaea0ec127550e300887213c27481ae45135f8b285412a"
     },
     {
       "path": "tests/test_reviewed_abstract_overlay.py",
@@ -2807,8 +2837,8 @@
     },
     {
       "path": "trace_gc/pdf_source_parallel_v4.py",
-      "bytes": 50549,
-      "sha256": "89b67a53b3e98f6415efc5dd54e22babbf16aba88d1b3e87e19cb61fd6bb2821"
+      "bytes": 53946,
+      "sha256": "c933eb8c6f09f2fad71e080eecec75ccd0fa6672b69cff8198b0ea43b066641d"
     },
     {
       "path": "trace_gc/pdf_source_v3.py",
@@ -2822,8 +2852,8 @@
     },
     {
       "path": "trace_gc/pdf_structure_parallel_v4.py",
-      "bytes": 133296,
-      "sha256": "e8193a8bb62d826774ab239cfe7ffa966d3cf42cafa431b3e40c50d358dbb5e4"
+      "bytes": 134492,
+      "sha256": "f65679d3f987448cbd22829d0cc518d7935b66cdbb70722691186fe6e1b61bfb"
     },
     {
       "path": "trace_gc/phase_authority.py",

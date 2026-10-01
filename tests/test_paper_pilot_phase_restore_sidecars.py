@@ -192,6 +192,9 @@ class PhaseRestoreSidecarTests(unittest.TestCase):
 
     def test_changed_capsule_binding_authorization_and_foreign_target_hold(self):
         self.restore()
+        target_before = {p.name: p.read_bytes() for p in self.target.iterdir()}
+        backups_before = {name: (self.capsule_dir / f"{name}.sqlite3").read_bytes()
+                          for name in self.capsule["database_backup_sha256"]}
         self.authority.binding["implementation_sha256"] = "changed"
         with self.assertRaises(ContractError):
             self.restore()
@@ -204,9 +207,36 @@ class PhaseRestoreSidecarTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError, "partial target has unknown content"):
             self.restore()
         self.assertEqual((self.target / "foreign.txt").read_bytes(), b"unreviewed")
+        (self.target / "foreign.txt").unlink()  # Disposable fixture only.
+        self.assertEqual({p.name: p.read_bytes() for p in self.target.iterdir()},
+                         target_before)
         self.capsule_path.write_bytes(self.capsule_path.read_bytes() + b" ")
-        with self.assertRaises(ContractError):
+        with self.assertRaisesRegex(ContractError, "pinned phase bytes changed"):
             self.restore()
+        self.assertEqual({p.name: p.read_bytes() for p in self.target.iterdir()},
+                         target_before)
+        self.assertEqual({name: (self.capsule_dir / f"{name}.sqlite3").read_bytes()
+                          for name in backups_before}, backups_before)
+
+    def test_signed_conflicting_import_authorizations_leave_restored_state_unchanged(self):
+        self.restore()
+        target_before = {p.name: p.read_bytes() for p in self.target.iterdir()}
+        backups_before = {name: (self.capsule_dir / f"{name}.sqlite3").read_bytes()
+                          for name in self.capsule["database_backup_sha256"]}
+        for field, wrong in (("capsule_sha256", "0" * 64),
+                             ("target_implementation_sha256", "other-target"),
+                             ("run_id", "other-run")):
+            with self.subTest(field=field):
+                payload = dict(self.authorization["payload"])
+                payload[field] = wrong
+                conflicting = self.signer.issue("AUTHORIZATION", payload)
+                with self.assertRaisesRegex(ContractError,
+                                            "exact reviewed phase authorization required"):
+                    self.restore(conflicting)
+                self.assertEqual({p.name: p.read_bytes() for p in self.target.iterdir()},
+                                 target_before)
+                self.assertEqual({name: (self.capsule_dir / f"{name}.sqlite3").read_bytes()
+                                  for name in backups_before}, backups_before)
 
 
 if __name__ == "__main__":

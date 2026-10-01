@@ -52,12 +52,20 @@ def logical_state(connection: sqlite3.Connection) -> str:
 
 
 def _file_logical(path: Path) -> str:
-    connection = sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True)
+    sidecars = (path.with_name(path.name + "-wal"),
+                path.with_name(path.name + "-shm"))
+    require(not any(sidecar.exists() for sidecar in sidecars),
+            "PHASE_SQLITE", "uncheckpointed or foreign SQLite sidecar")
+    # Every destination writer is closed before this readback. Inspect only
+    # the checkpointed main database, without creating WAL/SHM artifacts.
+    connection = sqlite3.connect(f"file:{path.as_posix()}?mode=ro&immutable=1", uri=True)
     try:
         connection.execute("PRAGMA query_only=ON")
         return logical_state(connection)
     finally:
         connection.close()
+        require(not any(sidecar.exists() for sidecar in sidecars),
+                "PHASE_SQLITE", "SQLite sidecar appeared during logical read")
 
 
 def _backup(source: sqlite3.Connection, target: Path) -> str:

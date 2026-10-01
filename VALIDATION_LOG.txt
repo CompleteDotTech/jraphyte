@@ -1,6 +1,6 @@
 test_inflight_request_is_not_resubmitted (test_abstract_validation.EmbeddingLedgerTests.test_inflight_request_is_not_resubmitted) ... ok
 test_retry_keeps_failed_charge_reservation_and_exact_input (test_abstract_validation.EmbeddingLedgerTests.test_retry_keeps_failed_charge_reservation_and_exact_input) ... ok
-test_rectangular_ranking_uses_target_identity (test_abstract_validation.RetrievalMetricsTests.test_rectangular_ranking_uses_target_identity) ... skipped 'Optional NumPy environment not installed'
+test_rectangular_ranking_uses_target_identity (test_abstract_validation.RetrievalMetricsTests.test_rectangular_ranking_uses_target_identity) ... ok
 test_01_valid_synthetic_bundle (test_contracts.ContractTests.test_01_valid_synthetic_bundle) ... ok
 test_02_source_bytes_changed (test_contracts.ContractTests.test_02_source_bytes_changed) ... ok
 test_03_wrong_quote (test_contracts.ContractTests.test_03_wrong_quote) ... ok
@@ -43,7 +43,7 @@ test_39_acyclic_candidate_dependencies (test_contracts.ContractTests.test_39_acy
 test_40_empty_evidence_cannot_support_operation (test_contracts.ContractTests.test_40_empty_evidence_cannot_support_operation) ... ok
 test_41_score_probability_distribution_not_rewritten (test_contracts.ContractTests.test_41_score_probability_distribution_not_rewritten) ... ok
 test_42_unknown_fields_are_not_silently_accepted (test_contracts.ContractTests.test_42_unknown_fields_are_not_silently_accepted) ... ok
-test_unretrieved_target_gets_no_credit_from_tie_order (test_expanded_retrieval.ShortlistMetricsTests.test_unretrieved_target_gets_no_credit_from_tie_order) ... skipped 'Optional NumPy environment not installed'
+test_unretrieved_target_gets_no_credit_from_tie_order (test_expanded_retrieval.ShortlistMetricsTests.test_unretrieved_target_gets_no_credit_from_tie_order) ... ok
 test_candidate_only_report_does_not_fabricate_rerank_metrics (test_first_page_retrieval_v3.CandidateCoverageTests.test_candidate_only_report_does_not_fabricate_rerank_metrics) ... ok
 test_duplicate_nonfinite_and_cloud_channels_rejected (test_first_page_retrieval_v3.CandidateCoverageTests.test_duplicate_nonfinite_and_cloud_channels_rejected) ... ok
 test_empty_fields_zero_scores_do_not_make_arbitrary_candidates (test_first_page_retrieval_v3.CandidateCoverageTests.test_empty_fields_zero_scores_do_not_make_arbitrary_candidates) ... ok
@@ -413,6 +413,12 @@ test_junction_archive_parent_holds_before_acl_or_rename (test_paper_pilot_phase_
 test_wrong_hash_holds_before_acl_change (test_paper_pilot_phase_fence.PhaseNamespaceFenceTests.test_wrong_hash_holds_before_acl_change) ... ok
 test_existing_pointer_rejects_before_import_body (test_paper_pilot_phase_import_lock.ImportLockTests.test_existing_pointer_rejects_before_import_body) ... ok
 test_import_holds_shared_phase_lock_until_mutation_returns (test_paper_pilot_phase_import_lock.ImportLockTests.test_import_holds_shared_phase_lock_until_mutation_returns) ... ok
+test_changed_capsule_binding_authorization_and_foreign_target_hold (test_paper_pilot_phase_restore_sidecars.PhaseRestoreSidecarTests.test_changed_capsule_binding_authorization_and_foreign_target_hold) ... ok
+test_foreign_wal_and_shm_rejected_without_cleanup (test_paper_pilot_phase_restore_sidecars.PhaseRestoreSidecarTests.test_foreign_wal_and_shm_rejected_without_cleanup) ... ok
+test_interruption_after_markers_before_receipt_reconciles (test_paper_pilot_phase_restore_sidecars.PhaseRestoreSidecarTests.test_interruption_after_markers_before_receipt_reconciles) ... ok
+test_sidecar_appearing_during_readback_is_rejected_and_preserved (test_paper_pilot_phase_restore_sidecars.PhaseRestoreSidecarTests.test_sidecar_appearing_during_readback_is_rejected_and_preserved) ... ok
+test_signed_restore_and_lost_coordinator_result_reconcile_exactly (test_paper_pilot_phase_restore_sidecars.PhaseRestoreSidecarTests.test_signed_restore_and_lost_coordinator_result_reconcile_exactly) ... ok
+test_wal_readback_creates_no_sidecars (test_paper_pilot_phase_restore_sidecars.PhaseRestoreSidecarTests.test_wal_readback_creates_no_sidecars) ... ok
 test_blocked_publication_is_immutable_and_redacted (test_paper_qualification_v1.ArtifactTests.test_blocked_publication_is_immutable_and_redacted) ... ok
 test_containment_before_read (test_paper_qualification_v1.ArtifactTests.test_containment_before_read) ... ok
 test_failed_regression_does_not_open_unseen_source (test_paper_qualification_v1.ArtifactTests.test_failed_regression_does_not_open_unseen_source) ... ok
@@ -1396,9 +1402,9 @@ test_pinned_comparison_replays_fresh_and_verifies_published_receipt (test_select
 test_reference_payload_is_rechecked_after_assessment_evaluation (test_selector_promotion_native_reference.NativeReferenceAuditTests.test_reference_payload_is_rechecked_after_assessment_evaluation) ... ok
 
 ----------------------------------------------------------------------
-Ran 1396 tests in 552.914s
+Ran 1402 tests in 643.086s
 
-OK (skipped=8)
+OK (skipped=6)
 
 === Original design-review probes ===
 P01: REJECTED_BY_VALIDATOR: Pack state can be completely empty despite complete closure

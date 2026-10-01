@@ -55,7 +55,7 @@ def source_path(root: Path, row: dict, source_root: Path | None) -> Path:
 
 def verify_pinned_source(root: Path, row: dict, source_root: Path | None) -> tuple[list[dict],list[float],dict]:
     """Reread original visual and native evidence; flag a divergent page copy."""
-    import fitz
+    import pymupdf as fitz
     from PIL import Image,ImageChops
     state=row.get('native_extraction_state','complete')
     error=row.get('native_extraction_error')
@@ -165,7 +165,7 @@ def bound_assessment(root: Path, entry: dict, row: dict, native: list[dict], pag
 
 def build_fields(root: Path, manifest: dict, output: Path | None, *, title_reviews=None, ocr_caches=None,
                  abstract_assessments=None, source_root: Path | None=None, corpus_policy=None) -> dict:
-    import fitz
+    import pymupdf as fitz
     import PIL
     manifest,title_reviews,ocr_caches,abstract_assessments,corpus_policy=copy.deepcopy(
         (manifest,title_reviews,ocr_caches,abstract_assessments,corpus_policy))

@@ -3,7 +3,7 @@
   "hash_algorithm": "SHA-256",
   "manifest_self_excluded": true,
   "source_only": true,
-  "file_count": 604,
+  "file_count": 607,
   "files": [
     {
       "path": ".github/workflows/test.yml",
@@ -24,6 +24,11 @@
       "path": "GRAPHRAG_IMPLEMENTATION_REPORT.md",
       "bytes": 12278,
       "sha256": "8957b2eb036a0cfd58efa5adb16104fae50921737990b9bc5833e0a9730ad6a1"
+    },
+    {
+      "path": "MANIFEST.in",
+      "bytes": 93,
+      "sha256": "b4b637c3d710c1082dcdb508c73914885376c79acfef9288b070cdb0e5ddfeaf"
     },
     {
       "path": "NEXT_AGENT_PROMPT.md",
@@ -57,13 +62,13 @@
     },
     {
       "path": "VALIDATION_LOG.txt",
-      "bytes": 217712,
-      "sha256": "89cb89c94a62e48a1a40f98c2ea92f18809b09a7fdc05b0177dbce4326fa250f"
+      "bytes": 219521,
+      "sha256": "485024db921e7d5aa7c7f761abc3d8d3197544cabb127a3aff137bb1c3ce661e"
     },
     {
       "path": "VALIDATION_REPORT.json",
-      "bytes": 222057,
-      "sha256": "a0e1f100488129679c0c6169cded7e2fc953063ac66817ee97713f5fbe2d4348"
+      "bytes": 223737,
+      "sha256": "d635071df2140ce9246d68cbfb7f8b6866ba3e60e7f621b36e20122ef00a2e15"
     },
     {
       "path": "archive/v0.2/MANIFEST.json",
@@ -702,8 +707,8 @@
     },
     {
       "path": "docs/paper_pilot_phase_transition.md",
-      "bytes": 5553,
-      "sha256": "1bce7d71520c1c6b77fdc8609d83cc817bc48764c04911a5ea3e9242bc27553f"
+      "bytes": 7076,
+      "sha256": "a42bf2a28ef7bc43264738a3a6b27990de8465f21612446e39a0f7a8ba640a85"
     },
     {
       "path": "docs/paper_pilot_workflow.md",
@@ -1846,6 +1851,11 @@
       "sha256": "e12545acd4e62d8e80179e356e1b2140424a048188e4b12a0285f34b9143cfd1"
     },
     {
+      "path": "src/paper_pilot_phase_cutover_guarded_v2.py",
+      "bytes": 16677,
+      "sha256": "618cb280f69353aba783b68c34b3c8344a3d04dd4442fd805cf96b964f4d9af7"
+    },
+    {
       "path": "src/paper_pilot_phase_export.py",
       "bytes": 14124,
       "sha256": "e71071e10e98ea342bc1b0964ae4755028d145d44e429a0db565dc936044e0b4"
@@ -2052,8 +2062,8 @@
     },
     {
       "path": "tests/test_first_page_v3_io.py",
-      "bytes": 12673,
-      "sha256": "90738fcb98635598c5599e99482904da17cd4a3514a62432ddb17cea16289f70"
+      "bytes": 13755,
+      "sha256": "70ac9c7159f7f66e6b436a782faf6573f083a67175dff5999b6b4679b56c5d0c"
     },
     {
       "path": "tests/test_first_page_v3_local_models.py",
@@ -2154,6 +2164,11 @@
       "path": "tests/test_paper_pilot_phase_backup.py",
       "bytes": 2639,
       "sha256": "006c341f31625c71a1607262c8eaefaa565c7b2ac5ce262ba8db007dcdf93d52"
+    },
+    {
+      "path": "tests/test_paper_pilot_phase_cutover_guarded_v2.py",
+      "bytes": 11173,
+      "sha256": "c1fab4e9adbe973c53d01fa2d0340559ffef0dc4d482e2b5b8bb68cfa9f43c33"
     },
     {
       "path": "tests/test_paper_pilot_phase_fence.py",
@@ -2487,8 +2502,8 @@
     },
     {
       "path": "tools/package_project.py",
-      "bytes": 8269,
-      "sha256": "81162b596847ac8340c77bb4f463b5785f1b565f090613daa11bfc82cfc1e7ab"
+      "bytes": 8284,
+      "sha256": "ebbce42f0768cf2a47afc080a23c0d41415845ccac1ce9d29e4696504543cb9b"
     },
     {
       "path": "tools/paper_ingestion_schemas.py",

@@ -38,6 +38,22 @@ class PackageSafetyTests(unittest.TestCase):
             self.assertEqual(audit_archive(parent/"source.zip")["private_pdfs"],0)
             self.assertEqual({r["path"] for r in json.loads((root/"MANIFEST.json").read_text())["files"]},{"src/example.py",".env.example"})
 
+    def test_exact_manifest_in_enters_source_archive_without_neighboring_in_files(self):
+        for name in ("MANIFEST.in.bak", "other.in", ".env.production"):
+            self.assertFalse(safe_name(name))
+        self.assertTrue(safe_name("MANIFEST.in"))
+        with tempfile.TemporaryDirectory() as tmp:
+            parent = Path(tmp); root = parent / "project"; root.mkdir()
+            (root / "MANIFEST.in").write_text("include src/example.py\n")
+            (root / "other.in").write_text("unreviewed instructions\n")
+            (root / "MANIFEST.in.bak").write_text("stale instructions\n")
+            (root / "src").mkdir(); (root / "src/example.py").write_text("value = 1\n")
+            result = package(root, parent / "source.zip", tracked_only=False)
+            self.assertEqual(result["status"], "PASS")
+            paths = {row["path"] for row in json.loads((root / "MANIFEST.json").read_text())["files"]}
+            self.assertEqual(paths, {"MANIFEST.in", "src/example.py"})
+            self.assertEqual(audit_archive(parent / "source.zip")["files_in_zip"], 3)
+
     def test_renamed_pdf_and_private_key_content_abort_packaging(self):
         for payload in (b"%PDF-1.7 disguised", b"-----BEGIN "+b"PRIVATE KEY-----\nfixture"):
             with tempfile.TemporaryDirectory() as tmp:

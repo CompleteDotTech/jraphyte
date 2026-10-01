@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 from contextlib import contextmanager
+from contextvars import ContextVar
 from copy import deepcopy
 import datetime as dt
 import hashlib
@@ -174,6 +175,14 @@ def validate_plan(root, descriptor):
     return plan, inputs, page
 
 
+_ENGINE_LOCK_ROOT = ContextVar("paper_converter_engine_lock_root", default=None)
+
+
+def engine_lock_owned(root):
+    """Report this process's active engine-lock context to an enrolled collector."""
+    return _ENGINE_LOCK_ROOT.get() == str(Path(root).resolve())
+
+
 @contextmanager
 def engine_lock(root):
     """An OS-released lock; a crashed process cannot leave a stale held lease."""
@@ -192,9 +201,11 @@ def engine_lock(root):
                 fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError as exc:
             raise ValueError("another_converter_owns_data_root") from exc
+        token = _ENGINE_LOCK_ROOT.set(str(Path(root).resolve()))
         try:
             yield
         finally:
+            _ENGINE_LOCK_ROOT.reset(token)
             stream.seek(0)
             if os.name == "nt":
                 msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
@@ -274,7 +285,7 @@ def _worker(root, plan_descriptor, out, plan):
             raise ValueError("worker_timeout_unknown_outcome") from None
 
 
-def outstanding_attempts(root):
+def outstanding_attempts(root, reconciliation=None):
     """A crashed controller releases the OS lock, not its unresolved intent."""
     registry = child(root, ".paper-converter-attempts")
     if not registry.exists():
@@ -283,6 +294,12 @@ def outstanding_attempts(root):
         value = Inputs(root).json(descriptor(root, path))
         exact(value, {"version", "output", "plan", "intent_sha256"}, "invalid_attempt_registry")
         require(value["version"] == "paper-converter-active-attempt-v1", "invalid_attempt_registry")
+        if reconciliation is not None and path.relative_to(root).as_posix() == reconciliation["old_registry_relative"]:
+            from src.paper_converter_reconciliation import recheck
+            require(descriptor(root, path)["sha256"] == reconciliation["old_registry_sha256"],
+                    "reconciled_registry_changed")
+            recheck(root, reconciliation, allow_successor_created=True)
+            continue
         out = output_path(root, value["output"])
         require((out / "execution.json").is_file() and not (out / "INVALIDATED.json").exists(), "unreconciled_attempt_blocks_data_root")
         Inputs(root).verify({"relative": (out / "intent.json").relative_to(root).as_posix(), "sha256": value["intent_sha256"]})
@@ -293,14 +310,77 @@ def execute(root, plan_descriptor, output):
     root = Path(root).resolve()
     plan_descriptor = deepcopy(plan_descriptor)
     with engine_lock(root):
+        return _execute_locked(root, plan_descriptor, output)
+
+
+def execute_successor(root, plan_descriptor, output, *, authority_relative,
+                      authority_sha256, receipt_relative, receipt_sha256,
+                      trusted_application=None):
+    """One distinct attempt under an enrolled application's live exclusion.
+
+    The standalone CLI cannot supply this capability. Its implementation must
+    independently enroll the authority and hold launch exclusion for the full
+    worker lifetime; a receipt or caller-supplied hash does neither.
+    """
+    from src.paper_converter_trusted_application_v1 import RootEnrolledConverterApplication
+    require(type(trusted_application) is RootEnrolledConverterApplication,
+            "root_owned_concrete_application_required")
+    root = Path(root).resolve()
+    plan_descriptor = deepcopy(plan_descriptor)
+    with engine_lock(root):
+        from src.paper_converter_reconciliation import verify_reconciliation
+        existing = output_path(root, output)
+        if (existing / "execution.json").is_file():
+            proof = verify_reconciliation(root,
+                authority_relative=authority_relative,
+                authority_sha256=authority_sha256,
+                receipt_relative=receipt_relative,
+                receipt_sha256=receipt_sha256,
+                successor_plan=plan_descriptor, successor_output=output,
+                allow_successor_created=True, historical_readback=True)
+            require(trusted_application.verify_authority(proof) is True,
+                    "historical_authority_revoked_or_not_enrolled")
+            return verify_execution(root, plan_descriptor, output,
+                                    trusted_application=trusted_application)
+        proof = verify_reconciliation(root, authority_relative=authority_relative,
+            authority_sha256=authority_sha256, receipt_relative=receipt_relative,
+            receipt_sha256=receipt_sha256, successor_plan=plan_descriptor,
+            successor_output=output)
+        require(trusted_application.verify_authority(proof) is True,
+                "authority_not_independently_enrolled")
+        with trusted_application.hold_live_exclusion(root, proof) as exclusion:
+            require(callable(getattr(exclusion, "reobserve", None)),
+                    "live_exclusion_observer_required")
+            return _execute_locked(root, plan_descriptor, output,
+                                   reconciliation=proof,
+                                   trusted_application=trusted_application,
+                                   live_exclusion=exclusion)
+
+
+def _execute_locked(root, plan_descriptor, output, reconciliation=None,
+                    trusted_application=None, live_exclusion=None):
         _prepare(root, plan_descriptor, output)
         out = output_path(root, output)
         plan, inputs, _ = validate_plan(root, plan_descriptor)
         require(not (out / "INVALIDATED.json").exists(), "attempt_invalidated")
         if (out / "execution.json").exists():
-            return verify_execution(root, plan_descriptor, output)
+            return verify_execution(root, plan_descriptor, output,
+                                    trusted_application=trusted_application)
         require(not (out / "intent.json").exists(), "unknown_attempt_requires_manual_reconciliation_no_retry")
-        outstanding_attempts(root)
+        outstanding_attempts(root, reconciliation)
+        if reconciliation is not None:
+            from src.paper_converter_reconciliation import recheck
+            recheck(root, reconciliation, allow_successor_created=True)
+            write_output(root, out / "RECONCILIATION_PARENT.json", {
+                "version": "paper-converter-successor-lineage-v1",
+                "old_output": reconciliation["old_output"],
+                "old_registry_sha256": reconciliation["old_registry_sha256"],
+                "authority": {"relative": reconciliation["authority_relative"],
+                              "sha256": reconciliation["authority_sha256"]},
+                "receipt": {"relative": reconciliation["receipt_relative"],
+                            "sha256": reconciliation["receipt_sha256"]},
+                "successor_plan": plan_descriptor,
+                "historical_outcome": "UNKNOWN_UNATTESTED_NO_RETRY"})
         write_output(root, out / "intent.json", {"version": "paper-converter-intent-v1", "plan": plan_descriptor,
                                         "started_at": now(), "mode": plan["mode"], "attempt": 1, "controller_pid": os.getpid()})
         registry = {"version": "paper-converter-active-attempt-v1", "output": out.relative_to(root).as_posix(),
@@ -309,10 +389,21 @@ def execute(root, plan_descriptor, output):
         write_once(registry_path, registry)
         started = time.monotonic()
         try:
+            if reconciliation is not None:
+                recheck(root, reconciliation, allow_successor_created=True)
+                from src.paper_converter_reconciliation import verify_live_exclusion
+                verify_live_exclusion(reconciliation, live_exclusion.reobserve())
             exit_code = _worker(root, plan_descriptor, out, plan)
+            if reconciliation is not None:
+                recheck(root, reconciliation, allow_successor_created=True,
+                        post_worker_readback=True)
+                verify_live_exclusion(reconciliation, live_exclusion.reobserve())
             inputs.recheck()
             require(code_identity() == plan["code_identity"], "smoke_code_changed")
-            result, artifacts = execution_evidence(root, out, plan_descriptor, plan, inputs)
+            result, artifacts = execution_evidence(root, out, plan_descriptor,
+                                                    plan, inputs,
+                                                    trusted_application=trusted_application,
+                                                    post_worker_readback=True)
             require(type(exit_code) is int and exit_code == (0 if result["status"] == "success" else 1), "exit_status_mismatch")
             receipt = {"version": "paper-converter-execution-readback-v1", "plan": plan_descriptor,
                        "mode": plan["mode"], "engine": result["engine"], "status": result["status"], "exit_code": exit_code,
@@ -328,12 +419,43 @@ def execute(root, plan_descriptor, output):
             raise
 
 
-def execution_evidence(root, out, plan_descriptor, plan, inputs):
+def execution_evidence(root, out, plan_descriptor, plan, inputs,
+                       trusted_application=None, post_worker_readback=False):
     """Reconstruct receipt claims from owned artifacts, with same-buffer parsing."""
     base_hashes = dict(inputs.hashes)
     artifacts = {key: descriptor(root, out / filename) for key, filename in {
         "worker_result": "worker-result.json", "stdout": "stdout.txt", "stderr": "stderr.txt",
         "prepared": "prepared.json", "intent": "intent.json", "page": "page.pdf"}.items()}
+    lineage = out / "RECONCILIATION_PARENT.json"
+    if lineage.exists():
+        require(trusted_application is not None and
+                callable(getattr(trusted_application, "verify_authority", None)),
+                "independent_reconciliation_readback_required")
+        artifacts["reconciliation_parent"] = descriptor(root, lineage)
+        parent = inputs.json(artifacts["reconciliation_parent"])
+        exact(parent, {"version", "old_output", "old_registry_sha256", "authority",
+                       "receipt", "successor_plan", "historical_outcome"},
+              "invalid_successor_lineage")
+        require(parent["version"] == "paper-converter-successor-lineage-v1" and
+                parent["successor_plan"] == plan_descriptor and
+                parent["historical_outcome"] == "UNKNOWN_UNATTESTED_NO_RETRY",
+                "successor_lineage_differs")
+        from src.paper_converter_reconciliation import verify_reconciliation
+        proof = verify_reconciliation(root,
+            authority_relative=parent["authority"]["relative"],
+            authority_sha256=parent["authority"]["sha256"],
+            receipt_relative=parent["receipt"]["relative"],
+            receipt_sha256=parent["receipt"]["sha256"],
+            successor_plan=plan_descriptor,
+            successor_output=out.relative_to(root).as_posix(),
+            allow_successor_created=True,
+            historical_readback=(out / "execution.json").is_file(),
+            post_worker_readback=post_worker_readback and
+                                 not (out / "execution.json").is_file())
+        require(proof["old_output"] == parent["old_output"] and
+                proof["old_registry_sha256"] == parent["old_registry_sha256"] and
+                trusted_application.verify_authority(proof) is True,
+                "successor_authority_or_old_inventory_differs")
     prepared = inputs.json(artifacts["prepared"])
     require(prepared == {"version": "paper-converter-prepared-v1", "plan": plan_descriptor, "mode": plan["mode"],
                          "input_hashes": base_hashes, "code_identity": plan["code_identity"]}, "prepared_identity_changed")
@@ -364,7 +486,7 @@ def execution_evidence(root, out, plan_descriptor, plan, inputs):
     return result, artifacts
 
 
-def verify_execution(root, plan_descriptor, output):
+def verify_execution(root, plan_descriptor, output, *, trusted_application=None):
     root = Path(root).resolve()
     plan_descriptor = deepcopy(plan_descriptor)
     plan, inputs, _ = validate_plan(root, plan_descriptor)
@@ -376,7 +498,8 @@ def verify_execution(root, plan_descriptor, output):
                    "input_hashes", "code_identity", "readiness_pass"}, "invalid_execution_record")
     require(record["version"] == "paper-converter-execution-readback-v1" and record["plan"] == plan_descriptor
             and record["mode"] == plan["mode"] and record["code_identity"] == plan["code_identity"], "execution_identity_changed")
-    result, artifacts = execution_evidence(root, out, plan_descriptor, plan, inputs)
+    result, artifacts = execution_evidence(root, out, plan_descriptor, plan,
+                                           inputs, trusted_application=trusted_application)
     require(record["engine"] == result["engine"] and record["status"] == result["status"]
             and type(record["exit_code"]) is int and record["exit_code"] == (0 if result["status"] == "success" else 1)
             and record["artifacts"] == artifacts and record["input_hashes"] == inputs.hashes
@@ -388,8 +511,10 @@ def verify_execution(root, plan_descriptor, output):
     return record
 
 
-def readiness_evidence(root, plan_descriptor, output, attestation_descriptor):
-    execution = verify_execution(root, plan_descriptor, output)
+def readiness_evidence(root, plan_descriptor, output, attestation_descriptor,
+                       *, trusted_application=None):
+    execution = verify_execution(root, plan_descriptor, output,
+                                 trusted_application=trusted_application)
     out = output_path(root, output)
     plan, inputs, _ = validate_plan(root, plan_descriptor)
     attestation = inputs.json(attestation_descriptor)
@@ -411,12 +536,14 @@ def readiness_evidence(root, plan_descriptor, output, attestation_descriptor):
     return readiness, inputs, plan
 
 
-def finalize(root, plan_descriptor, output, attestation_descriptor):
+def finalize(root, plan_descriptor, output, attestation_descriptor,
+             *, trusted_application=None):
     """Explicit attributed custodian readback; never invent or auto-sign it."""
     root = Path(root).resolve()
     plan_descriptor, attestation_descriptor = deepcopy(plan_descriptor), deepcopy(attestation_descriptor)
     with engine_lock(root):
-        readiness, inputs, plan = readiness_evidence(root, plan_descriptor, output, attestation_descriptor)
+        readiness, inputs, plan = readiness_evidence(root, plan_descriptor, output,
+            attestation_descriptor, trusted_application=trusted_application)
         out = output_path(root, output)
         write_output(root, out / "readiness.json", readiness)
         marker = {"version": "paper-converter-readiness-completion-v1", "mode": plan["mode"],
@@ -424,9 +551,11 @@ def finalize(root, plan_descriptor, output, attestation_descriptor):
                   "readiness": descriptor(root, out / "readiness.json"), "prospective_execution_authorized": False,
                   "graph_admission_enabled": False, "independent_human": False}
         try:
-            verify_execution(root, plan_descriptor, output); inputs.recheck()
+            verify_execution(root, plan_descriptor, output,
+                             trusted_application=trusted_application); inputs.recheck()
             write_output(root, out / "COMPLETE.json", marker)
-            verify_execution(root, plan_descriptor, output); inputs.recheck()
+            verify_execution(root, plan_descriptor, output,
+                             trusted_application=trusted_application); inputs.recheck()
             require(Inputs(root).json(descriptor(root, out / "COMPLETE.json")) == marker
                     and descriptor(root, out / "readiness.json")["sha256"] == marker["readiness"]["sha256"], "publication_changed")
             return marker
@@ -436,7 +565,8 @@ def finalize(root, plan_descriptor, output, attestation_descriptor):
             raise
 
 
-def verify_readiness(root, plan_descriptor, output, attestation_descriptor):
+def verify_readiness(root, plan_descriptor, output, attestation_descriptor,
+                     *, trusted_application=None):
     """Verify completion against the external plan AND custodian pins."""
     root = Path(root).resolve()
     plan_descriptor, attestation_descriptor = deepcopy(plan_descriptor), deepcopy(attestation_descriptor)
@@ -448,12 +578,14 @@ def verify_readiness(root, plan_descriptor, output, attestation_descriptor):
     require(marker["version"] == "paper-converter-readiness-completion-v1" and marker["attestation"] == attestation_descriptor
             and marker["prospective_execution_authorized"] is False and marker["graph_admission_enabled"] is False
             and marker["independent_human"] is False, "completion_identity_mismatch")
-    readiness, inputs, plan = readiness_evidence(root, plan_descriptor, output, attestation_descriptor)
+    readiness, inputs, plan = readiness_evidence(root, plan_descriptor, output,
+        attestation_descriptor, trusted_application=trusted_application)
     require(marker["mode"] == plan["mode"] and marker["execution"] == descriptor(root, out / "execution.json")
             and marker["readiness"] == descriptor(root, out / "readiness.json")
             and inputs.json(marker["readiness"]) == readiness, "readiness_fields_changed")
     inputs.recheck()
-    verify_execution(root, plan_descriptor, output)
+    verify_execution(root, plan_descriptor, output,
+                     trusted_application=trusted_application)
     inputs.recheck()
     require(sha(original) == descriptor(root, out / "COMPLETE.json")["sha256"]
             and not (out / "INVALIDATED.json").exists(), "completion_changed")
@@ -485,20 +617,33 @@ def validate_prospective_execution(value):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("prepare", "execute", "verify", "finalize", "verify-readiness"))
+    parser.add_argument("action", choices=("prepare", "execute", "execute-successor", "verify", "finalize", "verify-readiness"))
     parser.add_argument("--data-root", required=True)
     parser.add_argument("--plan", required=True)
     parser.add_argument("--expected-plan-sha256", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--attestation")
     parser.add_argument("--expected-attestation-sha256")
+    parser.add_argument("--reconciliation-authority")
+    parser.add_argument("--expected-reconciliation-authority-sha256")
+    parser.add_argument("--reconciliation-receipt")
+    parser.add_argument("--expected-reconciliation-receipt-sha256")
     args = parser.parse_args()
     plan = {"relative": args.plan, "sha256": args.expected_plan_sha256}
     try:
+        reconciliation_args = (args.reconciliation_authority,
+            args.expected_reconciliation_authority_sha256,
+            args.reconciliation_receipt,
+            args.expected_reconciliation_receipt_sha256)
+        require((args.action == "execute-successor" and all(reconciliation_args)) or
+                (args.action != "execute-successor" and not any(reconciliation_args)),
+                "explicit_reconciliation_authority_and_receipt_required")
         if args.action in {"finalize", "verify-readiness"}:
             require(args.attestation and args.expected_attestation_sha256, "external_attestation_pin_required")
             function = finalize if args.action == "finalize" else verify_readiness
             result = function(args.data_root, plan, args.output, {"relative": args.attestation, "sha256": args.expected_attestation_sha256})
+        elif args.action == "execute-successor":
+            raise ValueError("standalone_successor_execution_requires_enrolled_application")
         else:
             result = {"prepare": prepare, "execute": execute, "verify": verify_execution}[args.action](args.data_root, plan, args.output)
         print(json.dumps({"status": args.action.upper(), "mode": result["mode"], "readiness_pass": args.action in {"finalize", "verify-readiness"}

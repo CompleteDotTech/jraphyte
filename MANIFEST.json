@@ -3,7 +3,7 @@
   "hash_algorithm": "SHA-256",
   "manifest_self_excluded": true,
   "source_only": true,
-  "file_count": 615,
+  "file_count": 617,
   "files": [
     {
       "path": ".github/workflows/test.yml",
@@ -62,13 +62,13 @@
     },
     {
       "path": "VALIDATION_LOG.txt",
-      "bytes": 222415,
-      "sha256": "5f56b57189d71e40367df1e53323fb2620f808044df09d21b8d0c5619f962437"
+      "bytes": 223929,
+      "sha256": "0e507ccd1e0c0338eba7cd080323d186c5fd907b1793a4b7a06d16ccb0ecfc73"
     },
     {
       "path": "VALIDATION_REPORT.json",
-      "bytes": 226490,
-      "sha256": "bd2ee728776d8b0df1e3e03309cfbeef4892c7b7ff2c9427acf83b652db3383a"
+      "bytes": 227887,
+      "sha256": "83fb6c5f1bfe7d115ee2c62cb314faef13fe3bc86962d6563b74407350898e0e"
     },
     {
       "path": "archive/v0.2/MANIFEST.json",
@@ -722,8 +722,8 @@
     },
     {
       "path": "docs/paper_pilot_phase_transition.md",
-      "bytes": 7076,
-      "sha256": "a42bf2a28ef7bc43264738a3a6b27990de8465f21612446e39a0f7a8ba640a85"
+      "bytes": 8497,
+      "sha256": "0bca297098416265b999f348cba1c6d14d1b626f475452dffe09c278c2df7957"
     },
     {
       "path": "docs/paper_pilot_workflow.md",
@@ -1881,6 +1881,11 @@
       "sha256": "618cb280f69353aba783b68c34b3c8344a3d04dd4442fd805cf96b964f4d9af7"
     },
     {
+      "path": "src/paper_pilot_phase_cutover_guarded_v4.py",
+      "bytes": 29079,
+      "sha256": "a9547fbaa0e76fbbd649366475262041f61d738f2dba1f0c8702a4a4c056abf1"
+    },
+    {
       "path": "src/paper_pilot_phase_export.py",
       "bytes": 14124,
       "sha256": "e71071e10e98ea342bc1b0964ae4755028d145d44e429a0db565dc936044e0b4"
@@ -2209,6 +2214,11 @@
       "path": "tests/test_paper_pilot_phase_cutover_guarded_v2.py",
       "bytes": 11173,
       "sha256": "c1fab4e9adbe973c53d01fa2d0340559ffef0dc4d482e2b5b8bb68cfa9f43c33"
+    },
+    {
+      "path": "tests/test_paper_pilot_phase_cutover_guarded_v4.py",
+      "bytes": 14007,
+      "sha256": "8ce50d09266407ccff5f2ace0b1cde7d4e4b00e81939426c58b459456f801237"
     },
     {
       "path": "tests/test_paper_pilot_phase_fence.py",

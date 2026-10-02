@@ -1,0 +1,12 @@
+{
+  "version": "selector-promotion-configuration-v1",
+  "selected_primary": "parallel_structure_v4",
+  "measured_methods": ["parallel_structure_v4", "parallel_grobid_v4", "parallel_mineru_v4", "parallel_olmocr_v4"],
+  "physical_page": 1,
+  "native_mode": "fresh",
+  "fallback_policy": "disabled",
+  "image_evidence_policy": "source-bound-attributed-image-review-v1",
+  "manual_closure_policy": "source-bound-attributed-review-v1",
+  "source_admission": "separate_review_required",
+  "graph_admission": "disabled"
+}

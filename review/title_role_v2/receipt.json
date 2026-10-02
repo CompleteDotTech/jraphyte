@@ -1,0 +1,21 @@
+{
+  "schema": "title-role-public-receipt-v1",
+  "issue": 52,
+  "title_policy_version": "native-title-runs-v2",
+  "real_case_id": "d21604",
+  "real_case_source_image_reviewed": true,
+  "real_case_reviewer": "assistant:/root",
+  "real_case_metadata_line_ids": [0],
+  "real_case_title_line_ids": [1, 2],
+  "real_case_author_line_ids": [3],
+  "real_case_selected_title_character_count": 120,
+  "private_source_review_sha256": "9f60f8b4768f1d551accacc3857f565745652e26deab42027b5602e65ed9d617",
+  "focused_retrieval_tests_passed": 39,
+  "field_io_tests_passed": 33,
+  "field_io_tests_skipped": 2,
+  "full_corpus_rebuild": "verified_10000_documents",
+  "frozen_query_rerun": "complete_60_queries_five_target_label_permutations_pass",
+  "successor_public_receipt": "../retrieval_title_role_10k_v1/receipt.json",
+  "source_or_image_published": false,
+  "graph_admission": false
+}

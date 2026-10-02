@@ -3,14 +3,17 @@ from __future__ import annotations
 
 from collections import Counter
 from trace_gc.pdf_source_parallel_v4 import compare
+from .fidelity import LEGACY_METRIC_VERSION, evaluate_fidelity, fidelity_summary
 
 COMPLETE = "complete"
 PARTIAL = {"partial", "partial_on_page_one"}
 ABSENT = {"absent", "no_abstract_text"}
 
 
-def score_case(case_id: str, prediction: dict, reference: dict) -> dict:
+def score_case(case_id: str, prediction: dict, reference: dict, *, evaluated_at: str | None = None) -> dict:
     return {"id": case_id, "gold": reference["status"], "predicted": prediction["status"],
+            "legacy_metric_version": LEGACY_METRIC_VERSION,
+            "fidelity": evaluate_fidelity(prediction, reference, evaluated_at=evaluated_at),
             "proposed": bool(prediction.get("proposal", False)),
             "conversion_status": prediction.get("conversion_status", "unknown"),
             "verified_admission": bool(prediction.get("verified_admission", False)),
@@ -29,7 +32,8 @@ def summary(details: list[dict]) -> dict:
     incorrect_complete = [d for d in complete if d["proposed"] and not d["text_match_98"]]
     # Never count a matching withheld candidate as a correct proposal.
     assert len(good)+len(withheld)+len(incorrect_complete) == len(complete)
-    return {"pages": len(details), "complete_available": len(complete), "proposed": len(proposed),
+    return {"legacy_metric_version": LEGACY_METRIC_VERSION, "fidelity": fidelity_summary(details),
+            "pages": len(details), "complete_available": len(complete), "proposed": len(proposed),
             "correct_proposals_98": len(good), "false_proposals": len(wrong),
             "complete_abstracts_withheld": len(withheld), "complete_abstracts_proposed_incorrectly": len(incorrect_complete),
             "matching_complete_abstracts_withheld": sum(d["text_match_98"] for d in withheld),

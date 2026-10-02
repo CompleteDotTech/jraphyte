@@ -1,10 +1,10 @@
 {
-  "answer_context_id": "graphrag-answer:4a9b38cd79823cf08d2d6442b55ce03385a9d4611321f179438e66c0de2bceda",
+  "answer_context_id": "graphrag-answer:17389eed154bcfc7d7807a69a7b5fb1bb28a6ee68d81419150c81f0771cfdb7b",
   "context": {
     "version": "trace-retrieval-v1",
-    "query_id": "retrieval-query:7614f869a7574c7c06d228a020f79f60cc92a58465725f24858e3db0b4d2a69f",
-    "result_id": "retrieval-result:4a1bbf59c7bc21a5f7f0f0b7fdbef4616cfd9718339e7dec0754d9feb29dfe94",
-    "graph_context_id": "graph-context:236dac39c63d337ffa09deb3f402068bb6a8b4d292a08b87c14f7697b15e5036",
+    "query_id": "retrieval-query:5f236618721a8bfde5a4ee60f4e6c6753373bdcd9b2befccb1607e5cc7f147ae",
+    "result_id": "retrieval-result:91b7ebea282c6d71ee1f44527442f8191345844ceffea7d1086c8390b08815a4",
+    "graph_context_id": "graph-context:31cc6024da7439d49bb9b956d281ac1fa9734a39201099da8ffd63bdd1a2d28e",
     "graph_version": 4,
     "mode": "BALANCED_EVIDENCE",
     "answer_status": "CONTEXT_ONLY",
@@ -28,24 +28,24 @@
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
         ],
         "decision_ids": [
-          "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a"
+          "resolution:63fd65dac32b4a755f673b2ea7f07df88545f3e3d617b074f725226344e8d81e"
         ],
         "observation_ids": [
-          "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2"
+          "observation:76bcabdfeee7d244106ed7cd77e191454561fee52013e7d01d5be13b9894cd27"
         ],
         "transaction_ids": [
-          "transaction:998b4022c47c85e085d7822287ff496a5ab5965c3293c69adeb8e8ce0c14d368"
+          "transaction:3f88e839dafe344bbf851ff6bcca3bdebf459ddd05ef31f64ace157c9f76f758"
         ],
         "plan_ids": [
-          "plan:cacad132f0bae6ea0e56b20936a50306c22b23159955c29dd9eb8fec54eab986"
+          "plan:a6bb12cabfec16cf2d2b88e2f1576ca4d243862b1e2cdc3e0dd9074da86bd010"
         ],
         "record_refs": [
           "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
-          "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2",
-          "plan:cacad132f0bae6ea0e56b20936a50306c22b23159955c29dd9eb8fec54eab986",
-          "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a",
+          "observation:76bcabdfeee7d244106ed7cd77e191454561fee52013e7d01d5be13b9894cd27",
+          "plan:a6bb12cabfec16cf2d2b88e2f1576ca4d243862b1e2cdc3e0dd9074da86bd010",
+          "resolution:63fd65dac32b4a755f673b2ea7f07df88545f3e3d617b074f725226344e8d81e",
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155",
-          "transaction:998b4022c47c85e085d7822287ff496a5ab5965c3293c69adeb8e8ce0c14d368"
+          "transaction:3f88e839dafe344bbf851ff6bcca3bdebf459ddd05ef31f64ace157c9f76f758"
         ],
         "relation_types": [
           "same_as"
@@ -54,7 +54,7 @@
         "trust_class": "PROVISIONAL_GRAPH_FACT",
         "current_status": "ACTIVE",
         "graph_version": 4,
-        "created_at": "2026-09-25T09:45:19.916429Z",
+        "created_at": "2026-10-01T05:48:03.076493Z",
         "superseded_at": null,
         "provenance_complete": true,
         "risk_class": "R4",
@@ -85,24 +85,24 @@
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
         ],
         "decision_ids": [
-          "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35"
+          "resolution:0c94dda352ebf2a1ee0f8f522a9f71b970bbfd29df2e9f70b08e482860a0412c"
         ],
         "observation_ids": [
-          "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030"
+          "observation:2ab52f348b2fef453db2ca5a5337146f000798f468364b35d675d91dd7608af9"
         ],
         "transaction_ids": [
-          "transaction:14367a407cfceaa0ba759b6f7522527ebcce6baaa5d0765a99acfc9deec08366"
+          "transaction:29432c848e4c9fa96fbf65c635df829eba2e2b3dd2f42b16d08e79dc208d2a4e"
         ],
         "plan_ids": [
-          "plan:af4c54f9931e4c6c77a3b2a1ec86f947bb96abc8ccace0c8bf8c0fed01ae3eb4"
+          "plan:df56d9d7a45242c3196f9ca6372d29984bd4a0941499f2a2b739bc6dbfa19988"
         ],
         "record_refs": [
           "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
-          "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030",
-          "plan:af4c54f9931e4c6c77a3b2a1ec86f947bb96abc8ccace0c8bf8c0fed01ae3eb4",
-          "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35",
+          "observation:2ab52f348b2fef453db2ca5a5337146f000798f468364b35d675d91dd7608af9",
+          "plan:df56d9d7a45242c3196f9ca6372d29984bd4a0941499f2a2b739bc6dbfa19988",
+          "resolution:0c94dda352ebf2a1ee0f8f522a9f71b970bbfd29df2e9f70b08e482860a0412c",
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155",
-          "transaction:14367a407cfceaa0ba759b6f7522527ebcce6baaa5d0765a99acfc9deec08366"
+          "transaction:29432c848e4c9fa96fbf65c635df829eba2e2b3dd2f42b16d08e79dc208d2a4e"
         ],
         "relation_types": [
           "same_as"
@@ -111,7 +111,7 @@
         "trust_class": "PROVISIONAL_GRAPH_FACT",
         "current_status": "ACTIVE",
         "graph_version": 4,
-        "created_at": "2026-09-25T09:45:20.119833Z",
+        "created_at": "2026-10-01T05:48:03.578651Z",
         "superseded_at": null,
         "provenance_complete": true,
         "risk_class": "R5",
@@ -142,24 +142,24 @@
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
         ],
         "decision_ids": [
-          "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a"
+          "resolution:63fd65dac32b4a755f673b2ea7f07df88545f3e3d617b074f725226344e8d81e"
         ],
         "observation_ids": [
-          "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2"
+          "observation:76bcabdfeee7d244106ed7cd77e191454561fee52013e7d01d5be13b9894cd27"
         ],
         "transaction_ids": [
-          "transaction:998b4022c47c85e085d7822287ff496a5ab5965c3293c69adeb8e8ce0c14d368"
+          "transaction:3f88e839dafe344bbf851ff6bcca3bdebf459ddd05ef31f64ace157c9f76f758"
         ],
         "plan_ids": [
-          "plan:cacad132f0bae6ea0e56b20936a50306c22b23159955c29dd9eb8fec54eab986"
+          "plan:a6bb12cabfec16cf2d2b88e2f1576ca4d243862b1e2cdc3e0dd9074da86bd010"
         ],
         "record_refs": [
           "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
-          "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2",
-          "plan:cacad132f0bae6ea0e56b20936a50306c22b23159955c29dd9eb8fec54eab986",
-          "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a",
+          "observation:76bcabdfeee7d244106ed7cd77e191454561fee52013e7d01d5be13b9894cd27",
+          "plan:a6bb12cabfec16cf2d2b88e2f1576ca4d243862b1e2cdc3e0dd9074da86bd010",
+          "resolution:63fd65dac32b4a755f673b2ea7f07df88545f3e3d617b074f725226344e8d81e",
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155",
-          "transaction:998b4022c47c85e085d7822287ff496a5ab5965c3293c69adeb8e8ce0c14d368"
+          "transaction:3f88e839dafe344bbf851ff6bcca3bdebf459ddd05ef31f64ace157c9f76f758"
         ],
         "relation_types": [
           "same_as"
@@ -168,7 +168,7 @@
         "trust_class": "DERIVED_GRAPH_FACT",
         "current_status": "ACTIVE",
         "graph_version": 4,
-        "created_at": "2026-09-25T09:45:19.916429Z",
+        "created_at": "2026-10-01T05:48:03.076493Z",
         "superseded_at": null,
         "provenance_complete": true,
         "risk_class": "R4",
@@ -199,24 +199,24 @@
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
         ],
         "decision_ids": [
-          "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35"
+          "resolution:0c94dda352ebf2a1ee0f8f522a9f71b970bbfd29df2e9f70b08e482860a0412c"
         ],
         "observation_ids": [
-          "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030"
+          "observation:2ab52f348b2fef453db2ca5a5337146f000798f468364b35d675d91dd7608af9"
         ],
         "transaction_ids": [
-          "transaction:14367a407cfceaa0ba759b6f7522527ebcce6baaa5d0765a99acfc9deec08366"
+          "transaction:29432c848e4c9fa96fbf65c635df829eba2e2b3dd2f42b16d08e79dc208d2a4e"
         ],
         "plan_ids": [
-          "plan:af4c54f9931e4c6c77a3b2a1ec86f947bb96abc8ccace0c8bf8c0fed01ae3eb4"
+          "plan:df56d9d7a45242c3196f9ca6372d29984bd4a0941499f2a2b739bc6dbfa19988"
         ],
         "record_refs": [
           "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
-          "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030",
-          "plan:af4c54f9931e4c6c77a3b2a1ec86f947bb96abc8ccace0c8bf8c0fed01ae3eb4",
-          "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35",
+          "observation:2ab52f348b2fef453db2ca5a5337146f000798f468364b35d675d91dd7608af9",
+          "plan:df56d9d7a45242c3196f9ca6372d29984bd4a0941499f2a2b739bc6dbfa19988",
+          "resolution:0c94dda352ebf2a1ee0f8f522a9f71b970bbfd29df2e9f70b08e482860a0412c",
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155",
-          "transaction:14367a407cfceaa0ba759b6f7522527ebcce6baaa5d0765a99acfc9deec08366"
+          "transaction:29432c848e4c9fa96fbf65c635df829eba2e2b3dd2f42b16d08e79dc208d2a4e"
         ],
         "relation_types": [
           "same_as"
@@ -225,7 +225,7 @@
         "trust_class": "DERIVED_GRAPH_FACT",
         "current_status": "ACTIVE",
         "graph_version": 4,
-        "created_at": "2026-09-25T09:45:20.119833Z",
+        "created_at": "2026-10-01T05:48:03.578651Z",
         "superseded_at": null,
         "provenance_complete": true,
         "risk_class": "R5",
@@ -238,53 +238,9 @@
         "instruction_authority": false
       },
       {
-        "id": "decision:2811a2ff330e07c0a75211e7",
+        "id": "decision:003016fbb1e48415c7dc20d3",
         "kind": "DECISION",
-        "canonical_ref": "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a",
-        "member_assertion_ids": [],
-        "assertion_ids": [],
-        "entity_ids": [
-          "person-a",
-          "person-c"
-        ],
-        "evidence_ids": [
-          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813"
-        ],
-        "source_ids": [
-          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
-        ],
-        "decision_ids": [
-          "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a"
-        ],
-        "observation_ids": [],
-        "transaction_ids": [],
-        "plan_ids": [],
-        "record_refs": [
-          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
-          "resolution:ce5a9a75aceb111f39284c68b0779b4ea0aac382df74c7f4a428043c95c1e83a",
-          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
-        ],
-        "relation_types": [],
-        "text": "{\"candidate_id\":\"known-alias\",\"outcome\":\"SELECTED\",\"risk_class\":\"R4\"}",
-        "trust_class": "HISTORICAL_GRAPH_FACT",
-        "current_status": "SELECTED",
-        "graph_version": 4,
-        "created_at": null,
-        "superseded_at": null,
-        "provenance_complete": false,
-        "risk_class": "R4",
-        "calibration": {
-          "qualified": false,
-          "note": "Retrieval status is not a calibrated truth probability."
-        },
-        "generated_summary": false,
-        "data_origin": "SOURCE_DERIVED",
-        "instruction_authority": false
-      },
-      {
-        "id": "decision:8a15c090adc88c73d2d1eae1",
-        "kind": "DECISION",
-        "canonical_ref": "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030",
+        "canonical_ref": "observation:2ab52f348b2fef453db2ca5a5337146f000798f468364b35d675d91dd7608af9",
         "member_assertion_ids": [],
         "assertion_ids": [],
         "entity_ids": [
@@ -298,14 +254,14 @@
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
         ],
         "decision_ids": [
-          "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030"
+          "observation:2ab52f348b2fef453db2ca5a5337146f000798f468364b35d675d91dd7608af9"
         ],
         "observation_ids": [],
         "transaction_ids": [],
         "plan_ids": [],
         "record_refs": [
           "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
-          "observation:274b5206089a1bdf7271c6fe5404d989fb101037bed44ece43b8c6ed1f665030",
+          "observation:2ab52f348b2fef453db2ca5a5337146f000798f468364b35d675d91dd7608af9",
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
         ],
         "relation_types": [],
@@ -313,7 +269,7 @@
         "trust_class": "HISTORICAL_GRAPH_FACT",
         "current_status": "MATCH",
         "graph_version": 4,
-        "created_at": "2026-09-25T09:45:20.012449Z",
+        "created_at": "2026-10-01T05:48:03.286159Z",
         "superseded_at": null,
         "provenance_complete": false,
         "risk_class": "R0",
@@ -326,9 +282,9 @@
         "instruction_authority": false
       },
       {
-        "id": "decision:b6cfdfcfffd3af1c1220ce08",
+        "id": "decision:708f411eb73ee39adedb82f2",
         "kind": "DECISION",
-        "canonical_ref": "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35",
+        "canonical_ref": "resolution:0c94dda352ebf2a1ee0f8f522a9f71b970bbfd29df2e9f70b08e482860a0412c",
         "member_assertion_ids": [],
         "assertion_ids": [],
         "entity_ids": [
@@ -342,14 +298,14 @@
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
         ],
         "decision_ids": [
-          "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35"
+          "resolution:0c94dda352ebf2a1ee0f8f522a9f71b970bbfd29df2e9f70b08e482860a0412c"
         ],
         "observation_ids": [],
         "transaction_ids": [],
         "plan_ids": [],
         "record_refs": [
           "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
-          "resolution:154ed02861fafabbb930ff87408548731f5b4e3a9b1a69e38c695cbefb4fae35",
+          "resolution:0c94dda352ebf2a1ee0f8f522a9f71b970bbfd29df2e9f70b08e482860a0412c",
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
         ],
         "relation_types": [],
@@ -370,9 +326,9 @@
         "instruction_authority": false
       },
       {
-        "id": "decision:fbe8f81d5cae0debd44cdd22",
+        "id": "decision:9a00830af3982d1442d2a56f",
         "kind": "DECISION",
-        "canonical_ref": "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2",
+        "canonical_ref": "resolution:63fd65dac32b4a755f673b2ea7f07df88545f3e3d617b074f725226344e8d81e",
         "member_assertion_ids": [],
         "assertion_ids": [],
         "entity_ids": [
@@ -386,14 +342,58 @@
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
         ],
         "decision_ids": [
-          "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2"
+          "resolution:63fd65dac32b4a755f673b2ea7f07df88545f3e3d617b074f725226344e8d81e"
         ],
         "observation_ids": [],
         "transaction_ids": [],
         "plan_ids": [],
         "record_refs": [
           "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
-          "observation:addcce34c76599ca64be1f3cb6b900709dcc830d635953eb2061364722430ea2",
+          "resolution:63fd65dac32b4a755f673b2ea7f07df88545f3e3d617b074f725226344e8d81e",
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "relation_types": [],
+        "text": "{\"candidate_id\":\"known-alias\",\"outcome\":\"SELECTED\",\"risk_class\":\"R4\"}",
+        "trust_class": "HISTORICAL_GRAPH_FACT",
+        "current_status": "SELECTED",
+        "graph_version": 4,
+        "created_at": null,
+        "superseded_at": null,
+        "provenance_complete": false,
+        "risk_class": "R4",
+        "calibration": {
+          "qualified": false,
+          "note": "Retrieval status is not a calibrated truth probability."
+        },
+        "generated_summary": false,
+        "data_origin": "SOURCE_DERIVED",
+        "instruction_authority": false
+      },
+      {
+        "id": "decision:bc48fe96d6c2767298c08f95",
+        "kind": "DECISION",
+        "canonical_ref": "observation:76bcabdfeee7d244106ed7cd77e191454561fee52013e7d01d5be13b9894cd27",
+        "member_assertion_ids": [],
+        "assertion_ids": [],
+        "entity_ids": [
+          "person-a",
+          "person-c"
+        ],
+        "evidence_ids": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813"
+        ],
+        "source_ids": [
+          "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
+        ],
+        "decision_ids": [
+          "observation:76bcabdfeee7d244106ed7cd77e191454561fee52013e7d01d5be13b9894cd27"
+        ],
+        "observation_ids": [],
+        "transaction_ids": [],
+        "plan_ids": [],
+        "record_refs": [
+          "evidence:44baed7f70d1652ff669ff4101efd15ef19c12b373dad5bf932ad89b5775b813",
+          "observation:76bcabdfeee7d244106ed7cd77e191454561fee52013e7d01d5be13b9894cd27",
           "source:3bc23f9e99eefaf6222fed511def35c3afcfe70e25baea217e6822ab2017e155"
         ],
         "relation_types": [],
@@ -401,7 +401,7 @@
         "trust_class": "HISTORICAL_GRAPH_FACT",
         "current_status": "MATCH",
         "graph_version": 4,
-        "created_at": "2026-09-25T09:45:19.858421Z",
+        "created_at": "2026-10-01T05:48:02.841022Z",
         "superseded_at": null,
         "provenance_complete": false,
         "risk_class": "R0",
@@ -430,6 +430,6 @@
       "SUMMARIES_ARE_NOT_CANONICAL_EVIDENCE"
     ],
     "can_mutate_graph": false,
-    "created_at": "2026-09-25T09:45:20.239451Z"
+    "created_at": "2026-10-01T05:48:03.780369Z"
   }
 }

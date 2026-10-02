@@ -1,0 +1,120 @@
+{
+  "assessment_count": 800,
+  "authored_causal_probe": {
+    "after_sha256": "384a3be5219ddda88b2c0492cb759dd330baf6a9f10386002fdcc7348a31a2ac",
+    "before_sha256": "0f7c7ea5be284e17742cd0207e3ba4be61097814a1ad840d3275d55d6c629b7a",
+    "merged_or_same_line_false_proposals_before": 6,
+    "merged_or_same_line_held_after": 6,
+    "separate_metadata_exclusion_cases_preserved": 3
+  },
+  "authored_tests_sha256": "121b4873bd545a41a69062ba869c6a5fde736b10b691b296817905cf6ce23a47",
+  "automatic_preservation_gate": {
+    "original_correct": 91,
+    "remaining_losses": 16,
+    "status": "FAIL"
+  },
+  "before_after_metrics_unchanged": true,
+  "changed_assessments": [
+    {
+      "arm": "parallel_olmocr_v4",
+      "case": "f050",
+      "changed_fields": [
+        "closing_boundary"
+      ],
+      "proposal": false,
+      "status": "uncertain"
+    },
+    {
+      "arm": "parallel_olmocr_v4",
+      "case": "f123",
+      "changed_fields": [
+        "closing_boundary",
+        "region_ownership"
+      ],
+      "proposal": false,
+      "status": "uncertain"
+    }
+  ],
+  "comparison_input_count": 1604,
+  "comparison_sha256": "8a8781ded01251789297bda6117f663fb4406fe2330efdc5381636f0a4a856be",
+  "limitations": [
+    "Legacy boundary and text98 metrics do not certify scientific notation.",
+    "This corpus receipt predates PR51; the opt-in fraction helper was absent and no SourceGeometry context was supplied.",
+    "The prior reviewed promotion result remains bound to its original code and evidence.",
+    "Fresh combined-tree extraction and review verification are required for a new promotion claim."
+  ],
+  "measured_base_commit": "f9f7c13ae73f40af8af167fda8e62711fcdb530c",
+  "measured_source_extractor_sha256": "18f87b4b7ad292948523536bc226701fcb5d83164ddd41611299eabcb9772fa2",
+  "metrics": {
+    "parallel_grobid_v4": {
+      "absent_false_proposals": 0,
+      "boundary_and_98_correct_proposals": 73,
+      "complete_abstracts_withheld": 38,
+      "complete_available": 111,
+      "diagnostic_notation_token_mismatches": 53,
+      "false_proposals": 0,
+      "pages": 200,
+      "partial_false_proposals": 0,
+      "proposed": 73
+    },
+    "parallel_mineru_v4": {
+      "absent_false_proposals": 0,
+      "boundary_and_98_correct_proposals": 67,
+      "complete_abstracts_withheld": 44,
+      "complete_available": 111,
+      "diagnostic_notation_token_mismatches": 38,
+      "false_proposals": 0,
+      "pages": 200,
+      "partial_false_proposals": 0,
+      "proposed": 67
+    },
+    "parallel_olmocr_v4": {
+      "absent_false_proposals": 0,
+      "boundary_and_98_correct_proposals": 64,
+      "complete_abstracts_withheld": 47,
+      "complete_available": 111,
+      "diagnostic_notation_token_mismatches": 32,
+      "false_proposals": 0,
+      "pages": 200,
+      "partial_false_proposals": 0,
+      "proposed": 64
+    },
+    "parallel_structure_v4": {
+      "absent_false_proposals": 0,
+      "boundary_and_98_correct_proposals": 79,
+      "complete_abstracts_withheld": 32,
+      "complete_available": 111,
+      "diagnostic_notation_token_mismatches": 19,
+      "false_proposals": 0,
+      "pages": 200,
+      "partial_false_proposals": 0,
+      "proposed": 79
+    }
+  },
+  "named_source_audit_sha256": "b89ce4e19671de8d6811d4006a8a3f95f440368ce67073bcfcb84dd30587c416",
+  "native_manifest_sha256": "c59617d008a6d63766e0100df7925e8105eb9717f38be4ae86632d920381f471",
+  "native_mode": "replay",
+  "new_paid_api_calls": 0,
+  "new_promotion_claim": false,
+  "pre_pr51_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_sha256": "eccc205627aac57112d0afb70e7e61d18fa271eb431788007dcafaa3e873a94c",
+    "skipped": 7,
+    "status": "PASS_WITH_EXTERNAL_GATES",
+    "tests_passed": 1024,
+    "tests_run": 1031
+  },
+  "production_graph_writes": 0,
+  "results_sha256": "f51e06e77dae187639b329542555f0542d1e139f8bbc35d76ee625e10be94b3f",
+  "runtime_sha256": "f091b827709308eb9f30695b100a798c67355ad1e6e506e393b49e7021026a67",
+  "saved_v2_replay_gate": "PASS",
+  "scope": "previously_examined_development_cached_native_default_geometry_helper_off",
+  "selector_sha256": "57f6402716d208f875063e62bdd6aaa48be4413d4d543a759184c43d35bca05c",
+  "source_count": 200,
+  "source_native_identities_unchanged": true,
+  "source_reviews_reapplied": false,
+  "superseded_measured_regression_sha256": "5b4c7169d9a3230535ee103ccb0746a030de45f2ac5c1835322d86e1b4af9f37",
+  "unseen_qualification": false,
+  "version": "embedded-metadata-development-receipt-v1"
+}

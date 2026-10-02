@@ -22,7 +22,7 @@ DENIED_SUFFIXES = {".pdf", ".pt", ".pth", ".bin", ".safetensors", ".ckpt", ".ggu
 SOURCE_SUFFIXES = {".py", ".md", ".rst", ".txt", ".json", ".jsonl", ".yaml", ".yml", ".toml", ".ini", ".cfg",
                    ".csv", ".tsv", ".mmd", ".svg", ".png", ".jpg", ".jpeg", ".html", ".css", ".js", ".ts",
                    ".tsx", ".jsx", ".sh", ".ps1", ".bat", ".patch"}
-SPECIAL_NAMES = {"license", "notice", "makefile", ".gitignore", ".gitattributes", ".env.example"}
+SPECIAL_NAMES = {"license", "notice", "makefile", ".gitignore", ".gitattributes", ".env.example", "manifest.in"}
 SECRET = re.compile(rb"-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{30,}|\bgithub_pat_[A-Za-z0-9_]{40,}|\bAIza[0-9A-Za-z_-]{35}\b")
 
 

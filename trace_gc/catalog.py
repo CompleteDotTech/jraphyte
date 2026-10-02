@@ -11,6 +11,7 @@ KINDS = {"source", "claim", "evidence", "candidate", "pack", "observation", "eva
 
 from .retrieval.contracts import KINDS as RETRIEVAL_KINDS
 KINDS.update(RETRIEVAL_KINDS)
+KINDS.add("image-evidence-v1")
 
 class Catalog:
     def __init__(self, records: Iterable[dict[str, Any]] = ()):
@@ -73,6 +74,11 @@ class Catalog:
     def verify_evidence(self, id_: str) -> None:
         e = self.get(id_, "evidence")
         s = self.get(e["source_snapshot_id"], "source")
+        from .pdf_image_evidence import verify_image_source
+        verify_image_source(self, s)
+        if s["representation"] == "reviewed-native-pdf-page-v1":
+            from .paper_ingestion import verify_page_source
+            verify_page_source(s)
         require(s["text"] is not None, "REPLAY_CONTENT_UNAVAILABLE", "source has been erased")
         require(self.hash(e["source_snapshot_id"]) == e["source_hash"] and
                 text_digest(s["text"]) == s["text_hash"] and

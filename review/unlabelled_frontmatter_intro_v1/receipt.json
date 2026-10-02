@@ -1,0 +1,39 @@
+{
+  "schema": "source-unlabelled-frontmatter-intro-experiment-v1",
+  "scope": "200 previously examined first-page papers, four frozen converter methods, verified original PDFs",
+  "implementation_commit_before_rebase": "dd7faca2f02c496472e33fcd41ccc3bff7d57468",
+  "source_geometry_policy": "source_fraction_v1",
+  "private_evidence": {
+    "preflight": "validation_v3_private/issue17-frontmatter-full200-20260929-01/preflight.json",
+    "preflight_sha256": "2e658c592e61aca9fd0f82f0a78153ab6da4be3d549cc7387cf86cc988fbb01d",
+    "result": "validation_v3_private/issue17-frontmatter-full200-20260929-01/results.json",
+    "result_sha256": "98a65fe0662d1b0e19e78b906fffeca80bde47d6acde50bd4bcec131e3a1890f",
+    "native_manifest_sha256": "2eafa728c18f9c76a6c9c9b504c1d58b7417306036b1000c52141407e913838a",
+    "prior_result_sha256": "1d1850600e6a70f7b57f91f7182f94e65cadd6d9ea106fae2d5f965113185d42",
+    "source_review_sha256": "b3012aa94138d5ef1f61f6f30b6315af6aaef0d4c9345f354ae9edf6974cdb2d"
+  },
+  "regression": {
+    "status": "FAILED_REGRESSION_PRESERVATION_GATE",
+    "preflight": "PASS",
+    "saved_v2_replay": "PASS",
+    "assessments": 800,
+    "primary_changed_case_ids": ["f096", "f158"],
+    "primary_selected_text_changed": false,
+    "primary_correct_before_after": [84, 86],
+    "grobid_correct_before_after": [77, 77],
+    "mineru_correct_before_after": [70, 70],
+    "olmocr_correct_before_after": [65, 65],
+    "false_proposals_all_methods": 0,
+    "historical_91_preservation_lost_ids": ["f012", "f032", "f045", "f059", "f079", "f081", "f122", "f153", "f171"],
+    "new_paid_api_calls": 0,
+    "production_graph_writes": 0,
+    "runtime_seconds": 1165.1443150000123
+  },
+  "review": {
+    "attribution": "internal assistant source-image diagnostic after predictions; no blinded or independent human review claimed",
+    "positive_boundary": "The source-located full-width paragraph follows a unique title, author and affiliation chain and ends before a source-located Introduction heading. Body text starts below in two columns.",
+    "f045_negative": "Correspondence metadata follows the unlabelled paragraph; no qualifying Introduction boundary, so the candidate remains held.",
+    "f158_notation_review": "Mathematical notation fidelity remains unresolved despite historical ordered-alphanumeric text agreement."
+  },
+  "limitations": "The 91-case historical preservation gate remains failed, f119 synopsis ownership remains held, and this exposed development corpus is not held-out qualification or automatic graph-admission authority. Default source geometry remains disabled."
+}

@@ -1,0 +1,57 @@
+{
+  "version": "source-verified-selector-public-evidence-v1",
+  "issue": 19,
+  "cohort": "original-200-development-regression",
+  "converter_arms": 4,
+  "frozen_gold_counts": {
+    "complete": 111,
+    "partial": 7,
+    "absent": 82
+  },
+  "source_verified_selected": 97,
+  "original_legacy_success_ids_preserved": 91,
+  "source_false_or_unresolved_selected": 0,
+  "current_reviewed_image_routes": 24,
+  "source_verified_policy_status": "PASS",
+  "fresh_separate_verification_status": "PASS",
+  "legacy_base_status": "FAIL",
+  "legacy_failed_gate_names": [
+    "zero_false_primary_proposals"
+  ],
+  "legacy_boundary_failure_ids": [
+    "f081"
+  ],
+  "legacy_reference_and_scorer_modified": false,
+  "user_approved_policy_amendment": true,
+  "approval_sha256": "29b5f9d09704057b440cbc1e726e1dc67ea3a0c86aa06775877791d000a6609e",
+  "policy_sha256": "3babc5b270ca62c73b064b90b5f749127d8d5893592ecbc1c6369fb25209a459",
+  "legacy_base_receipt_sha256": "6581453af3a819b60c358c3fa7bf3f4c253aea1a1d9d31d28dcf818d83bd13ca",
+  "source_verified_receipt_sha256": "11e4a1e481e4ba30494ff71f881c898c3daaa6f294bd59021011fba1d9e5cc78",
+  "sealed_private_readback_sha256": "88c712be902246fd9794fa81bc06bc087f9ec1a2929a23811c5c32279c86b303",
+  "invalid_prior_attempt_history_sha256": "084624550fa349c70b85b15efa9c2ab08de62d17df28ede8ad3e917d451379a7",
+  "review_attribution": "internal nonblind assistant source and notation review",
+  "independent_human_qualification": false,
+  "unseen_paper_qualification": false,
+  "automatic_fallback_enabled": false,
+  "graph_admission_enabled": false,
+  "production_graph_writes": 0,
+  "new_paid_api_calls": 0,
+  "private_evidence_included": false,
+  "source_verified_gate_code_sha256": "fd71fb225509dae80612b74b9c03aed6078df61727c091e19b1430c7bbf2284f",
+  "validation": {
+    "log_sha256": "15a034976af55f1ccff30c4344cb9d3a29716b279b23bc1ee8b8295aa8b1d418",
+    "report_sha256": "bfec0dda4d86103fd9559fb0ad2b8704f295da67d1ca15af3556b9ff2e360730",
+    "skipped": 8,
+    "status": "PASS_WITH_EXTERNAL_GATES",
+    "tests_passed": 1266,
+    "installed_cli_version": "TRACE-GC 0.4.0",
+    "errors": 0,
+    "tests_run": 1274,
+    "isolated_wheel_install_and_version_status": "PASS",
+    "real_graph_rag_qualification": false,
+    "wheel_build_sha256": "06dd52e8bb9b9de5d9a179bcaad80f4c4d078647e315840a13eb29f9e60d636c",
+    "legacy_package_fixture_status": "PASS",
+    "failures": 0,
+    "python": "3.12.10"
+  }
+}

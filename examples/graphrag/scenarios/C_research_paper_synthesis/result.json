@@ -11,13 +11,13 @@
     "candidate-1"
   ],
   "resolver_decisions": [
-    "resolution:b547eb19fbab2df3d3fba5ec62a3a77d7c0bfeef68d7fe3ad4e072f0078fd327"
+    "resolution:5279a2a518a4d49766e330ec9746ced292e9395e51e407901bd97dc029b60222"
   ],
   "retrieval_results": [
-    "retrieval-result:a060722e4262d6e3b4bb350f5c678032d81c049f7e5e73c3987dd4342b0af3d6"
+    "retrieval-result:0fd6f544e5a4aea9a3c15be24d6fba02570ce2aec39f06a2f3cd52c504368737"
   ],
   "expansions": [
-    "retrieval-expansion:696c6d645465014d1ded436b80ea378f4daf38e297115a360a15e2bfd05b268f"
+    "retrieval-expansion:1f485677d430adf6c1b14f3c7d5d13f4c11ad1b8083e71855f7262bec596fe3d"
   ],
   "commit_version": 2,
   "downstream_graph_version": 2,

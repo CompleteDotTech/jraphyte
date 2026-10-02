@@ -1,0 +1,292 @@
+{
+  "code": {
+    "clean_tree_at_terminal_readback": true,
+    "commit": "f9f7c13ae73f40af8af167fda8e62711fcdb530c",
+    "method_hashes_recorded_in": "trial-protocol.json",
+    "repository": "Jev-Engineering/jraphyte"
+  },
+  "corpus": {
+    "abstract_empty": 10000,
+    "ocr_eligibility": {
+      "candidate": 2,
+      "ineligible_native_error": 12,
+      "ineligible_native_present": 9975,
+      "ineligible_page_mismatch": 11
+    },
+    "ocr_producer": "Windows.Media.Ocr, local, full first page144DPI, two genuine calls, unreviewed retrieval text only",
+    "remaining_unsearchable": 12,
+    "searchable_after": 9988,
+    "searchable_before": 9986
+  },
+  "execution_status": "COMPLETE",
+  "external_evidence": {
+    "DRIVER_COMPLETE.json": {
+      "relative_path": "validation_v3_private/issue22-ocr-corpus-retrieval-20260928-03/DRIVER_COMPLETE.json",
+      "sha256": "880fd2b67281eb0209cf33c0592d0f36055ddc0921fa04cb2fdebd69df9197c2"
+    },
+    "FINAL_RANK_COMPARISON.json": {
+      "relative_path": "validation_v3_private/issue22-ocr-corpus-retrieval-20260928-03/FINAL_RANK_COMPARISON.json",
+      "sha256": "7896f13a97023d823199026d07d725f9dd150908239d445afd36e9aad2a66576"
+    },
+    "MODEL_INITIALIZATION_WARNING.json": {
+      "relative_path": "validation_v3_private/issue22-ocr-corpus-retrieval-20260928-03/MODEL_INITIALIZATION_WARNING.json",
+      "sha256": "6097ab8dcaa1abadb8e0356492fb13ae90b28000ee77f1f2fc24b78fd10afaba"
+    },
+    "STDOUT_DIAGNOSIS.json": {
+      "relative_path": "validation_v3_private/issue22-ocr-corpus-retrieval-20260928-03/STDOUT_DIAGNOSIS.json",
+      "sha256": "89dcf23e02cdb58121f171f8bd568b953315b638bc26b9e47cc8ecae11a9dbf6"
+    },
+    "TERMINAL_INTEGRITY_READBACK.json": {
+      "relative_path": "validation_v3_private/issue22-ocr-corpus-retrieval-20260928-03/TERMINAL_INTEGRITY_READBACK.json",
+      "sha256": "999d2248cd2c6410e92759a9ac6682237effb273b1610bc5068eb88689d8e4ee"
+    },
+    "mupdf-messages.log": {
+      "relative_path": "validation_v3_private/issue22-ocr-corpus-retrieval-20260928-03/mupdf-messages.log",
+      "sha256": "73bfb7c26bcd74b68060b26375adcb08db12955362e588e658cdea959574f502"
+    },
+    "trial-protocol.json": {
+      "relative_path": "validation_v3_private/issue22-ocr-corpus-retrieval-20260928-03/trial-protocol.json",
+      "sha256": "3a9745f3d07f5bf14f3da3747fd56bbc1d99c745f66b688d63134c3ed8df0c7a"
+    },
+    "trial/receipt.json": {
+      "relative_path": "validation_v3_private/issue22-ocr-corpus-retrieval-20260928-03/trial/receipt.json",
+      "sha256": "194b44cbf40ffa7a317ca313791aab40a5a5ef598548e4a9915d5c3bf0925744"
+    }
+  },
+  "f076": {
+    "candidate_page_bm25_rank": 1,
+    "candidate_pool_positions": {
+      "pre_model_lexical_plus_page_union": 51,
+      "primary_lexical_plus_dense_plus_page_pool": 96
+    },
+    "final_rank": 1,
+    "prior_rank": null,
+    "scope": "Image-only cover; searchable body text does not establish an abstract"
+  },
+  "field_inputs": {
+    "dense_model_manifest": {
+      "relative_path": "validation_v3_private/issue22-specter2-model-manifest-20260928-01.json",
+      "sha256": "665d844f2a4818f591ec51ac8da2c3e5bafabaf75bdc808d3d59282d33da0970"
+    },
+    "fields": {
+      "relative_path": "validation_v3_private/issue22-ocr-corpus-retrieval-20260928-01/fields.json",
+      "sha256": "604bda81061542b8b66c528a67daf5a29519ea188d92089db80a32ef2fb6a61d"
+    },
+    "historical_fields": {
+      "relative_path": "validation_v3_private/issue22-ocr-corpus-retrieval-20260928-01/archived-nativeonly-fields.jsonl",
+      "sha256": "38b8f2bb333809b36b4865c483b56621b2a257b9096b6ad51f2f7f2ae0884758"
+    },
+    "preparation_manifest": {
+      "relative_path": "validation_v3_private/issue22-ocr-corpus-retrieval-20260928-01/preparation/manifest.json",
+      "sha256": "0c772d52148a98a681bd4dc4d56af6b8395cd035889fe2a60200bc6813a04e03"
+    },
+    "queries": {
+      "relative_path": "validation_expanded200/queries.json",
+      "sha256": "dc521d6ad32440db2df130abc54f1771ff5aa845442ae2d62a1616e67b0ca8ac"
+    },
+    "reranker_manifest": {
+      "relative_path": "validation_v3_private/issue22-reranker-manifest-20260928-01.json",
+      "sha256": "15d79e6c7b7c2ba45cf0008aa2f051fad013d27ada08dc3131ecc5c59283af4f"
+    }
+  },
+  "issue22_qualified": false,
+  "issues": {
+    "assessment_producer": "https://github.com/Jev-Engineering/jraphyte/issues/53",
+    "parent": "https://github.com/Jev-Engineering/jraphyte/issues/22",
+    "title_role": "https://github.com/Jev-Engineering/jraphyte/issues/52"
+  },
+  "label_independence": {
+    "historical_fields": {
+      "checks": {
+        "candidates": true,
+        "dense_cache_sha256": true,
+        "labels_changed": true,
+        "ranking_inputs_sha256": true,
+        "ranking_outputs_sha256": true
+      },
+      "status": "PASS"
+    },
+    "historical_fields_without_page": {
+      "checks": {
+        "candidates": true,
+        "dense_cache_sha256": true,
+        "labels_changed": true,
+        "ranking_inputs_sha256": true,
+        "ranking_outputs_sha256": true
+      },
+      "status": "PASS"
+    },
+    "primary": {
+      "checks": {
+        "candidates": true,
+        "dense_cache_sha256": true,
+        "labels_changed": true,
+        "ranking_inputs_sha256": true,
+        "ranking_outputs_sha256": true
+      },
+      "status": "PASS"
+    },
+    "without_dense": {
+      "checks": {
+        "candidates": true,
+        "dense_cache_sha256": true,
+        "labels_changed": true,
+        "ranking_inputs_sha256": true,
+        "ranking_outputs_sha256": true
+      },
+      "status": "PASS"
+    },
+    "without_page": {
+      "checks": {
+        "candidates": true,
+        "dense_cache_sha256": true,
+        "labels_changed": true,
+        "ranking_inputs_sha256": true,
+        "ranking_outputs_sha256": true
+      },
+      "status": "PASS"
+    }
+  },
+  "limitations": [
+    "No repaired-abstract10k condition; issue53 genuine assessment-map producer remains required.",
+    "d21604 mixed metadata/title role defect is present in this frozen tree; issue52 successor comparison is pending. Current-vs-archived comparison is not an isolated OCR ablation.",
+    "Two unreviewed OCR cover bodies do not certify complete transcription or abstract fidelity.",
+    "Earlier dependency and strict JSON transport failures are retained. Process-local PYMUPDF_MESSAGE append routing retained warnings; no repository parser relaxation was used.",
+    "Execution completeness and label-rotation checks do not establish relevance judgments, paper-to-graph readiness, or issue22 acceptance."
+  ],
+  "metrics": {
+    "historical_fields": {
+      "candidate_coverage": 0.9833333333333333,
+      "mrr": 0.975,
+      "searchable_fields": 9986,
+      "top1": 58,
+      "top10": 59
+    },
+    "historical_fields_without_page": {
+      "candidate_coverage": 0.95,
+      "mrr": 0.9416666666666667,
+      "searchable_fields": 9986,
+      "top1": 56,
+      "top10": 57
+    },
+    "primary": {
+      "candidate_coverage": 1.0,
+      "mrr": 0.9916666666666667,
+      "searchable_fields": 9988,
+      "top1": 59,
+      "top10": 60
+    },
+    "without_dense": {
+      "candidate_coverage": 1.0,
+      "mrr": 0.9916666666666667,
+      "searchable_fields": 9988,
+      "top1": 59,
+      "top10": 60
+    },
+    "without_page": {
+      "candidate_coverage": 0.95,
+      "mrr": 0.9416666666666667,
+      "searchable_fields": 9988,
+      "top1": 56,
+      "top10": 57
+    }
+  },
+  "models": {
+    "dense_manifest_sha256": "665d844f2a4818f591ec51ac8da2c3e5bafabaf75bdc808d3d59282d33da0970",
+    "fresh_current_dense_cache_sha256": "8add940afb337560dbf5875eabd6a1e9882d628ff5a5cf6238630f32fdc653bb",
+    "fresh_historical_dense_cache_sha256": "1ce947c89591034f98acfb060843f58b2d85046c0574b683a2bc1ae7aa49c04e",
+    "reranker_manifest_sha256": "15d79e6c7b7c2ba45cf0008aa2f051fad013d27ada08dc3131ecc5c59283af4f",
+    "stale_dense_cache_reused": false
+  },
+  "performance": {
+    "cpu_budget": {
+      "device": "cpu",
+      "environment_thread_limit": 4,
+      "gpu_used": false,
+      "torch_interop_threads": 1,
+      "torch_threads": 4
+    },
+    "memory": {
+      "child_processes_included": false,
+      "peak_rss_bytes": 2683613184,
+      "scope": "current_process_lifetime_including_model_threads",
+      "system_memory_measured": false
+    },
+    "phase_timings": {
+      "dense_production": {
+        "process_cpu_seconds": 619.984375,
+        "wall_seconds": 197.15125330002047
+      },
+      "historical_dense_production": {
+        "process_cpu_seconds": 633.609375,
+        "wall_seconds": 169.0198037000082
+      },
+      "reranker_load": {
+        "process_cpu_seconds": 0.28125,
+        "wall_seconds": 0.882283400016604
+      }
+    },
+    "ranking_arm_wall_seconds": {
+      "historical_fields": 556.3218100000231,
+      "historical_fields_without_page": 408.49604369999724,
+      "primary": 387.3370619000052,
+      "without_dense": 394.5633142000006,
+      "without_page": 430.5006724999985
+    },
+    "recovery_driver_wall_seconds": 10162.464553000027,
+    "trial_wall_seconds": 8506.28553189998
+  },
+  "queries_with_any_rank_change": [
+    "expanded_f117",
+    "expanded_f141",
+    "expanded_f195",
+    "v2_f063",
+    "v2_f066",
+    "v2_f067",
+    "v2_f076"
+  ],
+  "reproduction": {
+    "cwd_commit": "f9f7c13ae73f40af8af167fda8e62711fcdb530c",
+    "freeze_inputs": "Exact recorded protocol configuration and external field/input hashes above; rerun freeze to a new output path before run",
+    "requires": "Authorized external TRACE_GC_TEST_DATA_ROOT corpus and the pinned local model/runtime snapshots; no synthetic corpus replacement",
+    "run_command": "<pinned-model-python> -B -m src.parallel_source_v4.retrieval_trial run --data-root ${TRACE_GC_TEST_DATA_ROOT} --protocol validation_v3_private/issue22-ocr-corpus-retrieval-20260928-03/trial-protocol.json --expected-protocol-sha256 3a9745f3d07f5bf14f3da3747fd56bbc1d99c745f66b688d63134c3ed8df0c7a --output <fresh-relative-output>",
+    "warning_transport": "Set process-local PYMUPDF_MESSAGE=path+<new-absolute-log-path> before imports to retain native diagnostics outside strict stdout JSON"
+  },
+  "schema_version": "issue22-public-interim-retrieval-v1",
+  "scope": {
+    "abstract_assessments": 0,
+    "abstract_mode": "disabled",
+    "documents": 10000,
+    "graph_admission": false,
+    "historical_comparator": "10000 archived native-only text rows; fresh embeddings and current ranking for each condition",
+    "historical_source_certification": false,
+    "independent_relevance_review": "NOT_PERFORMED",
+    "metric": "first_physical_page_known_item_retrieval",
+    "paid_api_calls": 0,
+    "queries": 60,
+    "selection": "Every corpus row checked for empty-native OCR eligibility before queries loaded; no target-derived page selection"
+  },
+  "source_readback": {
+    "artifacts": 40000,
+    "bounded_terminal_file_hash_count": 2770,
+    "bounded_terminal_status": "PASS",
+    "documents": 10000,
+    "field_semantic_receipt_sha256": "a04dabf513819351c9a11ba8621ec7f9bc298985a3512e72e764e6ff1e219408",
+    "freeze_start_end": "EXACT_MATCH",
+    "pillow": "12.2.0",
+    "pymupdf": "1.28.0",
+    "runtime_python": "3.12.10"
+  },
+  "supersedes": {
+    "reason": "Condition-label correction:51 is earlier no-dense candidate union position; the completed primary dense-plus-lexical-plus-page pool position is96. All measured outputs remain unchanged.",
+    "relative_path": "validation_v3_private/issue22-ocr-corpus-retrieval-20260928-03/PUBLIC_INTERIM_RECEIPT.json",
+    "sha256": "22d1b386589973077cb27b028e47d4b2ffa42c262d6e8600d9e9407a574ceda6"
+  },
+  "target_rank_changes": {
+    "v2_f076": {
+      "fresh_archived_nativeonly": null,
+      "fresh_current_ocr": 1,
+      "prior_manual_nativeonly": null
+    }
+  }
+}

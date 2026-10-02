@@ -1,0 +1,112 @@
+{
+  "authority": {
+    "automatic_fallback_enabled": false,
+    "graph_admission_enabled": false,
+    "new_paid_api_calls_during_audit": 0,
+    "production_graph_writes": 0,
+    "public_receipt_authorizes_promotion": false,
+    "release_activated": false,
+    "unseen_qualification": false
+  },
+  "automatic_only": {
+    "complete_first_page_abstracts_withheld": 32,
+    "historical_successes_lost": 16,
+    "legacy_boundary_and_text98_correct": 79,
+    "proposals": 79,
+    "proposed_notation_failures": 17,
+    "source_fidelity_verified": 62,
+    "status": "FAIL"
+  },
+  "denominators": {
+    "complete_first_page_abstracts": 111,
+    "historical_correct_proposals": 91,
+    "papers": 200
+  },
+  "evaluated_at": "2026-09-28T23:45:37.538776+00:00",
+  "evidence_mode": {
+    "converter_assessment_inputs": "frozen_saved_outputs",
+    "measured_arms": 4,
+    "measured_assessments": 800,
+    "native_extraction": "fresh",
+    "reference_comparison_changed_cases": 0
+  },
+  "gates": {
+    "historical_success_preservation": "PASS",
+    "image_route": "PASS",
+    "original_source_outcomes": "PASS",
+    "provenance": "PASS",
+    "reviewed_boundary_extent": "PASS",
+    "reviewed_fidelity": "PASS",
+    "saved_v2_replay": "PASS",
+    "zero_false_primary_proposals": "PASS"
+  },
+  "identity_sha256": {
+    "configuration": "cbe4845b973d1a6030632124f2d8d351c7b2eb98b57e09def9d0b04edc061c97",
+    "fresh_extraction_results": "532bb1f40718c8f5aa441be229ef2acd351a0c70b1d42bce5ec90f7f5bac87f8",
+    "fresh_native_manifest": "4dd9166a9f7147ece90b4e72fd24c1c9d3a3fec9aa8f92b2df25d59e32edc668",
+    "image_route_manifest": "8f7c5c6b5b644537f82d2cf493e6e858d4273bce9fd84e18a03315eb143abfda",
+    "input_manifest": "372c88fa77ba259715a2b4294659148058924562864a1c893967e2f1e476ecb8",
+    "method_manifest": "800154d9b334a5918c5e5105b2664537a54b0b6e2077398335e7c0cf9c6ce10e",
+    "private_acceptance": "40a6263d5c7b25100ba4a0b8bf46cb36459e93320446b87c5dc6afb5b1412477",
+    "public_export_builder": "e87a84656f2d330361b42853aa8ea8d6c1059a9de8f09cb7413fb070293bc66a",
+    "review_supplement": "5f2e3c90bfbe313f2f3d3e0f4e1b3c45e459fa27c7d60d52ab941cf1e64f1dad",
+    "review_union_readback": "92a41a090cc04a430705de4ab76b30f17222273f49c3ee4f3235da97c72cad83",
+    "runtime": "f091b827709308eb9f30695b100a798c67355ad1e6e506e393b49e7021026a67",
+    "verifier_readback": "699d826d7cfd5f0cc99b71b7bfb145f8be4ff2030daf934254dcb09ab001347c"
+  },
+  "integrity": {
+    "all_case_image_route_decisions": 200,
+    "bound_inputs": 3613,
+    "original_native_negative_records_retained": 24,
+    "postrun_source_code_runtime_recheck": "PASS",
+    "promotion_verifier": "PASS",
+    "review_threshold_or_frozen_reference_changes": false,
+    "sealed_derived_assessments": 35
+  },
+  "limits": [
+    "The passing result applies to this exact reviewed first-page configuration and corpus.",
+    "Fourteen complete first-page abstracts remain withheld; automatic-only fidelity and preservation still fail.",
+    "All native errors and prior attempts remain in the private lineage.",
+    "The audit reuses frozen converter outputs; it does not establish fresh converter or unseen-corpus accuracy.",
+    "Document-wide extraction, GraphRAG and source/graph admission require their separate gates."
+  ],
+  "measurement_commit": "7cbc22fb217f2ccac822f7e3badf2815fdb3ea13",
+  "prior_attempt": {
+    "acceptance_sha256": "c1476ff7551dc89b0f8dfa2b8a6c7cf17f4baefdd1243fcc6edd5155f1a3521e",
+    "artifacts_preserved": true,
+    "historical_successes_retained": 89,
+    "legacy_serialization_mismatches": 3,
+    "selected_notation_failures": 16,
+    "status": "FAIL"
+  },
+  "review_provenance": {
+    "historical_exposure": "previously_examined_development",
+    "independent_human_qualification": false,
+    "reviewer_kind": "internal_assistant",
+    "source_before_original_predictions": false
+  },
+  "reviewed_configuration": {
+    "absent_false_proposals": 0,
+    "additional_correct_proposals": 6,
+    "complete_first_page_abstracts_withheld": 14,
+    "composition": {
+      "attributed_corrected_image_transcriptions": 24,
+      "attributed_native_closure_reviews": 11,
+      "native_proposals": 62
+    },
+    "false_proposals": 0,
+    "historical_successes_lost": 0,
+    "historical_successes_retained": 91,
+    "legacy_boundary_and_text98_correct": 97,
+    "partial_false_proposals": 0,
+    "selected_proposals": 97,
+    "source_fidelity_failed": 0,
+    "source_fidelity_unresolved_among_selected": 0,
+    "source_fidelity_verified": 97,
+    "verified_complete_abstract_recall": 0.8738738738738738
+  },
+  "scope": "previously_examined_200_paper_first_physical_page_development_corpus",
+  "status": "PASS",
+  "verified_at": "2026-09-28T23:48:30.683409+00:00",
+  "version": "redacted-reviewed-selector-development-result-v1"
+}

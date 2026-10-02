@@ -1,19 +1,36 @@
 """Query-independent field and candidate coverage tests with no model downloads."""
 import copy
+import hashlib
 import json
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from trace_gc.pdf_source_parallel_v4 import digest_value
+try:
+    import fitz
+except ImportError:  # PyMuPDF is optional in the package validation environment.
+    fitz = None
+from trace_gc.pdf_source_parallel_v4 import digest_value, source_lines
+from trace_gc.pdf_structure_parallel_v4 import seal
 from src.parallel_source_v4.retrieval import (extract_fields, candidate_pool, rerank_pool,
     evaluate, local_cross_encoder, BM25, normalize_queries)
 from src.parallel_source_v4.metrics import ranking_metrics, score_case, summary, fallback_increment
 from src.parallel_source_v4.common import digest
+from src.parallel_source_v4.specter2_cache import read_hashed_json
 from test_parallel_source_v4 import line, assess, ABSTRACT, PARAMS
 
 
 class RetrievalTests(unittest.TestCase):
+    def test_specter2_input_rejects_ambiguous_json(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'input.json'
+            path.write_text('{"id":"first","id":"second"}',encoding='utf-8')
+            with self.assertRaisesRegex(ValueError,'duplicate_key_in_specter2_input'):
+                read_hashed_json(path)
+            path.write_text('{"score":NaN}',encoding='utf-8')
+            with self.assertRaisesRegex(ValueError,'nonfinite_specter2_input'):
+                read_hashed_json(path)
+
     def test_graphical_heading_not_title_even_when_largest(self):
         lines=[line(0,'Graphical Abstract',50,size=24),
                line(1,'Quantum transport in disordered materials',450,size=15),
@@ -23,6 +40,98 @@ class RetrievalTests(unittest.TestCase):
         self.assertEqual(fields['abstract'],'')
         self.assertTrue(fields['retrieval_only'])
         self.assertFalse(fields['eligible_for_jev'])
+
+    def test_small_classification_line_sharing_title_block(self):
+        lines=[line(0,'MSC: 65M60, 65M12, 35L65',55,size=10,block=0),
+               line(1,'A Second-Order Maximum-Principle-Preserving Crouzeix-Raviart',72,size=17,block=0),
+               line(2,'Finite Element Method for Time-dependent Transport Equation',94,size=17,block=0),
+               line(3,'Shipeng Maoa,1, Mingyang Zhanga,1',123,size=12,block=1)]
+        result=extract_fields('mixed',lines,**PARAMS)
+        self.assertEqual(result['title'],lines[1]['text']+' '+lines[2]['text'])
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[1,2])
+        self.assertFalse(result['field_provenance']['title']['source_reviewed'])
+        self.assertEqual([x['line_id'] for x in result['field_provenance']['title']['source_line_spans']],[1,2])
+        self.assertEqual(result['field_provenance']['title']['source_line_spans'][0]['spans'][0]['end'],len(lines[1]['text']))
+
+    @unittest.skipUnless(fitz, 'PyMuPDF optional authored PDF fixture')
+    def test_authored_pdf_native_mixed_block_title(self):
+        pdf=fitz.open()
+        page=pdf.new_page(width=600,height=800)
+        page.insert_text((40,65),'MSC: 65M60, 65M12',fontsize=10)
+        page.insert_text((40,85),'A Second-Order Maximum-Principle-Preserving',fontsize=17)
+        page.insert_text((40,108),'Finite Element Method for Transport',fontsize=17)
+        page.insert_text((40,126),'Ada Lovelace, Grace Hopper',fontsize=12)
+        payload=pdf.tobytes()
+        with fitz.open(stream=payload,filetype='pdf') as saved:
+            native=source_lines(saved[0])
+            self.assertEqual([x['block_id'] for x in native[:4]],[0,0,0,0])
+            result=extract_fields('authored-pdf',native,page_size=[600,800],
+                                  source_sha256=hashlib.sha256(payload).hexdigest(),
+                                  page_sha256=hashlib.sha256(payload).hexdigest())
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[1,2])
+        self.assertEqual(result['title'],native[1]['text']+' '+native[2]['text'])
+
+    def test_metadata_split_requires_visible_style_boundary(self):
+        lines=[line(0,'MSC: 65M60',55,size=10,block=0),
+               line(1,'The transport equation',72,size=11,block=0),
+               line(2,'A genuine larger title elsewhere',130,size=14,block=1)]
+        result=extract_fields('no-split',lines,**PARAMS)
+        self.assertEqual(result['title'],lines[2]['text'])
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[2])
+
+    def test_short_first_title_line_stays_with_same_style_continuation(self):
+        lines=[line(0,'MSC: 65M60',55,size=10,block=0),
+               line(1,'Quantum',75,size=17,block=0),
+               line(2,'Transport and coherence in interacting systems',98,size=17,block=0),
+               line(3,'Ada Lovelace, Grace Hopper',130,size=12,block=1)]
+        result=extract_fields('short-title-line',lines,**PARAMS)
+        self.assertEqual(result['title'],'Quantum Transport and coherence in interacting systems')
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[1,2])
+
+    def test_title_numeric_superscripts_do_not_imply_author_affiliation(self):
+        title=line(0,'Comparing L1 and L2 networks under perturbations12',60,size=17)
+        start=len(title['text'])-2
+        title['spans']=[{'start':0,'end':start,'text':title['text'][:start],'size':17},
+                        {'start':start,'end':start+1,'text':'1','size':10},
+                        {'start':start+1,'end':start+2,'text':'2','size':10}]
+        prose=line(1,'An analysis of University network datasets provides new findings.',100,size=10)
+        result=extract_fields('numeric-title',[title,prose],**PARAMS)
+        self.assertEqual(result['title'],title['text'])
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[0])
+
+    def test_institution_affiliation_with_colon_is_not_title(self):
+        lines=[line(0,'Department of Physics: Example University',50,size=18),
+               line(1,'Quantum transport in disordered materials',120,size=16)]
+        result=extract_fields('affiliation-colon',lines,**PARAMS)
+        self.assertEqual(result['title'],lines[1]['text'])
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[1])
+
+    def test_author_markers_need_following_affiliation_evidence(self):
+        author=line(1,'Ada Lovelacea,1, Grace Hoppera,1',125,size=12)
+        author['spans']=[{'start':0,'end':12,'text':'Ada Lovelace','size':12},
+                         {'start':12,'end':13,'text':'a','size':8},
+                         {'start':13,'end':15,'text':',1','size':8},
+                         {'start':15,'end':29,'text':', Grace Hopper','size':12},
+                         {'start':29,'end':30,'text':'a','size':8},
+                         {'start':30,'end':32,'text':',1','size':8}]
+        affiliation=line(2,'aDepartment of Mathematics, Example University',145,size=8)
+        result=extract_fields('authors',[author,affiliation],**PARAMS)
+        self.assertNotEqual(result['title'],author['text'])
+        genuine=line(0,'University Networks in 3D: An A. B. Test',60,size=17)
+        result=extract_fields('genuine',[genuine,author,affiliation],**PARAMS)
+        self.assertEqual(result['title'],genuine['text'])
+        self.assertEqual(result['field_provenance']['title']['line_ids'],[0])
+
+    def test_two_authors_sharing_same_affiliation_marker(self):
+        author=line(0,'Ada Lovelacea, Grace Hoppera',125,size=12)
+        last=len(author['text'])-1
+        author['spans']=[{'start':0,'end':12,'text':author['text'][:12],'size':12},
+                         {'start':12,'end':13,'text':'a','size':8},
+                         {'start':13,'end':last,'text':author['text'][13:last],'size':12},
+                         {'start':last,'end':last+1,'text':'a','size':8}]
+        affiliation=line(1,'aDepartment of Mathematics, Example University',145,size=8)
+        result=extract_fields('shared-affiliation',[author,affiliation],**PARAMS)
+        self.assertEqual(result['title'],'')
 
     def test_empty_image_page_is_not_invented(self):
         fields=extract_fields('image',[],**PARAMS)
@@ -61,6 +170,26 @@ class RetrievalTests(unittest.TestCase):
         assessment['text']='tampered'
         with self.assertRaises(ValueError):extract_fields('paper',lines,**PARAMS,abstract_assessment=assessment)
 
+    def test_abstract_field_rejects_duplicate_native_occurrence_and_held_wrong_source(self):
+        lines=[line(0,'Abstract '+ABSTRACT),line(1,'Introduction',200)]
+        assessment=assess(lines)
+        duplicated=[*lines,line(2,'Abstract '+ABSTRACT,350)]
+        with self.assertRaisesRegex(ValueError,'abstract_field_spans_not_unique_or_current'):
+            extract_fields('paper',duplicated,**PARAMS,abstract_assessment=assessment)
+        held=assess(lines,conversion_status='error')
+        held['page_sha256']='e'*64
+        seal(held)
+        with self.assertRaisesRegex(ValueError,'abstract_field_source_mismatch'):
+            extract_fields('paper',lines,**PARAMS,abstract_assessment=held)
+        unsupported={**held,'page_sha256':PARAMS['page_sha256'],'schema_version':99}
+        seal(unsupported)
+        with self.assertRaisesRegex(ValueError,'unsupported_abstract_assessment_version_or_state'):
+            extract_fields('paper',lines,**PARAMS,abstract_assessment=unsupported)
+        unknown={**held,'page_sha256':PARAMS['page_sha256'],'status':'mystery'}
+        seal(unknown)
+        with self.assertRaisesRegex(ValueError,'unsupported_abstract_assessment_version_or_state'):
+            extract_fields('paper',lines,**PARAMS,abstract_assessment=unknown)
+
     def test_full_page_rank_44_enters_candidate_pool(self):
         field=[f'field-{i}' for i in range(50)];dense=[f'dense-{i}' for i in range(50)]
         body=[f'body-{i}' for i in range(50)];body[43]='title-field-miss'
@@ -69,6 +198,23 @@ class RetrievalTests(unittest.TestCase):
         self.assertNotIn('title-field-miss',old_pool)
         self.assertIn('title-field-miss',new_pool)
         self.assertLessEqual(len(new_pool),150)
+
+    def test_page_ablation_removes_only_page_candidates_not_reranker_text(self):
+        fields=[{'id':'a','title':'needle needle','abstract':'','body':'background '*100},
+                {'id':'b','title':'unrelated','abstract':'','body':'needle needle'}]
+        query=[{'id':'q','query':'needle','target_id':'b'}]
+        pairs=[]
+        def scorer(values):
+            pairs.append(copy.deepcopy(values));return [0.] * len(values)
+        full=evaluate(fields,query,k=1,scorer=scorer)
+        without=evaluate(fields,query,k=1,scorer=scorer,page_channel=False)
+        self.assertEqual(full['candidates']['q']['pool'],['a','b'])
+        self.assertEqual(without['candidates']['q']['pool'],['a'])
+        self.assertEqual(pairs[0][0],pairs[1][0])
+        self.assertEqual(full['fields_sha256'],without['fields_sha256'])
+        self.assertEqual(full['candidates']['q']['field_weighted_bm25_parallel_v4_topk'],
+                         without['candidates']['q']['field_weighted_bm25_parallel_v4_topk'])
+        self.assertEqual(without['candidate_stage_metrics']['bm25_page'],{'status':'NOT_RUN'})
 
     def test_target_label_does_not_change_candidate_pool(self):
         fields=[{'id':'a','title':'transport network','body':'','abstract':''},
@@ -108,6 +254,38 @@ class RetrievalTests(unittest.TestCase):
         self.assertEqual(evaluate(fields,queries,dense_cache=cache)['dense_stage'],'supplied_bound_cache')
         with self.assertRaises(ValueError):evaluate([{**fields[0],'title':'Repaired title'}],queries,dense_cache=cache)
         with self.assertRaises(ValueError):evaluate(fields,[{**queries[0],'query':'new query'}],dense_cache=cache)
+
+    def test_dense_ranking_and_rerank_are_independent_of_target_labels(self):
+        fields=[{'id':'a','title':'Transport networks','body':'','abstract':''},
+                {'id':'b','title':'Algebraic topology','body':'','abstract':''}]
+        query={'id':'q','query':'transport','target_id':'a'}
+        ranking_inputs=[{'id':'q','query':'transport'}]
+        cache={'binding_version':'ranking-inputs-v2','fields_sha256':digest_value(fields),
+               'ranking_inputs_sha256':digest_value(ranking_inputs),'model_revision':'c'*40,
+               'channel':'specter2','rankings':{'q':['b','a']},
+               'ranking_sha256':digest_value({'q':['b','a']}),
+               'document_ids_sha256':digest_value(['a','b']),
+               'query_ids_sha256':digest_value(['q']),
+               'target_ids_used_for_ranking':False,'top_k':2}
+        def scorer(pairs):
+            return [len(text) for _,text in pairs]
+        first=evaluate(fields,[query],dense_cache=cache,scorer=scorer,k=2)
+        second=evaluate(fields,[{**query,'target_id':'b'}],dense_cache=cache,scorer=scorer,k=2)
+        self.assertEqual(first['ranking_inputs_sha256'],second['ranking_inputs_sha256'])
+        self.assertNotEqual(first['evaluation_labels_sha256'],second['evaluation_labels_sha256'])
+        self.assertEqual(first['candidates'],second['candidates'])
+        self.assertEqual(first['ranking_outputs_sha256'],second['ranking_outputs_sha256'])
+        self.assertEqual(first['dense_cache_binding'],'ranking_inputs_only_v2')
+        self.assertEqual(first['candidate_stage_metrics']['specter2']['status'],'MEASURED')
+        self.assertNotEqual(first['details'][0]['target_id'],second['details'][0]['target_id'])
+        with self.assertRaisesRegex(ValueError,'dense_cache_query_or_model_binding_invalid'):
+            evaluate(fields,[{**query,'query':'different'}],dense_cache=cache,scorer=scorer,k=2)
+        with self.assertRaisesRegex(ValueError,'unsupported_dense_cache_binding_version'):
+            evaluate(fields,[query],dense_cache={**cache,'binding_version':'unknown'},scorer=scorer,k=2)
+        with self.assertRaisesRegex(ValueError,'dense_cache_ranking_provenance_invalid'):
+            evaluate(fields,[query],dense_cache={**cache,'rankings':{'q':['a','b']}},scorer=scorer,k=2)
+        with self.assertRaisesRegex(ValueError,'v2_dense_cache_requires_explicit_query_identifiers'):
+            evaluate(fields,{'a':'transport'},dense_cache=cache,scorer=scorer,k=2)
 
     def test_frozen_query_id_text_schema_supported(self):
         result=normalize_queries({'queries':[{'query_id':'q1','text':'transport','target_id':'paper'}]})

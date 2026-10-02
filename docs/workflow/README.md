@@ -2,6 +2,8 @@
 
 **Evidence → compilation → observation → resolution → authorized graph → cited context**
 
+This atlas documents source revision `d5ca636a48e963619f4c89e2958d0bb1a3e72f80`. Later runtime and research changes are not yet reflected in its source inventory; the current verification report records that drift.
+
 Twelve source-reviewed chapters explain the complete implemented workflow, including failures, review gates, history and the experimental PDF paths. Each chapter includes editable Mermaid, source-code references and matching light/dark high-resolution exports.
 
 [![The complete TRACE-GC workflow](png/01-overview.png)](png/01-overview.png)

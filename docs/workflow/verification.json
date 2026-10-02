@@ -1,5 +1,5 @@
 {
-  "status": "PASS",
+  "status": "FAIL",
   "source_revision": "d5ca636a48e963619f4c89e2958d0bb1a3e72f80",
   "active_modules": 112,
   "chapters": 12,
@@ -8,5 +8,26 @@
   "local_links_checked": 558,
   "mermaid_blocks_match_sources": true,
   "runtime_tests_executed": false,
-  "errors": []
+  "errors": [
+    "Source inventory has missing or extra paths.",
+    "Source changed: src/abstract_validation/common.py",
+    "Source changed: src/parallel_source_v4/adapters.py",
+    "Source changed: src/parallel_source_v4/common.py",
+    "Source changed: src/parallel_source_v4/extraction.py",
+    "Source changed: src/parallel_source_v4/fields.py",
+    "Source changed: src/parallel_source_v4/metrics.py",
+    "Source changed: src/parallel_source_v4/prepare.py",
+    "Source changed: src/parallel_source_v4/retrieval.py",
+    "Source changed: tools/build_schemas.py",
+    "Source changed: tools/package_project.py",
+    "Source changed: trace_gc/adapter.py",
+    "Source changed: trace_gc/backend.py",
+    "Source changed: trace_gc/budget.py",
+    "Source changed: trace_gc/catalog.py",
+    "Source changed: trace_gc/compiler.py",
+    "Source changed: trace_gc/ledger.py",
+    "Source changed: trace_gc/pdf_source_parallel_v4.py",
+    "Source changed: trace_gc/pdf_structure_parallel_v4.py",
+    "Source changed: trace_gc/validation.py"
+  ]
 }

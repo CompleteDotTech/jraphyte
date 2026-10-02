@@ -1,0 +1,17 @@
+{
+  "source_revision": "d5ca636a48e963619f4c89e2958d0bb1a3e72f80",
+  "diagrams": [
+    {"id": "01-overview", "title": "From evidence to an auditable graph", "subtitle": "The complete lifecycle · compilation, authority, retrieval and revision"},
+    {"id": "02-evidence-compilation", "title": "Compile a reproducible evidence pack", "subtitle": "Immutable records · complete closure · exact state and request bytes"},
+    {"id": "03-observations-resolution", "title": "Observe, reconcile and resolve", "subtitle": "Recorded model responses · feasible hypotheses · explicit uncertainty"},
+    {"id": "04-policy-publication", "title": "Authorize the graph mutation", "subtitle": "Qualification and review · signed approvals · atomic publication"},
+    {"id": "05-history-replay", "title": "Preserve history and revisit decisions", "subtitle": "Causal ledgers · alternative proofs · withdrawal and analysis replay"},
+    {"id": "06-hybrid-retrieval", "title": "Retrieve bounded, permitted context", "subtitle": "Eighteen channels · version-aware caches · provenance and budgets"},
+    {"id": "07-upstream-compilation", "title": "Use the graph to inform synthesis", "subtitle": "Adaptive evidence acquisition · new observations · bounded expansion"},
+    {"id": "08-downstream-answers", "title": "Return context with exact citations", "subtitle": "Read-side GraphRAG · access checks · source-bound provenance"},
+    {"id": "09-pdf-evidence-review", "title": "Review evidence from the first page", "subtitle": "Source bytes and geometry · experimental proposals · explicit admission"},
+    {"id": "10-research-experiments", "title": "Freeze, compare and measure", "subtitle": "Versioned research branches · original-source review · preservation gates"},
+    {"id": "11-validation-delivery", "title": "Validate the implementation and package", "subtitle": "Offline checks · release artifacts · explicit external requirements"},
+    {"id": "12-commands-budgets", "title": "Choose the operation and bound the work", "subtitle": "Command entry points · persistent run usage · retrieval limits"}
+  ]
+}

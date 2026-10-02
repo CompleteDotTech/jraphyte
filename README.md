@@ -16,6 +16,8 @@ python examples/graphrag/query_example.py
 
 Read the [canonical architecture](docs/01_architecture.md), [material change matrix](docs/20_graphrag_deltas.md), [retrieval and downstream API](docs/17_hybrid_and_downstream_graphrag.md), [security boundary](docs/18_graphrag_security.md) and [all-requirements/deliverables index](docs/22_graphrag_traceability.md). Editable diagrams are in `diagrams/`; four executable scenarios and their immutable bundles are in `examples/graphrag/`.
 
+Explore the [end-to-end workflow atlas](docs/workflow/README.md): 12 source-reviewed Mermaid chapters with high-resolution light/dark PNGs, code links, failure paths and reproducible rendering.
+
 The implementation is graph-database agnostic, with tested SQLite and in-memory adapters. Other database adapters are specified interfaces, not installed integrations. The offline vector baseline uses token hashing; trained embeddings are injectable. Community summaries are bounded connected components, not a full Microsoft GraphRAG global pipeline. The existing fixed semantic synthesis tasks remain support/refutation and identity. Live providers, real-data accuracy, deployment calibration, distributed scale and new semantic programs are not claimed as completed gates.
 
 ## Run it

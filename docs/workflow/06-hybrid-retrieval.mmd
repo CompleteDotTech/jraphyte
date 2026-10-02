@@ -1,0 +1,64 @@
+flowchart TB
+    accTitle: Hybrid retrieval from request to auditable context
+    accDescr: A validated request reads a versioned graph, applies application-owned access controls, checks a scoped cache, runs selected retrieval channels sequentially, reconstructs canonical items, fuses rankings, enforces budgets, and records context and lineage.
+
+    subgraph read["01 · REQUEST AND CONSISTENT READ"]
+        Q["Retrieval query<br/>role · scope · mode · limits"]:::input
+        Validate["Validate query<br/>charge shared run budget"]:::process
+        Snapshot["Read snapshot + current statuses<br/>version / as_of / before_source"]:::artifact
+        ACL["Require authenticated scope<br/>bind optional candidate plan"]:::authority
+        Cache{"Scoped candidate cache hit?<br/>snapshot · ACL · versions"}:::decision
+        Q --> Validate --> Snapshot --> ACL --> Cache
+    end
+
+    subgraph search["02 · BOUNDED DISCOVERY ON A CACHE MISS"]
+        Visible["Filter edges + find conflicts<br/>ACL · status · time · relations"]:::process
+        Run["Run selected channels in order<br/>CONFLICT first when enabled"]:::process
+        Text["LEXICAL · VECTOR<br/>SOURCE · EVIDENCE"]:::process
+        Entities["ENTITY · CLAIM"]:::process
+        Traverse["NEIGHBORHOOD · PATH<br/>RELATION · TEMPORAL"]:::process
+        Scale["COMMUNITY · GLOBAL"]:::process
+        Schema["ONTOLOGY · SCHEMA"]:::process
+        Audit["PROVENANCE · CONFLICT<br/>DECISION · SIMILAR_CASE"]:::process
+        Canonical["Rebuild each canonical item<br/>reject forged text or labels"]:::authority
+        Merge["Deduplicate by item ID<br/>merge features + reciprocal ranks"]:::process
+        Save["Cache complete discovery only<br/>deep-copy bounded LRU"]:::artifact
+        Partial["Work / candidate / time cap<br/>retain partial candidates"]:::stop
+        Cache -->|"miss"| Visible --> Run --> Canonical --> Merge --> Save
+        Run -.-> Text
+        Run -.-> Entities
+        Run -.-> Traverse
+        Run -.-> Scale
+        Run -.-> Schema
+        Run -.-> Audit
+        Visible -->|"budget exhausted"| Partial
+        Run -->|"budget exhausted"| Partial
+    end
+
+    subgraph select["03 · RANK, SELECT, AND RECORD"]
+        Rank["Conflict items first<br/>utility / lexical / RRF rank"]:::process
+        Select["Accept within context budgets<br/>keep conflict pairs atomic"]:::authority
+        Receipts["Context + lineage + result<br/>COMPLETE / PARTIAL / EMPTY"]:::artifact
+        Rerank["Optional upstream Jev rerank<br/>bounded order changes only"]:::external
+        Cache -->|"hit"| Rank
+        Save --> Rank
+        Partial --> Rank
+        Rank --> Select --> Receipts
+        Receipts -.-> Rerank
+    end
+
+    Reject["Contract error<br/>no retrieval result returned"]:::stop
+    Validate -->|"invalid"| Reject
+    Snapshot -->|"unavailable or conflicting"| Reject
+    ACL -->|"scope or binding mismatch"| Reject
+    Canonical -->|"candidate differs"| Reject
+
+%% BEGIN SHARED ATLAS STYLE
+    classDef input fill:#E7F5F1,stroke:#348E82,color:#174D49,stroke-width:1.5px;
+    classDef process fill:#EAF1FC,stroke:#6589BB,color:#203F68,stroke-width:1.5px;
+    classDef decision fill:#FFF2D9,stroke:#CA963B,color:#6B4918,stroke-width:1.5px;
+    classDef artifact fill:#EEEFFD,stroke:#8388C3,color:#414779,stroke-width:1.5px;
+    classDef authority fill:#F4EBF9,stroke:#A181B9,color:#643E7A,stroke-width:1.5px;
+    classDef stop fill:#FCECEA,stroke:#C57B74,color:#823F39,stroke-width:1.5px;
+    classDef external fill:#F0F3F7,stroke:#92A0B2,color:#536277,stroke-width:1.5px,stroke-dasharray:5 4;
+%% END SHARED ATLAS STYLE

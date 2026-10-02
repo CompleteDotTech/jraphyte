@@ -1,0 +1,53 @@
+flowchart TB
+    accTitle: Commands, execution boundaries and budgets
+    accDescr: Offline CLI commands route to validation, demo, analysis replay, qualification evaluation and legacy conformance. Application APIs own publication. RunBudget persists shared usage while BudgetMeter bounds each retrieval.
+
+    CLI["trace-gc command<br/>or python -m trace_gc"]:::input
+    ROUTE{"Choose operation"}:::decision
+    CLI --> ROUTE
+
+    subgraph COMMANDS["OFFLINE COMMAND SURFACE"]
+        DEMO["demo / graphrag-demo<br/>temporary synthetic lifecycles"]:::process
+        BENCH["graphrag-benchmark<br/>synthetic retrieval comparisons"]:::process
+        VALID["validate / canonical<br/>integrity checks and exact hashes"]:::process
+        REPLAY["replay-policy<br/>unsigned analysis branch"]:::process
+        QUAL["evaluate-labels / audit-sample<br/>unsigned qualification or sample"]:::process
+        LEGACY["check-legacy<br/>exact upstream blob required"]:::external
+    end
+    ROUTE --> DEMO
+    ROUTE --> BENCH
+    ROUTE --> VALID
+    ROUTE --> REPLAY
+    ROUTE --> QUAL
+    ROUTE --> LEGACY
+    DEMO --> REPORT["JSON report or output artifacts<br/>command success / structured error"]:::artifact
+    BENCH --> REPORT
+    VALID --> REPORT
+    REPLAY --> REPORT
+    QUAL --> REPORT
+    LEGACY --> REPORT
+
+    subgraph LIMITS["RUNTIME RESOURCE ACCOUNTING"]
+        APP["Application invokes runtime<br/>with explicit budget objects"]:::input
+        RUN[("RunBudget / SQLite<br/>shared usage survives reopen")]:::artifact
+        RESERVE{"Atomic reservation<br/>all requested resources fit?"}:::decision
+        WORK["Retrieval, model request<br/>resolver search or review"]:::process
+        METER["BudgetMeter / per retrieval<br/>work, latency and context bounds"]:::process
+        STOP["Hold, truncate context or error<br/>according to the calling stage"]:::stop
+        APP --> RUN --> RESERVE
+        RESERVE -->|"yes"| WORK --> METER
+        RESERVE -->|"no"| STOP
+        METER -->|"local bound reached"| STOP
+    end
+    DEMO -. "fixture supplies budgets" .-> APP
+    APP -. "publication is a separate API" .-> AUTH["CompilerService<br/>trusted policy and authorization"]:::authority
+
+%% BEGIN SHARED ATLAS STYLE
+    classDef input fill:#E7F5F1,stroke:#348E82,color:#174D49,stroke-width:1.5px;
+    classDef process fill:#EAF1FC,stroke:#6589BB,color:#203F68,stroke-width:1.5px;
+    classDef decision fill:#FFF2D9,stroke:#CA963B,color:#6B4918,stroke-width:1.5px;
+    classDef artifact fill:#EEEFFD,stroke:#8388C3,color:#414779,stroke-width:1.5px;
+    classDef authority fill:#F4EBF9,stroke:#A181B9,color:#643E7A,stroke-width:1.5px;
+    classDef stop fill:#FCECEA,stroke:#C57B74,color:#823F39,stroke-width:1.5px;
+    classDef external fill:#F0F3F7,stroke:#92A0B2,color:#536277,stroke-width:1.5px,stroke-dasharray:5 4;
+%% END SHARED ATLAS STYLE

@@ -1,0 +1,53 @@
+flowchart TB
+  accTitle: Provider observations and bounded global resolution
+  accDescr: A validated pack is evaluated through explicit live capability gates or supplied recorded bytes. Every live attempt reserves persistent budget and preserves raw receipts. An explicit observation branch feeds bounded exact subset resolution, whose incomplete runs yield no selected candidates.
+  PACK["Validated evaluation pack"]:::input
+  MODE{"Execution path?"}:::decision
+  subgraph OBSERVE["01 · CAPTURE EVERY ATTEMPT"]
+    GATE["LIVE capability, key and signer<br/>tokenizer, sources and ACL checks"]:::authority
+    QUOTA["Reserve call and request bytes<br/>plus retry count after attempt 0"]:::process
+    HTTP["TypeSafe transport<br/>exact request bytes"]:::external
+    IMPORT["Synthetic or recorded<br/>response bytes supplied"]:::input
+    RECORD["record_response<br/>raw wire + OK or ERROR observations"]:::artifact
+    ATTEST["LIVE observation attestations<br/>preserve every attempt"]:::authority
+    RETRY{"429, 529 or transport error<br/>and retries remain?"}:::decision
+    WAIT["Bounded retry delay<br/>at most 60 seconds"]:::process
+    CHOOSE["Choose explicit immutable<br/>observation branch"]:::process
+    GATE --> QUOTA --> HTTP --> RECORD
+    IMPORT --> RECORD
+    RECORD -->|LIVE| ATTEST --> RETRY
+    RETRY -->|Yes| WAIT --> QUOTA
+    RETRY -->|No| CHOOSE
+    RECORD -->|Supplied bytes| CHOOSE
+  end
+  subgraph RESOLVE["02 · RESOLVE THE WHOLE BATCH"]
+    VALIDATE["Validate observations<br/>at most one primary Choice"]:::process
+    WEIGHTS["Build integer utilities<br/>from accepted-label probabilities"]:::process
+    SEARCH["Enumerate candidate subsets<br/>charge each solver expansion"]:::process
+    CONSTRAINTS["Check prerequisites, types<br/>exclusivity and identity conflicts"]:::process
+    COMPLETE{"Search complete and<br/>feasible snapshot?"}:::decision
+    OPTIMAL["OPTIMAL certificate<br/>best utility, lexical tie-break"]:::artifact
+    UNRESOLVED["INFEASIBLE or BUDGET_EXHAUSTED<br/>empty selection, no objective"]:::stop
+    PROJECT["Project per-candidate outcomes<br/>and structural risk classes"]:::artifact
+    VALIDATE --> WEIGHTS --> SEARCH --> CONSTRAINTS --> COMPLETE
+    COMPLETE -->|Yes| OPTIMAL --> PROJECT
+    COMPLETE -->|No| UNRESOLVED --> PROJECT
+  end
+  STOP["ContractError<br/>no next call or decision"]:::stop
+  PACK --> MODE
+  MODE -->|LIVE| GATE
+  MODE -->|Synthetic / recorded| IMPORT
+  GATE -. unmet gate .-> STOP
+  QUOTA -. run cap exhausted .-> STOP
+  CHOOSE --> VALIDATE
+  VALIDATE -. ambiguous or altered branch .-> STOP
+
+%% BEGIN SHARED ATLAS STYLE
+    classDef input fill:#E7F5F1,stroke:#348E82,color:#174D49,stroke-width:1.5px;
+    classDef process fill:#EAF1FC,stroke:#6589BB,color:#203F68,stroke-width:1.5px;
+    classDef decision fill:#FFF2D9,stroke:#CA963B,color:#6B4918,stroke-width:1.5px;
+    classDef artifact fill:#EEEFFD,stroke:#8388C3,color:#414779,stroke-width:1.5px;
+    classDef authority fill:#F4EBF9,stroke:#A181B9,color:#643E7A,stroke-width:1.5px;
+    classDef stop fill:#FCECEA,stroke:#C57B74,color:#823F39,stroke-width:1.5px;
+    classDef external fill:#F0F3F7,stroke:#92A0B2,color:#536277,stroke-width:1.5px,stroke-dasharray:5 4;
+%% END SHARED ATLAS STYLE

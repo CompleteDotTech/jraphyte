@@ -1,0 +1,47 @@
+flowchart TB
+    accTitle: Downstream evidence contexts with exact source citations
+    accDescr: A downstream request retrieves authorized context, reconstructs canonical items and provenance, produces exact source citations and warnings, and stores a context-only answer with no graph mutation capability. It does not generate a free-form language-model answer.
+
+    subgraph request["01 · REQUEST AUTHORIZED CONTEXT"]
+        Input["Search, QA, or agent request<br/>mode + filters + budget"]:::input
+        Role{"Component starts with<br/>downstream?"}:::decision
+        Reject["Reject request<br/>RETRIEVAL_ROLE"]:::stop
+        Retrieve["HybridRetriever.retrieve<br/>snapshot + ACL + budget checks"]:::process
+        Result["Load retrieval result<br/>and selected graph context"]:::artifact
+        Input --> Role
+        Role -->|"no"| Reject
+        Role -->|"yes"| Retrieve --> Result
+    end
+
+    subgraph verify["02 · RECONSTRUCT AND ATTRIBUTE"]
+        Configuration["Validate query, graph version<br/>scope + retrieval fingerprint"]:::authority
+        Canonical["Reconstruct canonical items<br/>with current application ACL"]:::authority
+        Provenance["Trace matching committed proof<br/>plan · transaction · resolution<br/>observation · evidence · source"]:::artifact
+        Budget["Check projections + unique IDs<br/>conservative context budgets"]:::authority
+        Citations["Cite every selected evidence span<br/>source ID + hash + offsets + quote"]:::process
+        Invalid["Fail context validation<br/>no answer context returned"]:::stop
+        Result --> Configuration --> Canonical --> Budget --> Citations
+        Provenance -.-> Canonical
+        Configuration -->|"binding differs"| Invalid
+        Canonical -->|"materialization differs"| Invalid
+        Budget -->|"projection or cap differs"| Invalid
+    end
+
+    subgraph response["03 · RETURN THE EVIDENCE PACKAGE"]
+        Warnings["Preserve retrieval warnings<br/>add conflicts, incomplete proof,<br/>or no authorized context"]:::process
+        Answer["Construct graphrag-answer<br/>answer_status = CONTEXT_ONLY<br/>can_mutate_graph = false"]:::artifact
+        Catalog["Store immutable answer record<br/>query + result + context IDs"]:::artifact
+        Output["Return answer_context_id<br/>and structured context body"]:::artifact
+        Consumer["Caller consumes cited context<br/>any further answer generation<br/>is outside this service"]:::external
+        Citations --> Warnings --> Answer --> Catalog --> Output --> Consumer
+    end
+
+%% BEGIN SHARED ATLAS STYLE
+    classDef input fill:#E7F5F1,stroke:#348E82,color:#174D49,stroke-width:1.5px;
+    classDef process fill:#EAF1FC,stroke:#6589BB,color:#203F68,stroke-width:1.5px;
+    classDef decision fill:#FFF2D9,stroke:#CA963B,color:#6B4918,stroke-width:1.5px;
+    classDef artifact fill:#EEEFFD,stroke:#8388C3,color:#414779,stroke-width:1.5px;
+    classDef authority fill:#F4EBF9,stroke:#A181B9,color:#643E7A,stroke-width:1.5px;
+    classDef stop fill:#FCECEA,stroke:#C57B74,color:#823F39,stroke-width:1.5px;
+    classDef external fill:#F0F3F7,stroke:#92A0B2,color:#536277,stroke-width:1.5px,stroke-dasharray:5 4;
+%% END SHARED ATLAS STYLE

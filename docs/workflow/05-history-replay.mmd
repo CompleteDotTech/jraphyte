@@ -1,0 +1,51 @@
+flowchart TB
+  accTitle: Auditable history, replay branches and source withdrawal
+  accDescr: Causal ledgers and optional external checkpoints preserve inspectable history. Policy and retrieval replay create branches without publication authority. Authorized source revocation deactivates affected assertions transactionally; optional later cached-content erasure makes exact replay unavailable while retaining tombstone audit metadata.
+  subgraph HISTORY["01 · RECORD AND VERIFY HISTORY"]
+    RECORDS["Immutable catalog records<br/>and committed receipts"]:::input
+    LEDGER["Build causal ledger<br/>parent links and hash chain"]:::process
+    BUNDLE["Bundle manifest<br/>exact records and source status"]:::artifact
+    CHECKPOINT["Optional external signer<br/>RUN_CHECKPOINT receipt"]:::authority
+    VALIDATE["Validate records, bindings<br/>ledger coverage and profile"]:::process
+    REPORT["Structural audit report<br/>authorization_granted = false"]:::artifact
+    RECORDS --> LEDGER --> BUNDLE --> VALIDATE --> REPORT
+    BUNDLE --> CHECKPOINT --> VALIDATE
+  end
+  subgraph REPLAY["02 · EXPLICIT COUNTERFACTUAL BRANCHES"]
+    KIND{"Replay request?"}:::decision
+    POLICY["New ANALYSIS_ONLY policy<br/>reuse frozen observations"]:::process
+    RETRIEVAL["Change allowed retrieval options<br/>enforce current permissions"]:::process
+    BRANCH["New evaluations or retrieval result<br/>original observation hashes intact"]:::artifact
+    SYNTHESIS["Optional synthesis callback<br/>may create new observations"]:::external
+    NOAUTH["Unsigned analysis / replay artifact<br/>no publication authority"]:::stop
+    KIND -->|Policy| POLICY --> BRANCH
+    KIND -->|Retrieval| RETRIEVAL --> BRANCH
+    RETRIEVAL -. optional .-> SYNTHESIS --> BRANCH
+    BRANCH --> NOAUTH
+  end
+  subgraph REVOKE["03 · SOURCE LIFECYCLE AND RETENTION"]
+    AUTH["Authorized source revocation<br/>exact version, epoch and reason"]:::authority
+    TX["BEGIN IMMEDIATE<br/>verify trust and source epoch"]:::process
+    DEACTIVATE["Revoke source use<br/>deactivate dependent assertions"]:::process
+    COMMIT["Commit status, state and journal<br/>advance graph version"]:::artifact
+    RETAIN["Retained bytes support history<br/>fresh use remains restricted"]:::artifact
+    ERASE{"Committed tombstone<br/>and cleanup requested?"}:::decision
+    CLEAN["Separate cached-record erasure<br/>retain hash tombstones"]:::process
+    LOST["Exact replay unavailable<br/>journal audit remains possible"]:::stop
+    AUTH --> TX --> DEACTIVATE --> COMMIT --> RETAIN --> ERASE
+    ERASE -->|Yes| CLEAN --> LOST
+    ERASE -->|No| RETAIN
+  end
+  REPORT --> KIND
+  COMMIT -. new receipts .-> RECORDS
+  RETAIN -. historical inspection .-> VALIDATE
+
+%% BEGIN SHARED ATLAS STYLE
+    classDef input fill:#E7F5F1,stroke:#348E82,color:#174D49,stroke-width:1.5px;
+    classDef process fill:#EAF1FC,stroke:#6589BB,color:#203F68,stroke-width:1.5px;
+    classDef decision fill:#FFF2D9,stroke:#CA963B,color:#6B4918,stroke-width:1.5px;
+    classDef artifact fill:#EEEFFD,stroke:#8388C3,color:#414779,stroke-width:1.5px;
+    classDef authority fill:#F4EBF9,stroke:#A181B9,color:#643E7A,stroke-width:1.5px;
+    classDef stop fill:#FCECEA,stroke:#C57B74,color:#823F39,stroke-width:1.5px;
+    classDef external fill:#F0F3F7,stroke:#92A0B2,color:#536277,stroke-width:1.5px,stroke-dasharray:5 4;
+%% END SHARED ATLAS STYLE

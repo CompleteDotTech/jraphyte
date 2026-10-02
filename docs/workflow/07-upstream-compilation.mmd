@@ -1,0 +1,58 @@
+flowchart TB
+    accTitle: Bounded upstream retrieval, compilation, and semantic evaluation
+    accDescr: An upstream candidate receives progressively wider retrieval, optional relevance reranking, complete evidence closure, compiled model input, semantic observations, constraint resolution, and policy evaluation. Each round records lineage and either stops or acquires more evidence without publishing graph changes.
+
+    subgraph acquire["01 · PLAN AND ACQUIRE"]
+        Candidate["Candidate + claim<br/>executor + scoped run budget"]:::input
+        Scope["Bind candidate and budgets<br/>to the same run"]:::authority
+        Remaining{"Retrieval cost and time remain?"}:::decision
+        Exhausted["Stop before model execution<br/>retrieval budget exhausted"]:::stop
+        Plan["Task + risk plan, tiers 0–4<br/>cumulative channels and hops"]:::process
+        Retrieve["Hybrid retrieval<br/>context + result + lineage"]:::process
+        Novelty["Charge cost and retrieval time<br/>record new or changed items"]:::process
+        Optional{"Reranker supplied<br/>and context has items?"}:::decision
+        Rerank["Jev relevance pack + receipts<br/>bounded score/order changes"]:::process
+        Candidate --> Scope --> Remaining
+        Remaining -->|"no"| Exhausted
+        Remaining -->|"yes"| Plan --> Retrieve --> Novelty --> Optional
+        Optional -->|"yes"| Rerank
+    end
+
+    subgraph compile["02 · COMPILE SOURCE-BOUND MODEL INPUT"]
+        Closure["Close candidate dependencies<br/>selected evidence + source spans"]:::process
+        Materialize["Materialize exact source text<br/>selected graph items + traces"]:::process
+        Pack["Validate and store semantic pack<br/>snapshot + scope + hashes + caps"]:::artifact
+        Execute["Execute fixed semantic question<br/>TypeSafeAdapter or test recorder"]:::external
+        Binding["Require nonempty observations<br/>bound to this exact pack"]:::authority
+        Optional -->|"no"| Closure
+        Rerank --> Closure
+        Closure --> Materialize --> Pack --> Execute --> Binding
+    end
+
+    subgraph decide["03 · RESOLVE, EVALUATE, AND RECORD"]
+        Solve["Solve constraints<br/>project candidate resolutions"]:::process
+        Policy["Evaluate qualification policy<br/>route semantic INSUFFICIENT"]:::authority
+        Stop["Choose stop reason in order<br/>policy · constraints · partial<br/>saturation · maximum rounds"]:::process
+        Expansion["Store expansion receipt<br/>novelty · confidence · decision<br/>cost · latency · stop reason"]:::artifact
+        Again{"Stop reason set?"}:::decision
+        Return["Return UpstreamRun receipts<br/>no graph publication authority"]:::artifact
+        Binding --> Solve --> Policy --> Stop --> Expansion --> Again
+        Again -->|"no: next round"| Remaining
+        Again -->|"yes"| Return
+        Exhausted --> Return
+    end
+
+    Failure["Contract failure propagates<br/>no fabricated successful run"]:::stop
+    Scope -->|"run mismatch"| Failure
+    Pack -->|"closure / scope / cap failure"| Failure
+    Binding -->|"missing or wrong pack"| Failure
+
+%% BEGIN SHARED ATLAS STYLE
+    classDef input fill:#E7F5F1,stroke:#348E82,color:#174D49,stroke-width:1.5px;
+    classDef process fill:#EAF1FC,stroke:#6589BB,color:#203F68,stroke-width:1.5px;
+    classDef decision fill:#FFF2D9,stroke:#CA963B,color:#6B4918,stroke-width:1.5px;
+    classDef artifact fill:#EEEFFD,stroke:#8388C3,color:#414779,stroke-width:1.5px;
+    classDef authority fill:#F4EBF9,stroke:#A181B9,color:#643E7A,stroke-width:1.5px;
+    classDef stop fill:#FCECEA,stroke:#C57B74,color:#823F39,stroke-width:1.5px;
+    classDef external fill:#F0F3F7,stroke:#92A0B2,color:#536277,stroke-width:1.5px,stroke-dasharray:5 4;
+%% END SHARED ATLAS STYLE

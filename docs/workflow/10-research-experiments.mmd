@@ -1,0 +1,60 @@
+flowchart TB
+    accTitle: First-page research experiments from cohort selection to recorded integration
+    accDescr: Versioned experiments select or reuse external local sources, freeze attributed references before new predictions, assess extraction and retrieval separately, and retain explicit failed preservation gates. Historical retrieval results do not qualify newer selectors.
+    subgraph A["01 / COHORT AND REFERENCE PROVENANCE"]
+        S["External local corpus<br/>Read-only catalog / PDF inputs"]:::input
+        V1["v1: diagnostic holdout 200<br/>10,000-document index"]:::artifact
+        V2["v2: known 200 regression<br/>plus fresh 100 papers"]:::artifact
+        EX["Expanded200: v2 fresh 100<br/>plus 100 added papers"]:::artifact
+        F["New v3 / v4 source cohorts<br/>Exclude known work identities"]:::input
+        P["Prepare page-one source views<br/>Original, page, image, spans"]:::process
+        R["Attributed source review<br/>Labels, boundaries and queries"]:::authority
+        Z["Freeze sources, references<br/>methods and exposure history"]:::artifact
+        S --> V1
+        V1 --> V2 --> EX
+        S --> F --> P --> R --> Z
+    end
+    subgraph B["02 / CONTROLLED EXTRACTION"]
+        K["Verify original bytes<br/>Replay frozen old assessments"]:::process
+        C["Versioned conversion inputs<br/>Cached parsers / local models"]:::external
+        E["Run versioned selectors<br/>v1 / v2 / v3 / parallel v4"]:::process
+        M["Separate proposal, boundary<br/>hold and conversion metrics"]:::artifact
+        G{"Preserve 91 correct<br/>expanded-v2 proposals?"}:::decision
+        H["FAIL: v3 loses 68<br/>parallel v4 loses 55"]:::stop
+        EX --> K
+        Z --> K
+        K --> C --> E --> M
+        M --> G
+        G -->|"Recorded regression"| H
+    end
+    subgraph D["03 / SEPARATE RETRIEVAL TRACK"]
+        I["Source-bound title, abstract<br/>and full-page body fields"]:::process
+        Q["Frozen query / target set<br/>Targets used only for scoring"]:::input
+        L["Lexical / embedding candidates<br/>Version-specific pool union"]:::process
+        X["Optional local reranker<br/>Pinned model files and receipts"]:::external
+        Y["Known-item ranks and coverage<br/>Competing relevance unjudged"]:::artifact
+        C --> I
+        Z --> Q
+        I --> L
+        Q --> L
+        L --> X --> Y
+        L -->|"Candidate-only report"| Y
+    end
+    subgraph O["04 / RECORDED EVIDENCE AND LIMITS"]
+        J["Immutable results / error ledger<br/>Compact integration receipt"]:::artifact
+        T["Experimental review-only path<br/>Independent validation pending"]:::stop
+        M --> J
+        H --> J
+        Y --> J
+        J --> T
+    end
+
+%% BEGIN SHARED ATLAS STYLE
+    classDef input fill:#E7F5F1,stroke:#348E82,color:#174D49,stroke-width:1.5px;
+    classDef process fill:#EAF1FC,stroke:#6589BB,color:#203F68,stroke-width:1.5px;
+    classDef decision fill:#FFF2D9,stroke:#CA963B,color:#6B4918,stroke-width:1.5px;
+    classDef artifact fill:#EEEFFD,stroke:#8388C3,color:#414779,stroke-width:1.5px;
+    classDef authority fill:#F4EBF9,stroke:#A181B9,color:#643E7A,stroke-width:1.5px;
+    classDef stop fill:#FCECEA,stroke:#C57B74,color:#823F39,stroke-width:1.5px;
+    classDef external fill:#F0F3F7,stroke:#92A0B2,color:#536277,stroke-width:1.5px,stroke-dasharray:5 4;
+%% END SHARED ATLAS STYLE

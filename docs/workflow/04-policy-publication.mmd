@@ -1,0 +1,57 @@
+flowchart TB
+  accTitle: Policy, explicit authority and atomic graph publication
+  accDescr: A selected resolution is evaluated under a pinned policy. An immutable full-batch plan receives preflight and exact authorization receipts. The backend checks idempotency, repeats current-state and trust checks under its transaction lock, and commits graph state, records and journal together or rolls back.
+  subgraph DECIDE["01 · POLICY AND IMMUTABLE PLAN"]
+    RESOLUTION["Selected global resolution<br/>and preserved observations"]:::input
+    LABELS["External independent labels<br/>locked holdout and pipeline"]:::external
+    QUALIFIED["Risk + coverage qualification<br/>signed service registration"]:::authority
+    EVALUATE["evaluate_policy<br/>exact applicability and polarity"]:::process
+    OUTCOME{"Policy outcome?"}:::decision
+    PLAN["Create full-batch mutation plan<br/>snapshot, source epochs and risk"]:::artifact
+    STOP["Stop publication<br/>rejected or invalid contract"]:::stop
+    RESOLUTION --> EVALUATE
+    LABELS --> QUALIFIED -. when available .-> EVALUATE
+    EVALUATE --> OUTCOME
+    OUTCOME -->|ACCEPT| PLAN
+    OUTCOME -->|ABSTAIN: review required| PLAN
+    OUTCOME -->|REJECT| STOP
+  end
+  subgraph AUTHORIZE["02 · APPLICATION-OWNED AUTHORITY"]
+    CONFIG["Pinned service policy and trust<br/>REVIEWED or QUALIFIED mode"]:::authority
+    PREFLIGHT["Recheck snapshot and provenance<br/>sign all required checks"]:::authority
+    AUTH["Sign exact plan authorization<br/>trusted review where required"]:::authority
+    LINEAGE["Bind plan and receipts<br/>to causal ledger head"]:::artifact
+    PLAN --> PREFLIGHT
+    CONFIG --> PREFLIGHT
+    PREFLIGHT --> AUTH --> LINEAGE
+    PREFLIGHT -. failed gate .-> STOP
+  end
+  subgraph TRANSACTION["03 · SQLITE BEGIN IMMEDIATE"]
+    BEGIN["Acquire write transaction"]:::process
+    KEY{"Existing idempotency key?"}:::decision
+    REPEAT["Return original receipt<br/>no new commit"]:::artifact
+    RECHECK["Reverify authority and preflight<br/>current snapshot, sources, policy"]:::authority
+    APPLY["Apply validated operations<br/>increment graph version"]:::process
+    WRITE["Persist records, state, status<br/>journal and transaction receipt"]:::process
+    COMMIT["COMMIT<br/>durable publication receipt"]:::artifact
+    ROLLBACK["ROLLBACK<br/>preserve previous graph state"]:::stop
+    BEGIN --> KEY
+    KEY -->|Same fingerprint| REPEAT
+    KEY -->|Different fingerprint| ROLLBACK
+    KEY -->|New key| RECHECK --> APPLY --> WRITE --> COMMIT
+    RECHECK -. any check fails .-> ROLLBACK
+    WRITE -. fault before commit .-> ROLLBACK
+  end
+  VIEW["Recompute accepted graph view<br/>from active original assertions"]:::artifact
+  LINEAGE --> BEGIN
+  COMMIT --> VIEW
+
+%% BEGIN SHARED ATLAS STYLE
+    classDef input fill:#E7F5F1,stroke:#348E82,color:#174D49,stroke-width:1.5px;
+    classDef process fill:#EAF1FC,stroke:#6589BB,color:#203F68,stroke-width:1.5px;
+    classDef decision fill:#FFF2D9,stroke:#CA963B,color:#6B4918,stroke-width:1.5px;
+    classDef artifact fill:#EEEFFD,stroke:#8388C3,color:#414779,stroke-width:1.5px;
+    classDef authority fill:#F4EBF9,stroke:#A181B9,color:#643E7A,stroke-width:1.5px;
+    classDef stop fill:#FCECEA,stroke:#C57B74,color:#823F39,stroke-width:1.5px;
+    classDef external fill:#F0F3F7,stroke:#92A0B2,color:#536277,stroke-width:1.5px,stroke-dasharray:5 4;
+%% END SHARED ATLAS STYLE

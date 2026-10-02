@@ -18,6 +18,7 @@ PDF fixture tests skip when optional PyMuPDF or Pillow is unavailable, as in the
 ## Known 200-paper replay
 
 Supply the original external `validation_v2/` and `validation_expanded200/` caches and an external JSON mapping each `f001`–`f200` ID to a relative original PDF path under the data root. The harness checks the frozen protocol, source/page/image hashes and saved v2 assessments. Use a new output directory each time because receipts are immutable.
+Set `TRACE_GC_TEST_DATA_ROOT` to the same absolute directory passed to `--data-root` before launching Python; the frozen v2 replay imports its data root at module load time. This is required when the data directory is not beside the checkout.
 
 ```sh
 python -m src.parallel_source_v4.extraction regression \

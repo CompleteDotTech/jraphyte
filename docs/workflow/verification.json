@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "source_revision": "d5ca636a48e963619f4c89e2958d0bb1a3e72f80",
+  "active_modules": 112,
+  "chapters": 12,
+  "png_exports": 24,
+  "svg_exports": 24,
+  "local_links_checked": 558,
+  "mermaid_blocks_match_sources": true,
+  "runtime_tests_executed": false,
+  "errors": []
+}

@@ -1,0 +1,1659 @@
+{
+  "source_revision": "d5ca636a48e963619f4c89e2958d0bb1a3e72f80",
+  "scope": "Every active Python module under trace_gc, src and tools, plus the downstream query example. Archives and tests are not active workflow modules.",
+  "files": [
+    {
+      "path": "examples/graphrag/query_example.py",
+      "sha256": "139b54c4b2f40eb4af11ebfeb54d7f59c30840831ff622711b039b49def34f3b",
+      "chapters": [
+        "08-downstream-answers"
+      ],
+      "description": "Source-cited GraphRAG query over a fabricated, explicitly authorized fixture.",
+      "top_level_symbols": [
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation/__init__.py",
+      "sha256": "48ab6fdca264cd5adea8aed4ff0eeb0df6437ba2e39a5495796c13e6ee63e5ea",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Reproducible, isolated first-page extraction and retrieval experiments.",
+      "top_level_symbols": []
+    },
+    {
+      "path": "src/abstract_validation/audit.py",
+      "sha256": "b691c2c0946af398dc8e6c546764859ac2fcd707aa5285a68b1f5e1c19c7e87f",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Produce a selective reprocessing plan without mutating the active Jev job.",
+      "top_level_symbols": [
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation/baselines.py",
+      "sha256": "ee70cb7a852675d7fd81d82b5c69bf588b71677c1b2848a0846b1843ea2929f7",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Read-only production extraction, using the production Python/PyMuPDF runtime.",
+      "top_level_symbols": [
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation/common.py",
+      "sha256": "e27ae0ae3140407c92429d555b16fd1c4d7d25360b2a41f09d07c18f2c3222e0",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Module initialization or command forwarding.",
+      "top_level_symbols": [
+        "digest",
+        "read",
+        "write",
+        "reference_blocks",
+        "render"
+      ]
+    },
+    {
+      "path": "src/abstract_validation/embedding_batch.py",
+      "sha256": "6a41c7d495fa2c7002d462689e8062704334d1f316a73f1bbc0da8b15c5a21cd",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Resumable Gemini Embedding 2 client with atomic reservations and receipts.",
+      "top_level_symbols": [
+        "BudgetLedger",
+        "BatchEmbedder"
+      ]
+    },
+    {
+      "path": "src/abstract_validation/evaluate.py",
+      "sha256": "cf39399a0002100993ac0082a781793aeadb400f2717b043906f31566a70276d",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Extraction correctness and known-item retrieval are scored independently.",
+      "top_level_symbols": [
+        "canonical",
+        "compare",
+        "extraction",
+        "ranking_metrics",
+        "retrieval"
+      ]
+    },
+    {
+      "path": "src/abstract_validation/extraction_trial.py",
+      "sha256": "5c8f14c9a68996c91fefd3a6a5644d95cb906591b3089f4e6953b149e8180713",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Freeze, convert, and evaluate optional Docling extraction without corpus writes.",
+      "top_level_symbols": [
+        "items_from_document",
+        "assess",
+        "development",
+        "freeze",
+        "convert"
+      ]
+    },
+    {
+      "path": "src/abstract_validation/prepare.py",
+      "sha256": "856a25851d85cae97477565d6af4287f9d298f577ba1043d9386342d9f532a12",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Freeze a fresh stratified holdout and a query-independent retrieval pool.",
+      "top_level_symbols": [
+        "native_text",
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation/references.py",
+      "sha256": "effa1097ea2b63126107802845bb82ed78429331347ebf4fd2d4ba22cdbfd56a",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Materialize source-reviewed block selections, then freeze their hashes.",
+      "top_level_symbols": [
+        "freeze"
+      ]
+    },
+    {
+      "path": "src/abstract_validation/report.py",
+      "sha256": "9419045714a28252be1df7921e9dae17c5c646ceb1135bd16501fb98771930fd",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Render auditable local trial artifacts; never uploads source material.",
+      "top_level_symbols": [
+        "review_sheet",
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation/retrieval_trial.py",
+      "sha256": "329b4d7914486edaef885ec0008322da8067741524b78fa5917d30b3d578c380",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Ten-thousand-work first-page retrieval trial, with nearby-topic distractors.",
+      "top_level_symbols": [
+        "prepare_index",
+        "render_one",
+        "page_path",
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation/search.py",
+      "sha256": "1b5023a7e70eb930736bd5a77c2e6a506ad44b2e6a635c0301d63f0773a14a51",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Search the validated local page index; semantic queries can incur API cost.",
+      "top_level_symbols": [
+        "search"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_expanded/__init__.py",
+      "sha256": "2bd42541638dd71ef94c9b62989502552f5b7417e277aad591d3f7fb389ad3bc",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "A frozen-method expansion to 200 reviewed first pages.",
+      "top_level_symbols": []
+    },
+    {
+      "path": "src/abstract_validation_expanded/common.py",
+      "sha256": "6d6231660815870e6d9bf91ac75a663ee0ea4e7aab56065011015b4b46bc08b6",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Module initialization or command forwarding.",
+      "top_level_symbols": [
+        "rows",
+        "folder",
+        "cache",
+        "code_hashes",
+        "verify_protocol"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_expanded/convert.py",
+      "sha256": "2e2e6a0831597bd1ee8fb4806469b1ca31cba8b8f25fd0dced12c33cb07651f5",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Run the unchanged page-one conversion configurations on uncached inputs.",
+      "top_level_symbols": [
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_expanded/extraction.py",
+      "sha256": "ca65267a81d695acc8ee95d5c81ba26556158adce3310bee72f188ed4d663f91",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Apply frozen methods to the expanded paired sample; never call an API.",
+      "top_level_symbols": [
+        "prediction",
+        "evaluate"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_expanded/finalize.py",
+      "sha256": "f51462a46fd556a4430d5e062a9c7b28e2fba7429b3b5c920a37ccb941d76929",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Wait for retained local outputs, then score and verify the complete experiment.",
+      "top_level_symbols": [
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_expanded/prepare.py",
+      "sha256": "10dc17707e2b98fa99b708a7370cf927d5c3790664689a4782525a44a8a08690",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Append 100 unseen works without modifying the preceding frozen experiment.",
+      "top_level_symbols": [
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_expanded/references.py",
+      "sha256": "bdacf227f73f978aa14d27ef0dc95677ed481a6f514ee59b3fd57a8a6a785200",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Freeze source-only annotations; preserve the prior 100 references verbatim.",
+      "top_level_symbols": [
+        "freeze"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_expanded/report.py",
+      "sha256": "6be2552a88a1275c9c7ee4e3b2f84489613fd44607ae8d5a442c897a85943224",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Generate a compact, reproducible report only after the full paired run verifies.",
+      "top_level_symbols": [
+        "compact",
+        "interval",
+        "main",
+        "document"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_expanded/retrieval.py",
+      "sha256": "dce140772159adc276e0942d9d723767ec49df2b312ee8d8ce544887dcf234c6",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Local-only known-item retrieval; no cloud client or paid candidate pool.",
+      "top_level_symbols": [
+        "inputs",
+        "configuration",
+        "specter_queries",
+        "shortlist_metrics",
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_expanded/verify.py",
+      "sha256": "ffdb54821b9e8eaaecbfb50d5439ff4db5c6cc299905d728887e6d676f0126b8",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Read-only evidence checks; full verification requires all 200 model attempts.",
+      "top_level_symbols": [
+        "ledger_snapshot",
+        "sources",
+        "full"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_expanded/vision.py",
+      "sha256": "5b86b9efccda5cf6fb4659342030e99828563efa8fd69a05018dd298f815c71a",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Run both pinned local vision models on the same 200 first pages.",
+      "top_level_symbols": [
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v2/__init__.py",
+      "sha256": "b5b85b87c62d863629131b3aa2fe459bbc68c64b04cc787a1b0cdb4b87d1d199",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Second, isolated first-page extraction and retrieval experiment.",
+      "top_level_symbols": []
+    },
+    {
+      "path": "src/abstract_validation_v2/adapters.py",
+      "sha256": "8dfc22b20476196be3c2ca207491821c3d9c67c665cde2c73ab58071ba7e7ec8",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Explicit adapters: OCR remains distinct from native source projection.",
+      "top_level_symbols": [
+        "plain",
+        "document",
+        "item",
+        "mineru_document",
+        "olmocr_assess"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v2/audit.py",
+      "sha256": "605e7a3c2f4778d4d234a7dafee14a4045e3e3ec79cca16b14e2c33255a3036e",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Exercise the real source-review gate on the new pages; make zero API calls.",
+      "top_level_symbols": [
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v2/common.py",
+      "sha256": "33389d0d7b9aba97e8fa5d32117a408b97c0fbc5031e7f7f60bad09f50497aa7",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Module initialization or command forwarding.",
+      "top_level_symbols": [
+        "rows",
+        "page_folder"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v2/convert.py",
+      "sha256": "c9891bfcab3eeaba47ae378f654ddff1afc71e8c88dd00e6a3b83bbc638d9fc7",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Cache source-only page conversions. Predictions are assessed separately.",
+      "top_level_symbols": [
+        "cases",
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v2/download_models.py",
+      "sha256": "ecd153e29c313beb804ed5af1bd96b8a1787306ccc2897fb69e32c25bfacb10f",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Pin public model revisions and download weights; no inference API calls.",
+      "top_level_symbols": [
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v2/extraction.py",
+      "sha256": "f3359aeba1715edda8d3e0c1557f979de7ab70202ed6bc9986e13611f3573ae7",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Score proposals separately from the source-review admission gate.",
+      "top_level_symbols": [
+        "baseline",
+        "frozen",
+        "prediction",
+        "summary",
+        "evaluate"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v2/fields.py",
+      "sha256": "767a805fa563b3a0c0e9639c0d2603d0088a604dd76aff98a3c9f2c1d32ed259",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Query-independent retrieval fields; these are not admitted graph evidence.",
+      "top_level_symbols": [
+        "extract",
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v2/prepare.py",
+      "sha256": "229e43927a6c208f732aa5cbe63822911ce7cee265bb8cf851bee8d907748e51",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Select unseen works before extraction; create source-only reference sheets.",
+      "top_level_symbols": [
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v2/references.py",
+      "sha256": "d04ff70d1f44ea6431339cbb22c8a4056598707291053d078ee924a92ed6e4ad",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Freeze assistant-selected source spans and queries before prediction review.",
+      "top_level_symbols": [
+        "freeze"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v2/report.py",
+      "sha256": "5a1ae88dba644980dda16cf47397f982bcf87fdc33f69f34d6c2db8bb116c641",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Publish aggregate local receipts without copying paper text into the repo.",
+      "top_level_symbols": [
+        "compact",
+        "interval",
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v2/retrieval.py",
+      "sha256": "d4edb9a7080ecd3aeb89d563316eb253e632d7242bc4d7168f651ef4ac3c95b2",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Fixed BM25F, SPECTER2 adapters, and a pooled cross-encoder experiment.",
+      "top_level_symbols": [
+        "configuration",
+        "inputs",
+        "gemini",
+        "specter",
+        "bm25_scores",
+        "rank"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v2/verify.py",
+      "sha256": "1159d8f28f1b922713d0e96c41a6a0dbe018b73fa5d0d301a37e59e28e5ff734",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Verify retained sources, frozen protocols, and cached results without API calls.",
+      "top_level_symbols": [
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v2/vision.py",
+      "sha256": "52731682eb2a5ad8dea2fb4ccf5bf443f29e10dcb00cdd09daf9ed7d4e2e39ad",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Paired local fallback pilot, with input hashes and raw model outputs.",
+      "top_level_symbols": [
+        "pilot",
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v3/__init__.py",
+      "sha256": "47bfcaca14ddd02c6e61dd76f277e7131f34d71cbc8fe631e82c2fcf199087fc",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Offline, source-first v3 experiments; frozen v1/v2 receipts remain untouched.",
+      "top_level_symbols": []
+    },
+    {
+      "path": "src/abstract_validation_v3/adapters.py",
+      "sha256": "16a0418b3b9972daff7a10218b11f7233f6a2a33161971693f56840a48374249",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Read-only native PDF and cached local OCR adapters; never download models.",
+      "top_level_symbols": [
+        "read_native_page",
+        "native_document",
+        "_plain",
+        "olmocr_assess",
+        "mineru_assess"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v3/common.py",
+      "sha256": "2da9ee74a12530f623b783a31a2b50153b99cb23b4a674064a345b2336dace17",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "External data roots and immutable JSON receipts, without private path logging.",
+      "top_level_symbols": [
+        "data_root",
+        "external_output",
+        "resolve_source",
+        "file_digest",
+        "read",
+        "write_once",
+        "code_hashes",
+        "safe_id"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v3/evaluate.py",
+      "sha256": "fa40cfa6455aedb4209b4e9c53f10a285831bb5cd4188f6d3a30814342c0e013",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Read-only replay of the 200-page regression and versioned v3 comparisons.",
+      "top_level_symbols": [
+        "summary",
+        "paired_fallback",
+        "RegressionInputs",
+        "_detail",
+        "run_regression",
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v3/freeze.py",
+      "sha256": "5e80970b6f99699d9ef6f791ca6fcd0064bcfb68225ab37945eaced518f3101e",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Freeze a genuinely new source-reviewed cohort before opening predictions.",
+      "top_level_symbols": [
+        "freeze_cohort",
+        "evaluate_frozen",
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v3/local_reranker.py",
+      "sha256": "57b8337f3c65bdbfea0cd65a9710fd90b51ea88b3c5cdc68b959c90f479a465f",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Optional local-only scalar cross-encoder; weights never enter the repository.",
+      "top_level_symbols": [
+        "verify_snapshot",
+        "LocalReranker"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v3/prepare.py",
+      "sha256": "64baa6a85dcfb72f54832efafbf7836ea0367115ed3f04c34de8822c1fff31a6",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Prepare first-page source views only; never open or produce model predictions.",
+      "top_level_symbols": [
+        "_bytes_once",
+        "prepare",
+        "main"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v3/retrieval.py",
+      "sha256": "f2817276fbf2578555d14ffa4740362081876db2590096701c32ccc0508c1af8",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Query-independent fields and candidate generation, separate from reranking.",
+      "top_level_symbols": [
+        "title_fields",
+        "tokens",
+        "bm25",
+        "candidate_pool",
+        "rerank",
+        "ranking_metrics"
+      ]
+    },
+    {
+      "path": "src/abstract_validation_v3/retrieval_experiment.py",
+      "sha256": "f665aa1f7c2b55cc00bbd5930d1c0847767ff696bc8aff59f4c4832ef8e45978",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Local field preparation and query-blind candidate/rerank receipt evaluation.",
+      "top_level_symbols": [
+        "prepare_fields",
+        "evaluate",
+        "main"
+      ]
+    },
+    {
+      "path": "src/parallel_source_v4/__init__.py",
+      "sha256": "7c433293ab7d45eba066ccf6a6351239b985a89621471403c4dabdbff0d48ae4",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Local, versioned first-page research harness; no graph or API authority.",
+      "top_level_symbols": []
+    },
+    {
+      "path": "src/parallel_source_v4/adapters.py",
+      "sha256": "6279ace17b17372a784318741e03e977b7d9a1ace6c0562b0c44d6b454a8b7d9",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Local converter adapters. Fields and model text remain untrusted candidates.",
+      "top_level_symbols": [
+        "document",
+        "plain",
+        "item",
+        "conversion_state",
+        "mineru_document",
+        "olmocr_assess",
+        "grobid_assess"
+      ]
+    },
+    {
+      "path": "src/parallel_source_v4/common.py",
+      "sha256": "d1ba0d0baa081ef1bd3280cc009b03121701b3b49184d6ee6ed98600af7c8f1f",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Explicit authorized roots and immutable, content-bound research receipts.",
+      "top_level_symbols": [
+        "digest",
+        "read",
+        "within",
+        "child",
+        "data_root",
+        "write_once",
+        "method_hashes",
+        "verify_files",
+        "verify_first_page_bundle"
+      ]
+    },
+    {
+      "path": "src/parallel_source_v4/extraction.py",
+      "sha256": "bda230bece7a4b3cda308f9bebed3991e421d074b82d1770e21f748a4e17415b",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Read-only cached-conversion experiment; no worker, provider or graph imports.",
+      "top_level_symbols": [
+        "native_document",
+        "_cache",
+        "_folder",
+        "blocked",
+        "preflight",
+        "predict",
+        "run_cases",
+        "regression",
+        "frozen_cohort",
+        "main"
+      ]
+    },
+    {
+      "path": "src/parallel_source_v4/fields.py",
+      "sha256": "ee50cf230f4b7cba92a20b42a93fd66154a93439ec7ef2fb3b49854b5bab562a",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Build source-hashed, query-independent fields from a prepared page-one manifest.",
+      "top_level_symbols": [
+        "build_fields",
+        "main"
+      ]
+    },
+    {
+      "path": "src/parallel_source_v4/freeze.py",
+      "sha256": "2d84e014233b6c1e4cb4720a3344e26d3d86f002f73d558a61c6b2b2b19f18b6",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Freeze source-reviewed cohorts before prediction; cannot certify human review.",
+      "top_level_symbols": [
+        "_timestamp",
+        "freeze_cohort",
+        "verify_freeze",
+        "main"
+      ]
+    },
+    {
+      "path": "src/parallel_source_v4/metrics.py",
+      "sha256": "da671b664c34598022c5fc1d20ab0ba77d004551909e49c3d0eaaf61285a8751",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Disjoint proposal, abstention, conversion and admission measurements.",
+      "top_level_symbols": [
+        "score_case",
+        "summary",
+        "fallback_increment",
+        "ranking_metrics"
+      ]
+    },
+    {
+      "path": "src/parallel_source_v4/prepare.py",
+      "sha256": "6197dadc16509d6cff7088dd79970126f4e18c75623da10f9668b33fc526bd98",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Render authorized page-one inputs for source-first review; no predictions.",
+      "top_level_symbols": [
+        "prepare",
+        "main"
+      ]
+    },
+    {
+      "path": "src/parallel_source_v4/retrieval.py",
+      "sha256": "cbf0e2087b4fe0f728b98ef5ea08dea74d6426c462f07fc34a26c617e1ef1c9f",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Query-independent fields and separately measured local candidate/rerank stages.",
+      "top_level_symbols": [
+        "_title_like",
+        "extract_fields",
+        "tokens",
+        "BM25",
+        "ordered_scores",
+        "candidate_pool",
+        "rerank_pool",
+        "local_cross_encoder",
+        "normalize_queries",
+        "evaluate",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/build_schemas.py",
+      "sha256": "e4e340ad3ec27055e47011cb98e5cd8465c2e65f25d0251e65d031ecbb8d655e",
+      "chapters": [
+        "11-validation-delivery"
+      ],
+      "description": "Generate the checked-in standalone 2020-12 runtime schemas; no remote refs.",
+      "top_level_symbols": [
+        "nullable",
+        "arr",
+        "mapping",
+        "obj",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/build_vectors.py",
+      "sha256": "15daae9091eedfe528707f90ba6b0e540597124c858295767e238c8e35d0b0be",
+      "chapters": [
+        "11-validation-delivery"
+      ],
+      "description": "Publish transport/canonical bytes/hash vectors for independent implementations.",
+      "top_level_symbols": [
+        "main"
+      ]
+    },
+    {
+      "path": "tools/check_legacy.py",
+      "sha256": "cefe29ace33aac606d422bd0ba08ae41616200e1a5bc4b6fab8a14346f3ede07",
+      "chapters": [
+        "11-validation-delivery"
+      ],
+      "description": "Run the explicit upstream compatibility gate; no provider/production access.",
+      "top_level_symbols": []
+    },
+    {
+      "path": "tools/legacy_hardening.py",
+      "sha256": "7d35fa9fccc07897b93a0bc86d336a8bb1c12ba03c5a2eeea84ee680a47749d0",
+      "chapters": [
+        "11-validation-delivery"
+      ],
+      "description": "Compatibility fixes for the 0.2 fixture API. No graph-publication authority.",
+      "top_level_symbols": [
+        "validate_extended"
+      ]
+    },
+    {
+      "path": "tools/package_project.py",
+      "sha256": "81162b596847ac8340c77bb4f463b5785f1b565f090613daa11bfc82cfc1e7ab",
+      "chapters": [
+        "11-validation-delivery"
+      ],
+      "description": "Deterministic public source ZIP; exclude secrets, papers, models and outputs.",
+      "top_level_symbols": [
+        "safe_name",
+        "included",
+        "safe_bytes",
+        "archive_bytes",
+        "audit_archive",
+        "package",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/public_fixtures_parallel_v4.py",
+      "sha256": "b54e0dec9a6f1b14b52979b6910421b71b16a5551cf6c77e0189f26aa96e2c1b",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments",
+        "11-validation-delivery"
+      ],
+      "description": "Generate/replay authored PDF counterexamples, NOT an unseen-paper cohort.",
+      "top_level_symbols": [
+        "prepare",
+        "layout_fixture",
+        "replay",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/retrieval_schemas.py",
+      "sha256": "66125bf343e32b93ef6fd8a01ceed4c61a9e9c9bb699e840c7e45f8bb5be6014",
+      "chapters": [
+        "11-validation-delivery"
+      ],
+      "description": "Additive GraphRAG contracts to the existing standalone schema generator.",
+      "top_level_symbols": [
+        "extend"
+      ]
+    },
+    {
+      "path": "tools/run_validation.py",
+      "sha256": "aea3f70fc525b1308d2254689a43c50a7ae8708bd0599a6d9c5ed880d0775df3",
+      "chapters": [
+        "11-validation-delivery"
+      ],
+      "description": "Execute and record offline tests/probes/demo. Never claim unexecuted gates passed.",
+      "top_level_symbols": [
+        "RecordedResult",
+        "vectors",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/validate_package.py",
+      "sha256": "d461d0c14365d97630ea216608cdbb095e3f8806e76a0a954ea2dfcdbbee655a",
+      "chapters": [
+        "11-validation-delivery"
+      ],
+      "description": "Offline TRACE-GC design-contract checks; never performs inference or graph writes.",
+      "top_level_symbols": [
+        "ContractError",
+        "require",
+        "canonical",
+        "digest",
+        "text_digest",
+        "load_json",
+        "compiled_schema",
+        "validate_schema",
+        "check_distribution",
+        "unique_index",
+        "validate_bundle",
+        "main"
+      ]
+    },
+    {
+      "path": "trace_gc/__init__.py",
+      "sha256": "2129ff6e56d1d2b10c8c630bebc73440d5356a49eaa62e4a50f1e143997d3812",
+      "chapters": [
+        "01-overview",
+        "12-commands-budgets"
+      ],
+      "description": "TRACE-GC: evidence-bound graph compilation with explicit trust boundaries.",
+      "top_level_symbols": []
+    },
+    {
+      "path": "trace_gc/__main__.py",
+      "sha256": "79ee6f134c5c5193377cf9b189cbdcc3e2095e49ba9cec310114441c15a917c4",
+      "chapters": [
+        "12-commands-budgets"
+      ],
+      "description": "Module initialization or command forwarding.",
+      "top_level_symbols": []
+    },
+    {
+      "path": "trace_gc/adapter.py",
+      "sha256": "97677b5d7b4e80d80bf9642c11bc868c773cf958e81ab93664933a1ef89e8b02",
+      "chapters": [
+        "03-observations-resolution"
+      ],
+      "description": "TypeSafe HTTP lowering, exact wire receipts, and error-preserving observations.",
+      "top_level_symbols": [
+        "probability",
+        "parse_answer",
+        "record_response",
+        "validate_observation",
+        "TypeSafeAdapter"
+      ]
+    },
+    {
+      "path": "trace_gc/backend.py",
+      "sha256": "4e27a9da835803e7457ee4a9d75b1700752eb83b785ad54991c7cb7d6451afc9",
+      "chapters": [
+        "04-policy-publication",
+        "05-history-replay"
+      ],
+      "description": "Isolated SQLite reference backend and atomic publication boundary.",
+      "top_level_symbols": [
+        "SQLiteReferenceBackend",
+        "CompilerService"
+      ]
+    },
+    {
+      "path": "trace_gc/budget.py",
+      "sha256": "cbb9e7cb4e15bbcafdc37e89d9eb95938580dcce6b20c67d7c5bd84d4a08aa88",
+      "chapters": [
+        "12-commands-budgets"
+      ],
+      "description": "Shared, persistent, monotonic per-run budgets across services and retries.",
+      "top_level_symbols": [
+        "RunBudget"
+      ]
+    },
+    {
+      "path": "trace_gc/canonical.py",
+      "sha256": "2ab85ad82e4a193306ecd3b485d559634a0a870f22a1385ce0512b7cc6cfe7df",
+      "chapters": [
+        "02-evidence-compilation",
+        "05-history-replay"
+      ],
+      "description": "TRACE-C14N-1, an explicit typed binary encoding (NOT RFC 8785 / JCS).",
+      "top_level_symbols": [
+        "_sized",
+        "_encode",
+        "canonical_bytes",
+        "digest",
+        "bytes_digest",
+        "text_digest",
+        "dumps",
+        "loads",
+        "load",
+        "write"
+      ]
+    },
+    {
+      "path": "trace_gc/catalog.py",
+      "sha256": "3fc1fe669cf886e163ceb890720b1e62b49f7aaa9afb27a85b864a25d342b96c",
+      "chapters": [
+        "02-evidence-compilation"
+      ],
+      "description": "Immutable semantic records, independent of mutable lifecycle/status projections.",
+      "top_level_symbols": [
+        "Catalog"
+      ]
+    },
+    {
+      "path": "trace_gc/cli.py",
+      "sha256": "259456f2e2b9a134e6022400146aac9aea2a895286da5cb8b87f14096b07c938",
+      "chapters": [
+        "12-commands-budgets"
+      ],
+      "description": "Offline-first command line. There is deliberately no automatic publish command.",
+      "top_level_symbols": [
+        "read_trust",
+        "parser",
+        "main"
+      ]
+    },
+    {
+      "path": "trace_gc/compiler.py",
+      "sha256": "087a849f8c01e2e4bd67e9860fd71adb21fcd6ae56a6f596281b27f44d70140d",
+      "chapters": [
+        "02-evidence-compilation",
+        "07-upstream-compilation"
+      ],
+      "description": "Deterministic materialization and complete provenance/dependency closure.",
+      "top_level_symbols": [
+        "now",
+        "timestamp",
+        "transform",
+        "_references",
+        "closure",
+        "materialize",
+        "wire_request",
+        "semantic_input",
+        "byte_estimate",
+        "compile_pack",
+        "validate_pack"
+      ]
+    },
+    {
+      "path": "trace_gc/conformance.py",
+      "sha256": "208bfe0eb7736cf462b23b439b4d68ad322b89b354c8ae23683bc8a2afd31388",
+      "chapters": [
+        "11-validation-delivery"
+      ],
+      "description": "Explicit conformance gate for a user-supplied, byte-pinned legacy checkout.",
+      "top_level_symbols": [
+        "legacy_test_policy",
+        "check_legacy"
+      ]
+    },
+    {
+      "path": "trace_gc/constraints.py",
+      "sha256": "17ca63d4e24fe2627ef18dfb2070d7c4f5eddb8d42fb329ef00550a228ccaacd",
+      "chapters": [
+        "03-observations-resolution",
+        "04-policy-publication"
+      ],
+      "description": "Deterministic graph constraints shared by the solver and transaction boundary.",
+      "top_level_symbols": [
+        "UnionFind",
+        "normalize",
+        "validate_schema_contract",
+        "validate_graph",
+        "add_candidates_to_facts",
+        "impact"
+      ]
+    },
+    {
+      "path": "trace_gc/demo.py",
+      "sha256": "ab8c88246e8b7fdcd71f2535c44cf1f770f91ab8810bcdadce7cf4a96253e182",
+      "chapters": [
+        "01-overview",
+        "11-validation-delivery"
+      ],
+      "description": "A complete isolated lifecycle using synthetic observations and ephemeral keys.",
+      "top_level_symbols": [
+        "relation",
+        "limits",
+        "fixture_response",
+        "DemoFixture",
+        "build_fixture",
+        "run_demo"
+      ]
+    },
+    {
+      "path": "trace_gc/errors.py",
+      "sha256": "383af80f7faa7b05b63c2bb07d48bca0edccb1657e73ed1bc47d7a722010d29e",
+      "chapters": [
+        "02-evidence-compilation",
+        "12-commands-budgets"
+      ],
+      "description": "Stable machine-readable failures at all public trust boundaries.",
+      "top_level_symbols": [
+        "ContractError",
+        "require",
+        "boundary"
+      ]
+    },
+    {
+      "path": "trace_gc/ledger.py",
+      "sha256": "4b6fe05872364aec7f3b30d18b5ab3b67dc1123ed6b101bdfd3ef41e5efa7c30",
+      "chapters": [
+        "05-history-replay"
+      ],
+      "description": "Complete-run lineage and optional externally authenticated checkpoints.",
+      "top_level_symbols": [
+        "references",
+        "causal_references",
+        "build_ledger",
+        "manifest_hash",
+        "make_bundle",
+        "validate_ledger"
+      ]
+    },
+    {
+      "path": "trace_gc/legacy.py",
+      "sha256": "930cc2366ef6fd37563dd603085a23181e41b1eb4bfc86d1b18cb32d56484ede",
+      "chapters": [
+        "04-policy-publication",
+        "11-validation-delivery"
+      ],
+      "description": "Pinned legacy GraphStore bridge; the upstream store remains graph authority.",
+      "top_level_symbols": [
+        "git_blob_hash",
+        "load_pinned_core",
+        "_TransactionConnection",
+        "PinnedLegacyBackend"
+      ]
+    },
+    {
+      "path": "trace_gc/pdf_admission.py",
+      "sha256": "9b0c1acde9323720905aa7509e6c66f592accf88a22327fe882d10882fc1b854",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Review-gated admission of first-page evidence to a Jev request.",
+      "top_level_symbols": [
+        "sha256",
+        "seal",
+        "source_review",
+        "prepare_jev_request"
+      ]
+    },
+    {
+      "path": "trace_gc/pdf_evidence.py",
+      "sha256": "5a76e52b0cc27e8e9c61ee28eb11b41b29d5b78233b7a4e91f0d93c8ff710aeb",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Experimental, source-bound first-page abstract assessment.",
+      "top_level_symbols": [
+        "normalize",
+        "canonical",
+        "_section",
+        "_is_metadata",
+        "_overlap",
+        "_items",
+        "_assess_first_page",
+        "assess_first_page",
+        "reprocessing_action"
+      ]
+    },
+    {
+      "path": "trace_gc/pdf_source_parallel_v4.py",
+      "sha256": "df31e8d09cfe1502153ded6e87ca8ac9aad6d1b46012a6e7bf10b099a840f7e5",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Native first-page alignment with character-level provenance (no model calls).",
+      "top_level_symbols": [
+        "canonical",
+        "normalize",
+        "json_bytes",
+        "digest_value",
+        "compare",
+        "overlap",
+        "validate_box",
+        "validate_lines",
+        "source_lines",
+        "style",
+        "_chains",
+        "_mapped",
+        "_slices",
+        "locate",
+        "validate_source_spans"
+      ]
+    },
+    {
+      "path": "trace_gc/pdf_source_v3.py",
+      "sha256": "973a130a757e0483063ec167bb63a918a95114dc2f4be08c5ad857bfdc39a3d4",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Source-first experimental proposals. No API requests or publication authority.",
+      "top_level_symbols": [
+        "normalize",
+        "canonical",
+        "compare",
+        "digest",
+        "seal",
+        "_box",
+        "validate_lines",
+        "_span",
+        "reconstruct",
+        "_overlap",
+        "_streams",
+        "align_text",
+        "_document_items",
+        "_style",
+        "_bold",
+        "_role",
+        "_author_list",
+        "_fragments",
+        "_is_same_lane",
+        "_boundary",
+        "_candidate",
+        "_column_continuation",
+        "assess_document",
+        "verify_scholarly_field"
+      ]
+    },
+    {
+      "path": "trace_gc/pdf_structure.py",
+      "sha256": "ff84ed19946281f5d93d8cad3845ef1af0bccb03672ce71d05c80e23b03227f8",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Experimental v2 selector: document reading order and scholarly field checks.",
+      "top_level_symbols": [
+        "body_items",
+        "_trim",
+        "_agreement",
+        "assess_document",
+        "seal"
+      ]
+    },
+    {
+      "path": "trace_gc/pdf_structure_parallel_v4.py",
+      "sha256": "9818f1ff0afda2350dc1a7e39fbe503c4ff8d9d23f7a2dcaea54b374f42258e7",
+      "chapters": [
+        "09-pdf-evidence-review",
+        "10-research-experiments"
+      ],
+      "description": "Experimental parallel first-physical-page selector v4; never a publication authority.",
+      "top_level_symbols": [
+        "body_items",
+        "regions",
+        "_author_like",
+        "_role_rejected",
+        "_header",
+        "_structured",
+        "_cut",
+        "_style_cut",
+        "_source_bold",
+        "_field_context",
+        "_collect",
+        "seal",
+        "verify_assessment",
+        "assess_document"
+      ]
+    },
+    {
+      "path": "trace_gc/plans.py",
+      "sha256": "81487cd8ab5a09b9837371470dad4f10aea612a63b664256d1ae335500a28588",
+      "chapters": [
+        "04-policy-publication",
+        "05-history-replay"
+      ],
+      "description": "Typed immutable mutation plans and guarded append-only lifecycle transitions.",
+      "top_level_symbols": [
+        "Lifecycle",
+        "required_sources",
+        "create_plan",
+        "validate_plan",
+        "deactivate",
+        "add_operation"
+      ]
+    },
+    {
+      "path": "trace_gc/policy.py",
+      "sha256": "2816728ffa28c3a0578f328d08b3e56c3c8b3f6f95868420d8658c5a922bf4a1",
+      "chapters": [
+        "04-policy-publication"
+      ],
+      "description": "Immutable policy identity. Publication mode is application-owned configuration.",
+      "top_level_symbols": [
+        "find_policy",
+        "create_policy"
+      ]
+    },
+    {
+      "path": "trace_gc/programs.py",
+      "sha256": "7a0155324e571a65bff06c27e537d2b34e12e7e1af0ab18b7ef0abe439695965",
+      "chapters": [
+        "02-evidence-compilation",
+        "03-observations-resolution"
+      ],
+      "description": "Installed, immutable question programs; changing semantics requires a new version.",
+      "top_level_symbols": [
+        "question",
+        "verify_question",
+        "retrieval_question"
+      ]
+    },
+    {
+      "path": "trace_gc/qualification.py",
+      "sha256": "1611bc0cbc9a8831db6174054a228b056b71a6f0b2dd298f50916911f785027e",
+      "chapters": [
+        "04-policy-publication"
+      ],
+      "description": "Risk accounting, signed qualification applicability, and frozen-observation replay.",
+      "top_level_symbols": [
+        "pipeline_fingerprint",
+        "_binomial_cdf",
+        "upper_error_bound",
+        "evaluate_labels",
+        "QualificationRegistry",
+        "context_for",
+        "evaluate_policy",
+        "audit_sample"
+      ]
+    },
+    {
+      "path": "trace_gc/references.py",
+      "sha256": "3b3d19164c92ec61845ba182dbb907a293c949cceff2f640d0a6a767854471dc",
+      "chapters": [
+        "02-evidence-compilation",
+        "05-history-replay"
+      ],
+      "description": "Typed references and linear-time causal ordering; ordinary links are not DAG edges.",
+      "top_level_symbols": [
+        "topological_order",
+        "scoped_question",
+        "check_question_dependencies"
+      ]
+    },
+    {
+      "path": "trace_gc/replay.py",
+      "sha256": "515186fd3fded00294cb16e662ea723f19643fdce8777da658eca61e5ce543cd",
+      "chapters": [
+        "05-history-replay"
+      ],
+      "description": "Append policy branches without rewriting or fabricating model observations.",
+      "top_level_symbols": [
+        "replay_analysis_policy",
+        "replay_retrieval"
+      ]
+    },
+    {
+      "path": "trace_gc/resolver.py",
+      "sha256": "7374f618c24f983b4ee829d20d543050a5b0764fe64de8b336e017e5e75630c3",
+      "chapters": [
+        "03-observations-resolution"
+      ],
+      "description": "Bounded exact global resolution with independently recheckable certificates.",
+      "top_level_symbols": [
+        "primary_observation",
+        "acceptance_label",
+        "accepted_probability",
+        "build_problem",
+        "solve",
+        "verify_certificate",
+        "effective_risk",
+        "project_resolutions"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/__init__.py",
+      "sha256": "9898bc4c217cf0f6e396e30e62b908d13a25c8ff635d8da04a6bf8b5129a1df9",
+      "chapters": [
+        "06-hybrid-retrieval",
+        "07-upstream-compilation",
+        "08-downstream-answers"
+      ],
+      "description": "Bidirectional GraphRAG integrated with TRACE-GC's evidence-gated compiler.",
+      "top_level_symbols": []
+    },
+    {
+      "path": "trace_gc/retrieval/benchmark.py",
+      "sha256": "609b4f6d6b634eb10f7813c3f5d5eb793de25c1667b80743996e9ea62e434b8d",
+      "chapters": [
+        "06-hybrid-retrieval",
+        "11-validation-delivery"
+      ],
+      "description": "Reproducible synthetic GraphRAG ablations and actual pipeline wiring checks.",
+      "top_level_symbols": [
+        "resolved_case",
+        "gold",
+        "has_relevant_context",
+        "add_benchmark_candidate",
+        "FixedPlanner",
+        "AdaptiveCasePlanner",
+        "run_benchmark"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/budget.py",
+      "sha256": "de388e95f2e0db0af2e906875e319754194fc8980c1f93ebb905d55222f031e1",
+      "chapters": [
+        "06-hybrid-retrieval",
+        "12-commands-budgets"
+      ],
+      "description": "Bounded retrieval work and context accounting; costs are work units, not USD.",
+      "top_level_symbols": [
+        "conservative_tokens",
+        "BudgetMeter"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/contracts.py",
+      "sha256": "9e675ad86d7d7fb4cbd6d88ef0aa438de3c9fba8654f0167b3ea1cce1532b5ff",
+      "chapters": [
+        "06-hybrid-retrieval"
+      ],
+      "description": "Versioned retrieval contracts. Scores are utilities, never calibrated truth.",
+      "top_level_symbols": [
+        "now",
+        "timestamp",
+        "RetrievalBudget",
+        "query",
+        "validate_query",
+        "item_id"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/evaluation.py",
+      "sha256": "4eeeb0af57ef990ea239efdba6aeb4290f624ae0d8395d51e56a07cfee70f9d8",
+      "chapters": [
+        "06-hybrid-retrieval",
+        "11-validation-delivery"
+      ],
+      "description": "Retrieval/synthesis metrics and held-out research gates. No fabricated qualification.",
+      "top_level_symbols": [
+        "_ratio",
+        "retrieval_metrics",
+        "synthesis_metrics",
+        "efficiency_metrics",
+        "propose_retrieval_changes",
+        "heldout_policy_gate"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/fixtures.py",
+      "sha256": "493640c439adc85607a618cbbdc4c0cd68aefcc803ad90e12388e19095ae6fd1",
+      "chapters": [
+        "06-hybrid-retrieval",
+        "11-validation-delivery"
+      ],
+      "description": "Synthetic retrieval corpus. Demonstrates contracts, not real scientific findings.",
+      "top_level_symbols": [
+        "demo_access",
+        "corpus"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/integration.py",
+      "sha256": "5e274caa41b18ad58b10b48021e6ac27c0bbb3462adbf52f6e552bac736bc519",
+      "chapters": [
+        "02-evidence-compilation",
+        "07-upstream-compilation",
+        "08-downstream-answers"
+      ],
+      "description": "Additive Minimum Evidence Closure / Decision IR integration.",
+      "top_level_symbols": [
+        "lineage_fields",
+        "validate_pack_lineage",
+        "validate_observation_lineage",
+        "resolution_lineage",
+        "references",
+        "validate_record"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/items.py",
+      "sha256": "657969af61c0ea8fbe49ba84cd4b681356c8261c83099452399a6317b182a9ab",
+      "chapters": [
+        "06-hybrid-retrieval",
+        "08-downstream-answers"
+      ],
+      "description": "Canonical context construction and provenance classification, never graph truth.",
+      "top_level_symbols": [
+        "provenance",
+        "valid_at",
+        "compatible_relation",
+        "visible_edges",
+        "conflict_pairs",
+        "canonical_item"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/planner.py",
+      "sha256": "cdd7d95ce3cae8ac8d6aca2678895da9d464adc319b433490fd049f2de962a59",
+      "chapters": [
+        "07-upstream-compilation"
+      ],
+      "description": "Task/risk-aware planning and finite evidence acquisition through the existing pipeline.",
+      "top_level_symbols": [
+        "RetrievalPlanner",
+        "request_evidence",
+        "UpstreamRun",
+        "UpstreamGraphRAG"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/reranker.py",
+      "sha256": "0c5e79476304a57a06ffcb30f82662851b95900194a31791dbb2711682b6bf53",
+      "chapters": [
+        "06-hybrid-retrieval",
+        "07-upstream-compilation"
+      ],
+      "description": "Bounded Jev relevance judgments through the existing pack/observation adapter.",
+      "top_level_symbols": [
+        "JevReranker",
+        "validate_reranked_context"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/scenarios.py",
+      "sha256": "0f04ca6ce0b8b75d154aee3091cbb718f94ee648977575b81480040b588cf18e",
+      "chapters": [
+        "01-overview",
+        "07-upstream-compilation",
+        "08-downstream-answers",
+        "11-validation-delivery"
+      ],
+      "description": "Four executable GraphRAG lifecycles; all observations and sources are synthetic.",
+      "top_level_symbols": [
+        "synthetic_response",
+        "admit",
+        "retriever_for",
+        "reviewed_publish",
+        "execute",
+        "downstream",
+        "export",
+        "run_scenarios"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/security.py",
+      "sha256": "9b02083be3721315b4074e753dec4c6c93c156d09099b6b1248e5a57e7f6df9c",
+      "chapters": [
+        "06-hybrid-retrieval",
+        "08-downstream-answers"
+      ],
+      "description": "Application-owned, deny-by-default ACLs. Queries cannot grant access.",
+      "top_level_symbols": [
+        "access_policy",
+        "grant",
+        "AccessFilter"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/service.py",
+      "sha256": "28aa8b292914238bb9c760cd19ee0b575a3c94eecd832514d7c1612a52f57f38",
+      "chapters": [
+        "06-hybrid-retrieval",
+        "08-downstream-answers"
+      ],
+      "description": "Hybrid evidence/graph retrieval, auditable ranking, caching and downstream API.",
+      "top_level_symbols": [
+        "RetrievalCache",
+        "ranking_features",
+        "score",
+        "effective_strategies",
+        "retrieval_fingerprint",
+        "HybridRetriever",
+        "validate_context",
+        "GraphRAGQueryService"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/store.py",
+      "sha256": "7069dfa30bf16816f00e87fd0e87b0f2f95c7dc1a4031bc185b12c744f1b54cf",
+      "chapters": [
+        "06-hybrid-retrieval",
+        "08-downstream-answers"
+      ],
+      "description": "Read adapters over the existing graph authority; algorithms never write it.",
+      "top_level_symbols": [
+        "GraphReadView",
+        "GraphQueryAdapter",
+        "InMemoryGraphAdapter",
+        "resolve_version",
+        "SQLiteGraphAdapter"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/strategies.py",
+      "sha256": "7c333af28c48867bfa72b2f63a6411a17b42445a653dae16f5fd38df777f67c8",
+      "chapters": [
+        "06-hybrid-retrieval"
+      ],
+      "description": "Pluggable algorithms over an ACL-filtered, bounded graph view.",
+      "top_level_symbols": [
+        "SearchSpace",
+        "GraphRetriever",
+        "BuiltinStrategy"
+      ]
+    },
+    {
+      "path": "trace_gc/retrieval/vector.py",
+      "sha256": "47684d9349d159932848b77811abecec3ad60a3cbd02feb7afe495b4775ba415",
+      "chapters": [
+        "06-hybrid-retrieval"
+      ],
+      "description": "Replaceable embedding interfaces; built-in hashing is an offline lexical baseline.",
+      "top_level_symbols": [
+        "terms",
+        "EmbeddingModel",
+        "HashingEmbedding",
+        "PrecomputedEmbedding",
+        "cosine"
+      ]
+    },
+    {
+      "path": "trace_gc/schema.py",
+      "sha256": "0512e0b0b5a1bf9dc50537e5dbf2b85deaf04f9adebd58fc9e9020376ce84dbf",
+      "chapters": [
+        "02-evidence-compilation"
+      ],
+      "description": "Offline-only schema registry: never resolve untrusted remote $refs.",
+      "top_level_symbols": [
+        "validator",
+        "validate"
+      ]
+    },
+    {
+      "path": "trace_gc/trust.py",
+      "sha256": "966be0404d57cb2abf551feaa27d0636b52788d83672200fb8bf854ccbf4b16d",
+      "chapters": [
+        "04-policy-publication"
+      ],
+      "description": "Application-owned Ed25519 trust store; model output cannot enroll an issuer.",
+      "top_level_symbols": [
+        "IssuerPolicy",
+        "Signer",
+        "TrustStore",
+        "authorize_plan",
+        "verify_authorization",
+        "attest_observation",
+        "verify_observation_attestation"
+      ]
+    },
+    {
+      "path": "trace_gc/validation.py",
+      "sha256": "fb36c61c8b0cb5efb32d09159279d07fb456cae29d8641c9994d4dbcf5ae6db8",
+      "chapters": [
+        "05-history-replay",
+        "11-validation-delivery"
+      ],
+      "description": "Versioned bundle validation: partial, complete analysis, publication and history.",
+      "top_level_symbols": [
+        "validate_bundle"
+      ]
+    }
+  ]
+}

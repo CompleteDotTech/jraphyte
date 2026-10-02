@@ -1,0 +1,53 @@
+flowchart TB
+    accTitle: Offline validation, packaging, hosted checks, and deployment gates
+    accDescr: The offline runner records tests, probes, demos, and synthetic GraphRAG checks. CI also installs the package. Optional legacy compatibility, experimental preservation, and deployment qualification remain distinct gates; a passing offline report does not authorize production.
+    subgraph L["01 / LOCAL OFFLINE VALIDATION"]
+        A["Checkout plus pinned<br/>requirements.txt dependencies"]:::input
+        B["tools/run_validation.py<br/>Discover unittest suite"]:::process
+        C["Legacy fixture / canonical vectors<br/>Packaged schema copy parity"]:::process
+        D["18 design-review probes<br/>All must be rejected"]:::process
+        E["Isolated runtime demo<br/>GraphRAG scenarios / benchmark"]:::process
+        F["VALIDATION_REPORT.json<br/>VALIDATION_LOG.txt"]:::artifact
+        G{"Tests and offline<br/>checks successful?"}:::decision
+        H["FAIL report / nonzero exit<br/>Retain failure evidence"]:::stop
+        I["PASS_WITH_EXTERNAL_GATES<br/>Synthetic reference evidence"]:::artifact
+        A --> B --> C --> D --> E --> F --> G
+        G -->|"No"| H
+        G -->|"Yes"| I
+    end
+    subgraph K["02 / COMPATIBILITY AND RESEARCH GATES"]
+        J["Exact pinned legacy core.py<br/>External source required"]:::external
+        N["Git blob verified before import<br/>Temporary conformance databases"]:::process
+        O["Legacy PASS / fail / skip<br/>Record source availability"]:::artifact
+        P["PDF preservation gate FAIL<br/>v3 and parallel v4"]:::stop
+        J --> N --> O
+        O -. "separate evidence" .-> I
+        P -. "prevents promotion" .-> W
+    end
+    subgraph C2["03 / DELIVERY ARTIFACTS"]
+        Q["GitHub push / pull_request<br/>Ubuntu Python 3.11 / 3.12 / 3.13"]:::external
+        R["Run offline validation<br/>Install package / CLI version"]:::process
+        S["Tracked source ZIP builder<br/>Filter paths and file contents"]:::process
+        T["MANIFEST.json + audited ZIP<br/>Deterministic bytes + SHA-256"]:::artifact
+        Q --> R
+        I --> S --> T
+    end
+    subgraph Z["04 / EXTERNAL DEPLOYMENT ACCEPTANCE"]
+        U["Live provider and real backend<br/>Limits, costs, recovery and ACLs"]:::external
+        V["Independent labels / locked eval<br/>Trust, policy, keys and approvals"]:::authority
+        W["Bounded reviewed pilot<br/>Independent operational audit"]:::authority
+        X["Deployment qualification<br/>Outstanding external work"]:::stop
+        R --> U
+        T --> U
+        U --> V --> W --> X
+    end
+
+%% BEGIN SHARED ATLAS STYLE
+    classDef input fill:#E7F5F1,stroke:#348E82,color:#174D49,stroke-width:1.5px;
+    classDef process fill:#EAF1FC,stroke:#6589BB,color:#203F68,stroke-width:1.5px;
+    classDef decision fill:#FFF2D9,stroke:#CA963B,color:#6B4918,stroke-width:1.5px;
+    classDef artifact fill:#EEEFFD,stroke:#8388C3,color:#414779,stroke-width:1.5px;
+    classDef authority fill:#F4EBF9,stroke:#A181B9,color:#643E7A,stroke-width:1.5px;
+    classDef stop fill:#FCECEA,stroke:#C57B74,color:#823F39,stroke-width:1.5px;
+    classDef external fill:#F0F3F7,stroke:#92A0B2,color:#536277,stroke-width:1.5px,stroke-dasharray:5 4;
+%% END SHARED ATLAS STYLE

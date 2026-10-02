@@ -1,0 +1,61 @@
+flowchart LR
+    accTitle: TRACE-GC end-to-end workflow
+    accDescr: Source records and reviewed evidence enter immutable graph compilation, retrieval, semantic observation, joint resolution, policy and authenticated publication; graph history supplies cited retrieval and future runs. Experimental PDF review is an explicit application handoff.
+
+    subgraph IN["01 / EVIDENCE"]
+        direction TB
+        A["Application-supplied text<br/>schema and candidate intent"]:::input
+        P["Optional PDF experiment<br/>source-bound review proposal"]:::external
+        C["Immutable source and claim records<br/>exact evidence spans"]:::artifact
+        AD["Authorized source admission<br/>current status and graph snapshot"]:::authority
+        CA["Typed candidate hypotheses<br/>support, refutation or identity"]:::process
+        A --> C --> AD --> CA
+        P -. "application handoff after review" .-> C
+    end
+
+    subgraph SYN["02 / SYNTHESIS"]
+        direction TB
+        R["Optional upstream GraphRAG<br/>bounded source and graph context"]:::process
+        CP["Compile evidence closure<br/>state, questions and exact request"]:::process
+        O["Execute or import response<br/>immutable observation receipts"]:::artifact
+        RS["Resolve hypotheses jointly<br/>constraints and input certificate"]:::process
+        EV{"Policy evaluation<br/>and qualification"}:::decision
+        HOLD["Abstain or reject<br/>retain evidence and reasons"]:::stop
+        R --> CP --> O --> RS --> EV
+        EV -->|"abstain / reject"| HOLD
+        HOLD -. "semantic INSUFFICIENT only" .-> R
+    end
+
+    subgraph PUB["03 / PUBLICATION"]
+        direction TB
+        PL["Immutable typed mutation plan<br/>bind version, sources and policy"]:::artifact
+        AU["Trusted preflight and approval<br/>reviewed or qualified policy"]:::authority
+        TX{"Atomic commit recheck<br/>trust, versions and source epochs"}:::decision
+        DB[("Accepted graph<br/>records and transaction journal")]:::artifact
+        RB["Reject or roll back<br/>no partial graph update"]:::stop
+        PL --> AU --> TX
+        TX -->|"all checks pass"| DB
+        TX -->|"stale / invalid / fault"| RB
+    end
+
+    subgraph USE["04 / QUERY AND REVISIT"]
+        direction TB
+        Q["Downstream GraphRAG<br/>ACL-filtered context and citations"]:::process
+        HIST["Export, validate and replay<br/>causal ledger and optional signature"]:::process
+        CHANGE["Authorized source change<br/>withdraw dependent proofs"]:::authority
+        NEXT["Versioned graph context<br/>input to subsequent synthesis"]:::artifact
+        Q ~~~ HIST ~~~ CHANGE ~~~ NEXT
+    end
+    IN -->|"candidate and admitted evidence"| SYN
+    SYN -->|"selected hypothesis and permitted policy"| PUB
+    PUB -->|"committed graph and receipts"| USE
+
+%% BEGIN SHARED ATLAS STYLE
+    classDef input fill:#E7F5F1,stroke:#348E82,color:#174D49,stroke-width:1.5px;
+    classDef process fill:#EAF1FC,stroke:#6589BB,color:#203F68,stroke-width:1.5px;
+    classDef decision fill:#FFF2D9,stroke:#CA963B,color:#6B4918,stroke-width:1.5px;
+    classDef artifact fill:#EEEFFD,stroke:#8388C3,color:#414779,stroke-width:1.5px;
+    classDef authority fill:#F4EBF9,stroke:#A181B9,color:#643E7A,stroke-width:1.5px;
+    classDef stop fill:#FCECEA,stroke:#C57B74,color:#823F39,stroke-width:1.5px;
+    classDef external fill:#F0F3F7,stroke:#92A0B2,color:#536277,stroke-width:1.5px,stroke-dasharray:5 4;
+%% END SHARED ATLAS STYLE

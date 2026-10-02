@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/banner.jpg" alt="Violet and cyan diagram of evidence streams passing a hexagonal gate and compiling into a connected knowledge graph." width="100%"></p>
+
 # TRACE-GC 0.4.0 — bidirectional GraphRAG integration
 
 Evidence-bound graph compilation with immutable observations, explicit policy branches, typed mutation plans, and an authenticated transaction boundary.

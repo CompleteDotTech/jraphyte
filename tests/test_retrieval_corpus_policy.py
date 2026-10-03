@@ -26,6 +26,20 @@ else:
 
 
 class CorpusPolicyTests(unittest.TestCase):
+    def test_field_subprocess_preserves_selected_virtual_environment(self):
+        import subprocess
+        import venv
+        from src.parallel_source_v4.retrieval_trial import _field_process
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            venv.EnvBuilder(with_pip=False, symlinks=sys.platform != "win32").create(root)
+            executable = root / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+            script = "import json,sys; print(json.dumps({'prefix':sys.prefix,'executable':sys.executable}))"
+            expected = json.loads(subprocess.check_output([str(executable), "-B", "-s", "-c", script]))
+            observed = _field_process({"field_verifier_python": str(executable)}, ["-c", script])
+            self.assertEqual(observed, expected)
+            self.assertEqual(Path(observed["prefix"]).resolve(), root.resolve())
+
     def test_policy_has_no_id_or_query_exceptions(self):
         for changed in ({**BASELINE, "target_ids": ["f076"]}, {**BASELINE, "ocr_mode": "replace_corrupt"},
                         {**BASELINE, "assessment_method": "parallel_structure_v4"}):

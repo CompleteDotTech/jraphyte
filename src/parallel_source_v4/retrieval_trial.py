@@ -156,15 +156,19 @@ def _source_readback(root, source_root, rows):
 
 
 def _field_process(config, arguments):
-    executable = Path(config["field_verifier_python"]).resolve()
+    # Python locates pyvenv.cfg relative to the invoked executable. Resolving
+    # its symlink first silently selects the base interpreter's dependencies.
+    executable = Path(os.path.abspath(config["field_verifier_python"]))
     need(executable.is_file(), "pinned_field_verifier_interpreter_missing")
-    before = digest(executable)
+    identity = executable.resolve()
+    before = digest(identity)
     env = os.environ.copy()
     env.pop("PYTHONHOME", None)
     env.pop("PYTHONPATH", None)
     result = subprocess.run([str(executable), "-B", "-s", *arguments], cwd=REPO, env=env,
                             capture_output=True)
-    need(digest(executable) == before, "field_verifier_interpreter_changed")
+    need(executable.resolve() == identity and digest(identity) == before,
+         "field_verifier_interpreter_changed")
     need(result.returncode == 0, "field_reconstruction_or_runtime_verification_failed")
     return parse_bound_json(result.stdout)
 

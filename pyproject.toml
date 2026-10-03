@@ -18,3 +18,8 @@ include = ["trace_gc*"]
 
 [tool.setuptools.package-data]
 trace_gc = ["data/schemas/*.json"]
+
+[tool.pytest.ini_options]
+# Retained source-release archives are evidence, not the current test suite.
+# Match tools/run_validation.py's explicit discovery root.
+testpaths = ["tests"]
